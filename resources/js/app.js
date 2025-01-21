@@ -27,3 +27,15 @@ createInertiaApp({
         color: '#4B5563',
     },
 });
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/service-worker.js").then(
+            (registration) => {
+                console.log("Service Worker registrado:", registration);
+            },
+            (error) => {
+                console.log("Error al registrar el Service Worker:", error);
+            }
+        );
+    });
+}

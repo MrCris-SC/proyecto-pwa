@@ -12,6 +12,11 @@ export default {
 
     theme: {
         extend: {
+            colors: {
+                customColor: '#611232',
+                guinda: '#BF6172',
+            },
+
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },

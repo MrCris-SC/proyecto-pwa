@@ -6,6 +6,11 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
+        <!-- Metadatos de pdwa -->
+        <link rel="manifest" href="/manifest.json">
+        <meta name="theme-color" content="#4B5563">
+        <!-- fin de metadatos de pdwa -->
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
