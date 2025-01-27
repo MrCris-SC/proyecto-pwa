@@ -4,7 +4,7 @@ const routes = [
     {
         path: '/',
         name: 'Home',
-        component: () => import('./Pages/Welcome.vue'), // Cambia según tu estructura
+        component: () => import('./Pages/Welcome.vue'), // 
     },
     {
         path: '/login',
