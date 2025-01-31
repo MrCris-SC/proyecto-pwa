@@ -1,7 +1,8 @@
 <script setup>
-import { Link, usePage, router } from '@inertiajs/vue3'; // Añade router aquí
+import { Link, usePage, router } from '@inertiajs/vue3';
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 
+// Props (si los necesitas)
 defineProps({
     canLogin: Boolean,
     canRegister: Boolean,
@@ -9,37 +10,87 @@ defineProps({
     phpVersion: { type: String, required: true },
 });
 
-const currentSlide = ref(0);
-const images = [
+// Variables para el carrusel de bienvenida
+const currentSlideWelcome = ref(0);
+const imagesWelcome = [
     '/images/welcome/slide1.jpg',
     '/images/welcome/slide2.jpg',
     '/images/welcome/slide3.jpg',
     '/images/welcome/slide4.jpg',
     '/images/welcome/slide5.jpg',
 ];
-const totalSlides = images.length;
-const intervalTime = 3000;
-let interval;
 
+// Variables para el slider de la sección "acerca"
+const currentSlideAbout = ref(0);
+const imagesAbout = [
+    '/images/welcome/Portada1.jpg',
+    '/images/welcome/Portada2.jpg',
+    '/images/welcome/Portada3.jpg',
+    '/images/welcome/Portada4.jpg',
+];
+
+const intervalTime = 5000; // Cambiar la imagen cada 5 segundos
+let intervalWelcome;
+let intervalAbout;
+
+// Estado del menú móvil
 const menuOpen = ref(false);
 
+// Estado de visibilidad del header
+const isHeaderVisible = ref(true);
+const lastScrollPosition = ref(0);
+
+// Función para alternar el menú móvil
 const toggleMenu = () => {
     menuOpen.value = !menuOpen.value;
 };
 
-const nextSlide = () => {
-    currentSlide.value = (currentSlide.value + 1) % totalSlides;
+// Función para manejar el scroll y ocultar/mostrar el header
+const handleScroll = () => {
+    const currentScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+
+    if (currentScrollPosition < 0) {
+        return;
+    }
+
+    // Detectar la dirección del scroll
+    if (Math.abs(currentScrollPosition - lastScrollPosition.value) < 60) {
+        return;
+    }
+
+    // Mostrar u ocultar el header según la dirección del scroll
+    isHeaderVisible.value = currentScrollPosition < lastScrollPosition.value;
+    lastScrollPosition.value = currentScrollPosition;
 };
 
-const prevSlide = () => {
-    currentSlide.value = (currentSlide.value - 1 + totalSlides) % totalSlides;
+// Funciones para el carrusel de bienvenida
+const nextSlideWelcome = () => {
+    currentSlideWelcome.value = (currentSlideWelcome.value + 1) % imagesWelcome.length;
+};
+
+const prevSlideWelcome = () => {
+    currentSlideWelcome.value = (currentSlideWelcome.value - 1 + imagesWelcome.length) % imagesWelcome.length;
+};
+
+// Funciones para el slider de la sección "acerca"
+const nextSlideAbout = () => {
+    currentSlideAbout.value = (currentSlideAbout.value + 1) % imagesAbout.length;
+};
+
+const prevSlideAbout = () => {
+    currentSlideAbout.value = (currentSlideAbout.value - 1 + imagesAbout.length) % imagesAbout.length;
 };
 
 const scrollToSection = (sectionId) => {
     document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
 };
 
-const daysUntilEvent = ref(0);
+// Variables para el contador
+const days = ref(0);
+const hours = ref(0);
+const minutes = ref(0);
+const seconds = ref(0);
+
 const { props } = usePage();
 
 // Usar computed para isAuthenticated
@@ -50,28 +101,61 @@ if (isAuthenticated.value) {
     router.reload(); // Recarga la página para asegurar que los datos se actualicen
 }
 
+// Función para actualizar el contador
+const updateCountdown = () => {
+    const eventDate = new Date('2025-05-30').getTime(); // Fecha del evento
+    const now = new Date().getTime();
+    const timeLeft = eventDate - now;
+
+    if (timeLeft > 0) {
+        days.value = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+        hours.value = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        minutes.value = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        seconds.value = Math.floor((timeLeft % (1000 * 60)) / 1000);
+    } else {
+        // Si el evento ya pasó
+        days.value = 0;
+        hours.value = 0;
+        minutes.value = 0;
+        seconds.value = 0;
+    }
+};
+
 onMounted(() => {
     if (isAuthenticated.value) {
         // Redirige automáticamente al dashboard si ya está autenticado
         router.push('/dashboard');
     } else {
-        interval = setInterval(nextSlide, intervalTime);
+        // Iniciar el carrusel de bienvenida
+        intervalWelcome = setInterval(nextSlideWelcome, intervalTime);
 
-        const eventDate = new Date('2025-06-01');
-        const currentDate = new Date();
-        daysUntilEvent.value = Math.ceil((eventDate - currentDate) / (1000 * 3600 * 24));
+        // Iniciar el slider de la sección "acerca"
+        intervalAbout = setInterval(nextSlideAbout, intervalTime);
+
+        // Iniciar el contador
+        updateCountdown();
+        setInterval(updateCountdown, 1000); // Actualizar cada segundo
     }
+
+    // Event listener para el scroll
+    window.addEventListener('scroll', handleScroll);
 });
 
-
 onBeforeUnmount(() => {
-    clearInterval(interval);
+    clearInterval(intervalWelcome);
+    clearInterval(intervalAbout);
+    window.removeEventListener('scroll', handleScroll);
 });
 </script>
 
 <template>
-    <!-- Header -->
-    <header class="fixed top-0 left-0 w-full bg-[#611232] shadow z-50">
+
+<!-- Header -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <header :class="{
+        'fixed top-0 left-0 w-full bg-[#611232] shadow z-50 transition-transform duration-300': true,
+        'transform -translate-y-full': !isHeaderVisible
+    }">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
             <!-- Logo -->
             <img src="/images/dgeti.png" alt="Logo Sistema DGETI" class="h-12 object-contain">
@@ -80,7 +164,11 @@ onBeforeUnmount(() => {
             <button class="md:hidden text-white text-2xl" @click="toggleMenu">☰</button>
 
             <!-- Navegación -->
-            <nav :class="menuOpen ? 'flex' : 'hidden'" class="absolute md:relative top-16 left-0 w-full bg-[#611232] md:flex md:gap-4 md:items-center md:w-auto md:top-0 md:bg-transparent transition-all duration-300 ease-in-out">
+            <nav :class="{
+                'absolute md:relative top-16 left-0 w-full bg-[#611232] md:flex md:gap-4 md:items-center md:w-auto md:top-0 md:bg-transparent transition-all duration-300 ease-in-out': true,
+                'flex': menuOpen,
+                'hidden': !menuOpen
+            }">
                 <!-- Enlaces -->
                 <a href="#" @click.prevent="scrollToSection('inicio')" class="block md:inline-block text-white px-4 py-2 hover:text-red-500">Inicio</a>
                 <a href="#" @click.prevent="scrollToSection('acerca')" class="block md:inline-block text-white px-4 py-2 hover:text-red-500">Acerca</a>
@@ -98,92 +186,242 @@ onBeforeUnmount(() => {
     </header>
 
 
-    <!-- Sección de Bienvenida -->
-    <section id="inicio" class="relative h-screen flex items-center justify-center text-center bg-gray-900 text-white overflow-hidden">
-        <!-- Fondo del Carrusel -->
-        <div class="absolute inset-0 z-0">
-            <div class="flex transition-transform duration-1000 ease-in-out" :style="{ transform: `translateX(-${currentSlide * 100}%)` }">
-                <div v-for="(image, index) in images" :key="index" class="w-full h-screen flex-shrink-0">
-                    <img :src="image" :alt="`Slide ${index + 1}`" class="w-full h-full object-cover opacity-50" />
-                </div>
+
+    <section id="inicio" class="relative h-screen flex items-center justify-center text-center bg-gray-900 text-white overflow-hidden mt-16">
+    <!-- Fondo del Carrusel -->
+    <div class="absolute inset-0 z-0">
+        <div class="flex transition-transform duration-1000 ease-in-out" :style="{ transform: `translateX(-${currentSlideWelcome * 100}%)` }">
+            <div v-for="(image, index) in imagesWelcome" :key="index" class="w-full h-screen flex-shrink-0">
+                <img :src="image" :alt="`Slide ${index + 1}`" class="w-full h-full object-cover opacity-50" />
             </div>
         </div>
+    </div>
 
-        <!-- Contenido de Bienvenida -->
-        <div class="relative z-10 max-w-4xl px-4">
-            <h1 class="text-5xl md:text-6xl font-bold mb-6">Bienvenido al Sistema DGETI</h1>
-            <p class="text-xl md:text-2xl mb-8">
-                Gestión de proyectos para concursos de prototipos y emprendimiento.
-            </p>
-            <div class="flex justify-center gap-4">
-                <Link v-if="!isAuthenticated" href="/register" class="bg-[#D39D55] text-white px-8 py-3 rounded-lg hover:bg-[#c58d4a] transition-colors">Registrarse</Link>
-                <a href="#" @click.prevent="scrollToSection('acerca')" class="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg hover:bg-white hover:text-[#611232] transition-colors">Más información</a>
-            </div>
-            <p class="mt-6 text-lg text-gray-300">#DGETI</p>
+    <!-- Contenido de Bienvenida -->
+    <div class="relative z-10 max-w-4xl px-4">
+        <h1 class="text-5xl md:text-6xl font-bold mb-6">Bienvenido al Sistema DGETI</h1>
+        <p class="text-xl md:text-2xl mb-8">
+            Gestión de proyectos para concursos de prototipos y emprendimiento.
+        </p>
+        <div class="flex justify-center gap-4">
+            <Link v-if="!isAuthenticated" href="/register" class="bg-[#D39D55] text-white px-8 py-3 rounded-lg hover:bg-[#c58d4a] transition-colors">Registrarse</Link>
+            <a href="#" @click.prevent="scrollToSection('acerca')" class="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg hover:bg-white hover:text-[#611232] transition-colors">Más información</a>
         </div>
-    </section>
+        <p class="mt-6 text-lg text-gray-300">#DGETI</p>
+    </div>
+</section>
 
-    <!-- Slider Section -->
-    <section id="acerca" class="bg-[#FFF8E6] text-center">
-        <div class="w-full overflow-hidden relative">
-            <!-- Flechas de navegación -->
-            <button @click="prevSlide" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 p-2 rounded-full hover:bg-opacity-75 z-10 transition-opacity">
-                &larr;
-            </button>
-            <button @click="nextSlide" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 p-2 rounded-full hover:bg-opacity-75 z-10 transition-opacity">
-                &rarr;
-            </button>
-
-            <!-- Slider -->
-            <div class="flex transition-transform ease-in-out duration-500" :style="{ transform: `translateX(-${currentSlide * 100}%)` }">
-                <div v-for="index in totalSlides" :key="index" class="w-full flex-shrink-0">
-                    <img :src="`/images/welcome/Portada${index}.jpg`" alt="Slider Image" class="w-full h-auto object-cover max-h-[80vh]" />
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- Sección DGETI Mejorada -->
     <section id="acerca" class="bg-[#FFF8E6] py-16">
         <div class="max-w-7xl mx-auto px-6 text-center">
-            <!-- Título destacado -->
-            <h2 class="text-4xl font-bold text-[#611232] mb-6">
-                ¿Qué es la DGETI?
+            <!-- Título destacado con sombra y animación sutil -->
+            <h2 class="text-4xl md:text-5xl font-bold text-[#611232] mb-8 animate-fade-in">
+                ¿Qué es la <span class="text-[#8A1C4A]">DGETI</span>?
             </h2>
 
-            <!-- Información clave -->
-            <p class="text-lg text-[#555] mb-8 max-w-2xl mx-auto">
-                La Dirección General de Educación Tecnológica Industrial y de Servicios es una dependencia adscrita a la Subsecretaría de Educación Media Superior (SEMS), dependiente de la Secretaría de Educación Pública (SEP) que ofrece el servicio educativo del nivel medio superior tecnológico. El 16 de Abril de 1971 es publicado en el Diario Oficial de la Federación el acuerdo presidencial por el que se modifica la estructura orgánica administrativa de la SEP y se da paso a la creación de la DGETI, en agosto de ese mismo año se publican las funciones que tendrá esta institución y se integran a ella los centros de capacitación para el trabajo industrial, escuelas tecnológicas industriales, los centros de estudios tecnológicos en el Distrito Federal y los centros de estudios tecnológicos foráneos.            </p>
+            <!-- Contenedor de información con fondo y sombra -->
+            <div class="bg-white p-8 md:p-12 rounded-lg shadow-lg transform hover:scale-102 transition-transform duration-300">
+                <!-- Información clave con mejor tipografía y espaciado -->
+                <p class="text-lg md:text-xl text-[#555] leading-relaxed max-w-3xl mx-auto">
+                    La <span class="font-semibold text-[#611232]">Dirección General de Educación Tecnológica Industrial y de Servicios</span> (DGETI) es una dependencia adscrita a la Subsecretaría de Educación Media Superior (SEMS), dependiente de la Secretaría de Educación Pública (SEP). Ofrece el servicio educativo del nivel medio superior tecnológico, formando a jóvenes con habilidades técnicas y profesionales para el futuro.
+                </p>
+            </div>
         </div>
     </section>
 
-    <!-- Características Section -->
-    <section id="caracteristicas" class="py-20 bg-[#FBFBFB]">
-        <div class="max-w-7xl mx-auto px-4">
-            <h2 class="text-4xl font-bold text-center text-[#212121] mb-12">Características principales</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="bg-[#FFF8E6] p-8 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
-                    <h3 class="text-2xl font-bold text-[#611232] mb-4">Gestión de Proyectos</h3>
-                    <p class="text-[#212121]">Administra tus ideas desde un solo lugar, con herramientas intuitivas y colaborativas.</p>
-                </div>
-                <div class="bg-[#FFF8E6] p-8 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
-                    <h3 class="text-2xl font-bold text-[#611232] mb-4">Evaluación en Línea</h3>
-                    <p class="text-[#212121]">Proceso de evaluación automatizado y transparente para garantizar la imparcialidad.</p>
-                </div>
-                <div class="bg-[#FFF8E6] p-8 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
-                    <h3 class="text-2xl font-bold text-[#611232] mb-4">Reportes en Tiempo Real</h3>
-                    <p class="text-[#212121]">Accede a datos actualizados y métricas clave para tomar decisiones informadas.</p>
+    <section class="bg-[#FFF8E6] text-center">
+        <div class="w-full overflow-hidden relative">
+            <!-- Flechas de navegación -->
+            <button @click="prevSlideAbout" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 p-2 rounded-full hover:bg-opacity-75 z-10 transition-opacity">
+                &larr;
+            </button>
+            <button @click="nextSlideAbout" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 p-2 rounded-full hover:bg-opacity-75 z-10 transition-opacity">
+                &rarr;
+            </button>
+
+            <!-- Slider -->
+            <div class="flex transition-transform ease-in-out duration-500" :style="{ transform: `translateX(-${currentSlideAbout * 100}%)` }">
+                <div v-for="(image, index) in imagesAbout" :key="index" class="w-full flex-shrink-0">
+                    <img :src="image" :alt="`Slide ${index + 1}`" class="w-full h-auto object-cover max-h-[80vh]" />
                 </div>
             </div>
         </div>
     </section>
-    
+
+    <!-- Características Section - Mejorada -->
+    <section id="caracteristicas" class="py-20 bg-[#FBFBFB] overflow-hidden relative">
+        <!-- Fondo decorativo -->
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+        <div class="max-w-7xl mx-auto px-4 relative z-10">
+            <!-- Título -->
+            <h2 class="text-4xl font-bold text-center text-[#212121] mb-12 animate-fade-in">
+                Características principales
+            </h2>
+            <!-- Grid de tarjetas -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Tarjeta 1 -->
+                <div class="bg-[#FFF8E6] p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 relative overflow-hidden group animate-fade-in-up">
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#611232] to-[#FF6B6B] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <!-- Ícono -->
+                    <svg class="w-12 h-12 text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    <h3 class="text-2xl font-bold text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500">
+                        Registro Centralizado
+                    </h3>
+                    <p class="text-[#212121] relative z-10 group-hover:text-white transition-colors duration-500">
+                        Permite el registro de participantes y proyectos en una plataforma única, facilitando la gestión de la información.
+                    </p>
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-[#611232] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                </div>
+
+                <!-- Tarjeta 2 -->
+                <div class="bg-[#FFF8E6] p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 relative overflow-hidden group animate-fade-in-up delay-1">
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#611232] to-[#FF6B6B] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <!-- Ícono -->
+                    <svg class="w-12 h-12 text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <h3 class="text-2xl font-bold text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500">
+                        Evaluación Automatizada
+                    </h3>
+                    <p class="text-[#212121] relative z-10 group-hover:text-white transition-colors duration-500">
+                        Incorpora rúbricas configurables para la evaluación de proyectos, asegurando criterios uniformes y minimizando errores.
+                    </p>
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-[#611232] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                </div>
+
+                <!-- Tarjeta 3 -->
+                <div class="bg-[#FFF8E6] p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 relative overflow-hidden group animate-fade-in-up delay-2">
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#611232] to-[#FF6B6B] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <!-- Ícono -->
+                    <svg class="w-12 h-12 text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    <h3 class="text-2xl font-bold text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500">
+                        Generación de Reportes
+                    </h3>
+                    <p class="text-[#212121] relative z-10 group-hover:text-white transition-colors duration-500">
+                        Genera reportes detallados y constancias automáticas para cada fase del concurso (local, estatal y nacional).
+                    </p>
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-[#611232] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                </div>
+
+                <!-- Tarjeta 4 -->
+                <div class="bg-[#FFF8E6] p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 relative overflow-hidden group animate-fade-in-up delay-3">
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#611232] to-[#FF6B6B] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <!-- Ícono -->
+                    <svg class="w-12 h-12 text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    <h3 class="text-2xl font-bold text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500">
+                        Interacción entre Perfiles
+                    </h3>
+                    <p class="text-[#212121] relative z-10 group-hover:text-white transition-colors duration-500">
+                        Facilita la comunicación y colaboración entre administradores, vinculadores, participantes, asesores y jurados.
+                    </p>
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-[#611232] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                </div>
+
+                <!-- Tarjeta 5 -->
+                <div class="bg-[#FFF8E6] p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 relative overflow-hidden group animate-fade-in-up delay-4">
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#611232] to-[#FF6B6B] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <!-- Ícono -->
+                    <svg class="w-12 h-12 text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h3 class="text-2xl font-bold text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500">
+                        Transparencia y Equidad
+                    </h3>
+                    <p class="text-[#212121] relative z-10 group-hover:text-white transition-colors duration-500">
+                        Garantiza la transparencia en los resultados y la equidad en la evaluación mediante herramientas digitales.
+                    </p>
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-[#611232] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                </div>
+
+                <!-- Tarjeta 6 -->
+                <div class="bg-[#FFF8E6] p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 relative overflow-hidden group animate-fade-in-up delay-5">
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#611232] to-[#FF6B6B] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <!-- Ícono -->
+                    <svg class="w-12 h-12 text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                    </svg>
+                    <h3 class="text-2xl font-bold text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500">
+                        Plataforma Intuitiva
+                    </h3>
+                    <p class="text-[#212121] relative z-10 group-hover:text-white transition-colors duration-500">
+                        Diseñada para ser fácil de usar, accesible y eficiente, mejorando la experiencia de todos los usuarios.
+                    </p>
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-[#611232] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Animaciones personalizadas -->
+    <style>
+        @keyframes fade-in {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fade-in-up {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fade-in 1s ease-out;
+        }
+        .animate-fade-in-up {
+            animation: fade-in-up 0.8s ease-out forwards;
+        }
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        .delay-3 { animation-delay: 0.6s; }
+        .delay-4 { animation-delay: 0.8s; }
+        .delay-5 { animation-delay: 1s; }
+    </style>
+        
     <!-- Contador de días -->
     <section class="text-center bg-[#611232] py-20">
-        <div class="max-w-4xl mx-auto bg-[#FFF8E6] p-8 rounded-lg shadow-lg">
-            <h2 class="text-4xl font-bold text-[#212121] mb-4">Faltan</h2>
-            <div class="text-8xl font-bold text-[#611232] mb-4">{{ daysUntilEvent }}</div>
-            <p class="text-2xl text-[#212121]">días para el evento</p>
+        <div class="max-w-4xl mx-auto bg-[#FFF8E6] p-8 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300">
+            <h2 class="text-4xl font-bold text-[#212121] mb-8 animate-pulse">Faltan</h2>
+            <div class="flex justify-center items-center space-x-6">
+                <!-- Días -->
+                <div class="text-center">
+                    <div class="text-8xl font-bold text-[#611232] mb-2 animate-bounce">{{ String(days).padStart(2, '0') }}</div>
+                    <p class="text-2xl text-[#212121] font-semibold">Días</p>
+                </div>
+                
+                <!-- Separador -->
+                <div class="text-6xl font-bold text-[#611232]">:</div>
+                
+                <!-- Horas -->
+                <div class="text-center">
+                    <div class="text-8xl font-bold text-[#611232] mb-2 animate-bounce">{{ String(hours).padStart(2, '0') }}</div>
+                    <p class="text-2xl text-[#212121] font-semibold">Horas</p>
+                </div>
+                
+                <!-- Separador -->
+                <div class="text-6xl font-bold text-[#611232]">:</div>
+                
+                <!-- Minutos -->
+                <div class="text-center">
+                    <div class="text-8xl font-bold text-[#611232] mb-2 animate-bounce">{{ String(minutes).padStart(2, '0') }}</div>
+                    <p class="text-2xl text-[#212121] font-semibold">Minutos</p>
+                </div>
+                
+                <!-- Separador -->
+                <div class="text-6xl font-bold text-[#611232]">:</div>
+                
+                <!-- Segundos -->
+                <div class="text-center">
+                    <div class="text-8xl font-bold text-[#611232] mb-2 animate-bounce">{{ String(seconds).padStart(2, '0') }}</div>
+                    <p class="text-2xl text-[#212121] font-semibold">Segundos</p>
+                </div>
+            </div>
+            <p class="text-2xl text-[#212121] mt-8">para el gran evento</p>
         </div>
     </section>
 
@@ -192,20 +430,35 @@ onBeforeUnmount(() => {
         <div class="max-w-7xl mx-auto px-4">
             <h2 class="text-4xl font-bold text-center text-[#212121] mb-12">Roles en el Sistema</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Rol de Administrador -->
                 <div class="bg-[#FBFBFB] p-8 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
-                    <img src="/images/icons/admin.png" alt="Admin" class="w-20 h-20 mx-auto mb-4">
+                    <i class="fas fa-user-cog text-6xl text-[#611232] mx-auto mb-4"></i>
                     <h3 class="text-2xl font-bold text-[#611232] mb-4">Administradores</h3>
-                    <p class="text-[#212121]">Gestionan usuarios, proyectos y reportes, asegurando el correcto funcionamiento del sistema.</p>
+                    <p class="text-[#212121]">Gestionan usuarios, proyectos y reportes, asegurando el correcto funcionamiento del sistema y la transparencia en todas las fases del concurso.</p>
                 </div>
+                <!-- Rol de Vinculador -->
                 <div class="bg-[#FBFBFB] p-8 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
-                    <img src="/images/icons/vinculador.png" alt="Vinculador" class="w-20 h-20 mx-auto mb-4">
+                    <i class="fas fa-handshake text-6xl text-[#611232] mx-auto mb-4"></i>
                     <h3 class="text-2xl font-bold text-[#611232] mb-4">Vinculadores</h3>
-                    <p class="text-[#212121]">Se encargan de coordinar la relación con empresas y otros entes para el desarrollo de los proyectos.</p>
+                    <p class="text-[#212121]">Coordinan la relación con empresas, instituciones y otros entes externos para facilitar recursos y apoyo a los proyectos participantes.</p>
                 </div>
+                <!-- Rol de Participante -->
                 <div class="bg-[#FBFBFB] p-8 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
-                    <img src="/images/icons/participante.png" alt="Participante" class="w-20 h-20 mx-auto mb-4">
+                    <i class="fas fa-users text-6xl text-[#611232] mx-auto mb-4"></i>
                     <h3 class="text-2xl font-bold text-[#611232] mb-4">Participantes</h3>
-                    <p class="text-[#212121]">Estudiantes que presentan sus proyectos y compiten en los concursos organizados por la DGETI.</p>
+                    <p class="text-[#212121]">Estudiantes que presentan sus proyectos innovadores y compiten en las fases local, estatal y nacional del concurso de emprendimiento.</p>
+                </div>
+                <!-- Rol de Asesor -->
+                <div class="bg-[#FBFBFB] p-8 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                    <i class="fas fa-chalkboard-teacher text-6xl text-[#611232] mx-auto mb-4"></i>
+                    <h3 class="text-2xl font-bold text-[#611232] mb-4">Asesores</h3>
+                    <p class="text-[#212121]">Brindan orientación y apoyo técnico a los participantes durante el desarrollo y presentación de sus proyectos.</p>
+                </div>
+                <!-- Rol de Jurado -->
+                <div class="bg-[#FBFBFB] p-8 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                    <i class="fas fa-gavel text-6xl text-[#611232] mx-auto mb-4"></i>
+                    <h3 class="text-2xl font-bold text-[#611232] mb-4">Jurado</h3>
+                    <p class="text-[#212121]">Evalúan los proyectos participantes con base en criterios predefinidos, garantizando la equidad y transparencia en los resultados.</p>
                 </div>
             </div>
         </div>
@@ -214,33 +467,79 @@ onBeforeUnmount(() => {
     <!-- Sección de Contacto -->
     <section id="contacto" class="py-20 bg-[#611232] text-white">
         <div class="max-w-7xl mx-auto px-4 text-center">
-            <h2 class="text-4xl font-bold mb-6">Contáctanos</h2>
-            <p class="text-xl mb-8">Estamos aquí para apoyarte en tu camino hacia la innovación.</p>
+            <h2 class="text-4xl font-bold mb-6 animate-fade-in-up">Contáctanos</h2>
+            <p class="text-xl mb-8 animate-fade-in-up delay-100">Estamos aquí para apoyarte en tu camino hacia la innovación.</p>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left animate-fade-in-up delay-200">
                 <!-- Horario de Atención -->
-                <div>
-                    <h3 class="text-2xl font-bold mb-4">Horario de Atención</h3>
+                <div class="transform transition-transform duration-300 hover:scale-105">
+                    <div class="flex items-center mb-4">
+                        <!-- Icono de Reloj -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock mr-2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        <h3 class="text-2xl font-bold">Horario de Atención</h3>
+                    </div>
                     <p class="text-lg">Lunes - Viernes</p>
                     <p class="text-lg">8:00 am a 5:00 pm</p>
                 </div>
 
                 <!-- Dirección -->
-                <div>
-                    <h3 class="text-2xl font-bold mb-4">Nuestra Dirección</h3>
+                <div class="transform transition-transform duration-300 hover:scale-105">
+                    <div class="flex items-center mb-4">
+                        <!-- Icono de Mapa -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin mr-2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        <h3 class="text-2xl font-bold">Nuestra Dirección</h3>
+                    </div>
                     <p class="text-lg">Av. Educación Tecnológica 123</p>
                     <p class="text-lg">Ciudad Innovación, 54321</p>
                 </div>
 
                 <!-- Teléfonos -->
-                <div>
-                    <h3 class="text-2xl font-bold mb-4">Contáctanos</h3>
+                <div class="transform transition-transform duration-300 hover:scale-105">
+                    <div class="flex items-center mb-4">
+                        <!-- Icono de Teléfono -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-phone mr-2">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                        </svg>
+                        <h3 class="text-2xl font-bold">Contáctanos</h3>
+                    </div>
                     <p class="text-lg">+52-800-INNOVAR</p>
-                    <p class="text-lg">+52-800-EDUCION</p>
+                    <p class="text-lg">+52-800-EDUCACION</p>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- Animaciones personalizadas -->
+    <style>
+        @keyframes fade-in-up {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fade-in-up 0.6s ease-out forwards;
+        }
+
+        .delay-100 {
+            animation-delay: 0.1s;
+        }
+
+        .delay-200 {
+            animation-delay: 0.2s;
+        }
+    </style>
 
 
     
