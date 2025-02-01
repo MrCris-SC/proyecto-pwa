@@ -9,7 +9,7 @@ use App\Http\Controllers\RegisterController;
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
+        #'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);
@@ -26,7 +26,5 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::get('/new-user', [RegisterController::class, 'showRegistrationForm'])->middleware(['auth'])->name('new.user');
-
-Route::post('/new-user', [RegisterController::class, 'register']);
-
+Route::post('/register-store', [RegisterController::class, 'register'])->name('register.store');
 require __DIR__.'/auth.php';

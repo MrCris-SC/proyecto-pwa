@@ -30,26 +30,24 @@ class RegisterController extends Controller
 
     public function register(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'rol' => 'required|string|max:255', // Añadido campo rol
+            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'rol' => ['required', 'string', 'in:admin,vinculador,participante,evaluador,asesor'],
         ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'rol' => $request->rol, // Añadido campo rol
+            'rol' => $request->rol,
         ]);
 
-        auth()->login($user);
+        event(new Registered($user));
 
-        return redirect()->route('home');
+        Auth::login($user);
+
+        return redirect(route('dashboard', absolute: false));
     }
 }
