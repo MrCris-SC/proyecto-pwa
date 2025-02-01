@@ -18,7 +18,7 @@ const form = useForm({
     email: '',
     password: '',
     password_confirmation: '',
-    role: 'evaluador', // Default role
+    rol: '', // Default rol
 });
 
 const submit = () => {
@@ -113,13 +113,13 @@ const submit = () => {
                         <InputLabel for="rol" value="Rol" />
 
                         <select id="rol" v-model="form.rol" required>
-                            <option v-for="rol in props.rolesParaRegistrar" :key="rol" :value="rol">
+                            <option v-for="rol in rolesParaRegistrar" :key="rol" :value="rol">
                                 {{ rol }}
                             </option>
                         </select>
                         
 
-                        <InputError class="mt-2" :message="form.errors.role" />
+                        <InputError class="mt-2" :message="form.errors.rol" />
                     </div>
 
                     <div class="mt-4 flex items-center justify-end">
@@ -131,7 +131,7 @@ const submit = () => {
                         </Link>
 
                         <PrimaryButton
-                            class="ms-4"
+                            class="ml-4"
                             :class="{ 'opacity-25': form.processing }"
                             :disabled="form.processing"
                         >
