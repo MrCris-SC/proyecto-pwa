@@ -21,6 +21,7 @@ createInertiaApp({
             .use(plugin)
             .use(ZiggyVue)
             .use(router) // Agregar Vue Router
+            .mixin({ methods: { route: window.route } })
             .mount(el);
     },
     progress: {

@@ -6,7 +6,7 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
-
+import { Ziggy } from '@/ziggy';
 const showingNavigationDropdown = ref(false);
 </script>
 
@@ -40,11 +40,9 @@ const showingNavigationDropdown = ref(false);
                                     Inicio
                                 </NavLink>
 
-                                <NavLink
-                                    :href="route('dashboard')"
-                                   
-                                >
-                                    Registro de proyecto
+                               <!-- Registro Links -->
+                                <NavLink v-if="$page.props.auth.user.rol === 'admin'" :href="route('new.user')">
+                                    Registrar Usuarios
                                 </NavLink>
                             </div>
                         </div>
