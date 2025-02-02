@@ -53,9 +53,11 @@ class RegisterController extends Controller
             'password' => Hash::make($request->password),
             'rol' => $request->rol,
         ]);
-
+        
         // 🔥 Dispara el evento para que se envíe el email de verificación
         event(new Registered($user));
+
+        
 
         return redirect()->route('dashboard')->with('success', 'Usuario registrado correctamente.');
     }

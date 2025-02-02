@@ -31,7 +31,7 @@ Route::middleware('auth')->group(function () {
 Route::get('/new-user', [RegisterController::class, 'showRegistrationForm'])->middleware(['auth'])->name('new.user');
 Route::post('/register-store', [RegisterController::class, 'register'])->name('register.store');
 
-// Ruta para mostrar el mensaje de verificación
+
 
 
 
