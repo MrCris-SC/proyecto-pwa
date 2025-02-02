@@ -2,7 +2,7 @@
 import { Link, usePage, router } from '@inertiajs/vue3';
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 
-// Props (si los necesitas)
+// Props
 defineProps({
     canLogin: Boolean,
     canRegister: Boolean,
@@ -152,40 +152,114 @@ onBeforeUnmount(() => {
 
 <!-- Header -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <header :class="{
-        'fixed top-0 left-0 w-full bg-[#611232] shadow z-50 transition-transform duration-300': true,
-        'transform -translate-y-full': !isHeaderVisible
-    }">
+    <header
+        :class="{
+            'fixed top-0 left-0 w-full bg-[#611232] shadow z-50 transition-transform duration-300': true,
+            'transform -translate-y-full': !isHeaderVisible,
+        }"
+    >
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <!-- Logo -->
-            <img src="/images/dgeti.png" alt="Logo Sistema DGETI" class="h-12 object-contain">
+            <!-- Logo ajustable -->
+            <img src="/images/dgeti.png" alt="Logo Sistema DGETI" class="h-10 md:h-12 object-contain" />
 
             <!-- Botón de menú hamburguesa -->
-            <button class="md:hidden text-white text-2xl" @click="toggleMenu">☰</button>
+            <button
+                class="md:hidden text-white text-2xl focus:outline-none"
+                @click="toggleMenu"
+                aria-label="Abrir menú"
+            >
+                ☰
+            </button>
 
             <!-- Navegación -->
-            <nav :class="{
-                'absolute md:relative top-16 left-0 w-full bg-[#611232] md:flex md:gap-4 md:items-center md:w-auto md:top-0 md:bg-transparent transition-all duration-300 ease-in-out': true,
-                'flex': menuOpen,
-                'hidden': !menuOpen
-            }">
+            <nav
+                :class="{
+                    'absolute md:relative top-16 left-0 w-full bg-[#611232] md:flex md:gap-4 md:items-center md:w-auto md:top-0 md:bg-transparent transition-all duration-300 ease-in-out': true,
+                    'flex flex-col items-center': menuOpen,
+                    'hidden': !menuOpen,
+                }"
+            >
                 <!-- Enlaces -->
-                <a href="#" @click.prevent="scrollToSection('inicio')" class="block md:inline-block text-white px-4 py-2 hover:text-red-500">Inicio</a>
-                <a href="#" @click.prevent="scrollToSection('acerca')" class="block md:inline-block text-white px-4 py-2 hover:text-red-500">Acerca</a>
-                <a href="#" @click.prevent="scrollToSection('caracteristicas')" class="block md:inline-block text-white px-4 py-2 hover:text-red-500">Características</a>
-                <a href="#" @click.prevent="scrollToSection('contacto')" class="block md:inline-block text-white px-4 py-2 hover:text-red-500">Contacto</a>
+                <a
+                    href="#"
+                    @click.prevent="scrollToSection('inicio')"
+                    class="block md:inline-block text-white px-4 py-2 hover:text-red-500 transition-colors duration-200"
+                    >Inicio</a
+                >
+                <a
+                    href="#"
+                    @click.prevent="scrollToSection('acerca')"
+                    class="block md:inline-block text-white px-4 py-2 hover:text-red-500 transition-colors duration-200"
+                    >Acerca</a
+                >
+                <a
+                    href="#"
+                    @click.prevent="scrollToSection('caracteristicas')"
+                    class="block md:inline-block text-white px-4 py-2 hover:text-red-500 transition-colors duration-200"
+                    >Características</a
+                >
+                <a
+                    href="#"
+                    @click.prevent="scrollToSection('contacto')"
+                    class="block md:inline-block text-white px-4 py-2 hover:text-red-500 transition-colors duration-200"
+                    >Contacto</a
+                >
 
-                <!-- Botones -->
+                <!-- Botones ajustables para móviles -->
                 <div class="flex flex-col md:flex-row gap-2 mt-4 md:mt-0">
-                    <Link v-if="!isAuthenticated" href="/login" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Iniciar Sesión</Link>
-                    <Link v-if="!isAuthenticated" href="/register" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Registrarse</Link>
-                    <Link v-if="isAuthenticated" href="/dashboard" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Dashboard</Link>
+                    <Link
+                        v-if="!isAuthenticated"
+                        href="/login"
+                        class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center"
+                        >Iniciar Sesión</Link
+                    >
+                    <Link
+                        v-if="!isAuthenticated"
+                        href="/register"
+                        class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors duration-200 text-center"
+                        >Registrarse</Link
+                    >
+                    <Link
+                        v-if="isAuthenticated"
+                        href="/dashboard"
+                        class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center"
+                        >Dashboard</Link
+                    >
                 </div>
             </nav>
         </div>
     </header>
 
+    <style>
+        .nav-enter-active,
+        .nav-leave-active {
+            transition: opacity 0.3s, transform 0.3s;
+        }
 
+        .nav-enter-from,
+        .nav-leave-to {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        /* Medida para pantallas pequeñas */
+        @media (max-width: 768px) {
+            .flex-col {
+                flex-direction: column;
+            }
+            .text-center {
+                text-align: center;
+            }
+            .px-4 {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            .py-2 {
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
+            }
+        }
+    </style>
 
     <section id="inicio" class="relative h-screen flex items-center justify-center text-center bg-gray-900 text-white overflow-hidden mt-16">
     <!-- Fondo del Carrusel -->
@@ -210,7 +284,6 @@ onBeforeUnmount(() => {
         <p class="mt-6 text-lg text-gray-300">#DGETI</p>
     </div>
 </section>
-
 
     <!-- Sección DGETI Mejorada -->
     <section id="acerca" class="bg-[#FFF8E6] py-16">
@@ -541,8 +614,6 @@ onBeforeUnmount(() => {
         }
     </style>
 
-
-    
     <!-- Footer -->
     <footer class="bg-[#212121] text-white text-center py-8">
         <div class="max-w-7xl mx-auto px-6">
@@ -565,5 +636,4 @@ onBeforeUnmount(() => {
             </div>
         </div>
     </footer>
-
 </template>
