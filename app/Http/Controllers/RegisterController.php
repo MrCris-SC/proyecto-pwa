@@ -33,8 +33,12 @@ class RegisterController extends Controller
             'rolesParaRegistrar' => $rolesParaRegistrar,
         ]);
     }
-
-    public function register(Request $request)
+ /**
+     * Handle an incoming registration request.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function register(Request $request): RedirectResponse
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -50,10 +54,9 @@ class RegisterController extends Controller
             'rol' => $request->rol,
         ]);
 
+        // 🔥 Dispara el evento para que se envíe el email de verificación
         event(new Registered($user));
 
-        
-
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->route('dashboard')->with('success', 'Usuario registrado correctamente.');
     }
 }

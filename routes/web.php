@@ -5,6 +5,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Auth\EmailVerificationNotificationController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -27,4 +30,9 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/new-user', [RegisterController::class, 'showRegistrationForm'])->middleware(['auth'])->name('new.user');
 Route::post('/register-store', [RegisterController::class, 'register'])->name('register.store');
+
+// Ruta para mostrar el mensaje de verificación
+
+
+
 require __DIR__.'/auth.php';
