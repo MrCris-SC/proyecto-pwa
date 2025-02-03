@@ -1,376 +1,639 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { Link, usePage, router } from '@inertiajs/vue3';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 
+// Props
 defineProps({
-    canLogin: {
-        type: Boolean,
-    },
-    canRegister: {
-        type: Boolean,
-    },
-    laravelVersion: {
-        type: String,
-        required: true,
-    },
-    phpVersion: {
-        type: String,
-        required: true,
-    },
+    canLogin: Boolean,
+    canRegister: Boolean,
+    laravelVersion: { type: String, required: true },
+    phpVersion: { type: String, required: true },
 });
 
-function handleImageError() {
-    document.getElementById('screenshot-container')?.classList.add('!hidden');
-    document.getElementById('docs-card')?.classList.add('!row-span-1');
-    document.getElementById('docs-card-content')?.classList.add('!flex-row');
-    document.getElementById('background')?.classList.add('!hidden');
+// Variables para el carrusel de bienvenida
+const currentSlideWelcome = ref(0);
+const imagesWelcome = [
+    '/images/welcome/slide1.jpg',
+    '/images/welcome/slide2.jpg',
+    '/images/welcome/slide3.jpg',
+    '/images/welcome/slide4.jpg',
+    '/images/welcome/slide5.jpg',
+];
+
+// Variables para el slider de la sección "acerca"
+const currentSlideAbout = ref(0);
+const imagesAbout = [
+    '/images/welcome/Portada1.jpg',
+    '/images/welcome/Portada2.jpg',
+    '/images/welcome/Portada3.jpg',
+    '/images/welcome/Portada4.jpg',
+];
+
+const intervalTime = 5000; // Cambiar la imagen cada 5 segundos
+let intervalWelcome;
+let intervalAbout;
+
+// Estado del menú móvil
+const menuOpen = ref(false);
+
+// Estado de visibilidad del header
+const isHeaderVisible = ref(true);
+const lastScrollPosition = ref(0);
+
+// Función para alternar el menú móvil
+const toggleMenu = () => {
+    menuOpen.value = !menuOpen.value;
+};
+
+// Función para manejar el scroll y ocultar/mostrar el header
+const handleScroll = () => {
+    const currentScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+
+    if (currentScrollPosition < 0) {
+        return;
+    }
+
+    // Detectar la dirección del scroll
+    if (Math.abs(currentScrollPosition - lastScrollPosition.value) < 60) {
+        return;
+    }
+
+    // Mostrar u ocultar el header según la dirección del scroll
+    isHeaderVisible.value = currentScrollPosition < lastScrollPosition.value;
+    lastScrollPosition.value = currentScrollPosition;
+};
+
+// Funciones para el carrusel de bienvenida
+const nextSlideWelcome = () => {
+    currentSlideWelcome.value = (currentSlideWelcome.value + 1) % imagesWelcome.length;
+};
+
+const prevSlideWelcome = () => {
+    currentSlideWelcome.value = (currentSlideWelcome.value - 1 + imagesWelcome.length) % imagesWelcome.length;
+};
+
+// Funciones para el slider de la sección "acerca"
+const nextSlideAbout = () => {
+    currentSlideAbout.value = (currentSlideAbout.value + 1) % imagesAbout.length;
+};
+
+const prevSlideAbout = () => {
+    currentSlideAbout.value = (currentSlideAbout.value - 1 + imagesAbout.length) % imagesAbout.length;
+};
+
+const scrollToSection = (sectionId) => {
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+};
+
+// Variables para el contador
+const days = ref(0);
+const hours = ref(0);
+const minutes = ref(0);
+const seconds = ref(0);
+
+const { props } = usePage();
+
+// Usar computed para isAuthenticated
+const isAuthenticated = computed(() => props.auth?.user !== null);
+
+// Recargar la página después de iniciar sesión
+if (isAuthenticated.value) {
+    router.reload(); // Recarga la página para asegurar que los datos se actualicen
 }
+
+// Función para actualizar el contador
+const updateCountdown = () => {
+    const eventDate = new Date('2025-05-30').getTime(); // Fecha del evento
+    const now = new Date().getTime();
+    const timeLeft = eventDate - now;
+
+    if (timeLeft > 0) {
+        days.value = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+        hours.value = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        minutes.value = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        seconds.value = Math.floor((timeLeft % (1000 * 60)) / 1000);
+    } else {
+        // Si el evento ya pasó
+        days.value = 0;
+        hours.value = 0;
+        minutes.value = 0;
+        seconds.value = 0;
+    }
+};
+
+onMounted(() => {
+    if (isAuthenticated.value) {
+        // Redirige automáticamente al dashboard si ya está autenticado
+        router.push('/dashboard');
+    } else {
+        // Iniciar el carrusel de bienvenida
+        intervalWelcome = setInterval(nextSlideWelcome, intervalTime);
+
+        // Iniciar el slider de la sección "acerca"
+        intervalAbout = setInterval(nextSlideAbout, intervalTime);
+
+        // Iniciar el contador
+        updateCountdown();
+        setInterval(updateCountdown, 1000); // Actualizar cada segundo
+    }
+
+    // Event listener para el scroll
+    window.addEventListener('scroll', handleScroll);
+});
+
+onBeforeUnmount(() => {
+    clearInterval(intervalWelcome);
+    clearInterval(intervalAbout);
+    window.removeEventListener('scroll', handleScroll);
+});
 </script>
 
 <template>
-    <Head title="Welcome" />
-    <div class="bg-gray-50 text-black/50 dark:bg-black dark:text-white/50">
-        <img
-            id="background"
-            class="absolute -left-20 top-0 max-w-[877px]"
-            src="https://laravel.com/assets/img/welcome/background.svg"
-        />
-        <div
-            class="relative flex min-h-screen flex-col items-center justify-center selection:bg-[#FF2D20] selection:text-white"
-        >
-            <div class="relative w-full max-w-2xl px-6 lg:max-w-7xl">
-                <header
-                    class="grid grid-cols-2 items-center gap-2 py-10 lg:grid-cols-3"
+
+<!-- Header -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <header
+        :class="{
+            'fixed top-0 left-0 w-full bg-[#611232] shadow z-50 transition-transform duration-300': true,
+            'transform -translate-y-full': !isHeaderVisible,
+        }"
+    >
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <!-- Logo ajustable -->
+            <img src="/images/dgeti.png" alt="Logo Sistema DGETI" class="h-10 md:h-12 object-contain" />
+
+            <!-- Botón de menú hamburguesa -->
+            <button
+                class="md:hidden text-white text-2xl focus:outline-none"
+                @click="toggleMenu"
+                aria-label="Abrir menú"
+            >
+                ☰
+            </button>
+
+            <!-- Navegación -->
+            <nav
+                :class="{
+                    'absolute md:relative top-16 left-0 w-full bg-[#611232] md:flex md:gap-4 md:items-center md:w-auto md:top-0 md:bg-transparent transition-all duration-300 ease-in-out': true,
+                    'flex flex-col items-center': menuOpen,
+                    'hidden': !menuOpen,
+                }"
+            >
+                <!-- Enlaces -->
+                <a
+                    href="#"
+                    @click.prevent="scrollToSection('inicio')"
+                    class="block md:inline-block text-white px-4 py-2 hover:text-red-500 transition-colors duration-200"
+                    >Inicio</a
                 >
-                    <div class="flex lg:col-start-2 lg:justify-center">
-                        <img src="/images/dgeti.png" alt="Logo de la Aplicación" class="h-16 w-auto">
-                    </div>
-                    <nav v-if="canLogin" class="-mx-3 flex flex-1 justify-end">
-                        <Link
-                            v-if="$page.props.auth.user"
-                            :href="route('dashboard')"
-                            class="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
-                        >
-                            Dashboard
-                        </Link>
-
-                        <template v-else>
-                            <Link
-                                :href="route('login')"
-                                class="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
-                            >
-                                Log in
-                            </Link>
-
-                            <Link
-                                v-if="canRegister"
-                                :href="route('register')"
-                                class="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
-                            >
-                                Register
-                            </Link>
-                        </template>
-                    </nav>
-                </header>
-
-                <main class="mt-6">
-                    <div class="grid gap-6 lg:grid-cols-2 lg:gap-8">
-                        <a
-                            href="https://laravel.com/docs"
-                            id="docs-card"
-                            class="flex flex-col items-start gap-6 overflow-hidden rounded-lg bg-white p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)] ring-1 ring-white/[0.05] transition duration-300 hover:text-black/70 hover:ring-black/20 focus:outline-none focus-visible:ring-[#FF2D20] md:row-span-3 lg:p-10 lg:pb-10 dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:text-white/70 dark:hover:ring-zinc-700 dark:focus-visible:ring-[#FF2D20]"
-                        >
-                            <div
-                                id="screenshot-container"
-                                class="relative flex w-full flex-1 items-stretch"
-                            >
-                                <img
-                                    src="https://laravel.com/assets/img/welcome/docs-light.svg"
-                                    alt="Laravel documentation screenshot"
-                                    class="aspect-video h-full w-full flex-1 rounded-[10px] object-cover object-top drop-shadow-[0px_4px_34px_rgba(0,0,0,0.06)] dark:hidden"
-                                    @error="handleImageError"
-                                />
-                                <img
-                                    src="https://laravel.com/assets/img/welcome/docs-dark.svg"
-                                    alt="Laravel documentation screenshot"
-                                    class="hidden aspect-video h-full w-full flex-1 rounded-[10px] object-cover object-top drop-shadow-[0px_4px_34px_rgba(0,0,0,0.25)] dark:block"
-                                />
-                                <div
-                                    class="absolute -bottom-16 -left-16 h-40 w-[calc(100%+8rem)] bg-gradient-to-b from-transparent via-white to-white dark:via-zinc-900 dark:to-zinc-900"
-                                ></div>
-                            </div>
-
-                            <div
-                                class="relative flex items-center gap-6 lg:items-end"
-                            >
-                                <div
-                                    id="docs-card-content"
-                                    class="flex items-start gap-6 lg:flex-col"
-                                >
-                                    <div
-                                        class="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#FF2D20]/10 sm:size-16"
-                                    >
-                                        <svg
-                                            class="size-5 sm:size-6"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                fill="#FF2D20"
-                                                d="M23 4a1 1 0 0 0-1.447-.894L12.224 7.77a.5.5 0 0 1-.448 0L2.447 3.106A1 1 0 0 0 1 4v13.382a1.99 1.99 0 0 0 1.105 1.79l9.448 4.728c.14.065.293.1.447.1.154-.005.306-.04.447-.105l9.453-4.724a1.99 1.99 0 0 0 1.1-1.789V4ZM3 6.023a.25.25 0 0 1 .362-.223l7.5 3.75a.251.251 0 0 1 .138.223v11.2a.25.25 0 0 1-.362.224l-7.5-3.75a.25.25 0 0 1-.138-.22V6.023Zm18 11.2a.25.25 0 0 1-.138.224l-7.5 3.75a.249.249 0 0 1-.329-.099.249.249 0 0 1-.033-.12V9.772a.251.251 0 0 1 .138-.224l7.5-3.75a.25.25 0 0 1 .362.224v11.2Z"
-                                            />
-                                            <path
-                                                fill="#FF2D20"
-                                                d="m3.55 1.893 8 4.048a1.008 1.008 0 0 0 .9 0l8-4.048a1 1 0 0 0-.9-1.785l-7.322 3.706a.506.506 0 0 1-.452 0L4.454.108a1 1 0 0 0-.9 1.785H3.55Z"
-                                            />
-                                        </svg>
-                                    </div>
-
-                                    <div class="pt-3 sm:pt-5 lg:pt-0">
-                                        <h2
-                                            class="text-xl font-semibold text-black dark:text-white"
-                                        >
-                                            Documentation
-                                        </h2>
-
-                                        <p class="mt-4 text-sm/relaxed">
-                                            Laravel has wonderful documentation
-                                            covering every aspect of the
-                                            framework. Whether you are a
-                                            newcomer or have prior experience
-                                            with Laravel, we recommend reading
-                                            our documentation from beginning to
-                                            end.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <svg
-                                    class="size-6 shrink-0 stroke-[#FF2D20]"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke-width="1.5"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"
-                                    />
-                                </svg>
-                            </div>
-                        </a>
-
-                        <a
-                            href="https://laracasts.com"
-                            class="flex items-start gap-4 rounded-lg bg-white p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)] ring-1 ring-white/[0.05] transition duration-300 hover:text-black/70 hover:ring-black/20 focus:outline-none focus-visible:ring-[#FF2D20] lg:pb-10 dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:text-white/70 dark:hover:ring-zinc-700 dark:focus-visible:ring-[#FF2D20]"
-                        >
-                            <div
-                                class="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#FF2D20]/10 sm:size-16"
-                            >
-                                <svg
-                                    class="size-5 sm:size-6"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <g fill="#FF2D20">
-                                        <path
-                                            d="M24 8.25a.5.5 0 0 0-.5-.5H.5a.5.5 0 0 0-.5.5v12a2.5 2.5 0 0 0 2.5 2.5h19a2.5 2.5 0 0 0 2.5-2.5v-12Zm-7.765 5.868a1.221 1.221 0 0 1 0 2.264l-6.626 2.776A1.153 1.153 0 0 1 8 18.123v-5.746a1.151 1.151 0 0 1 1.609-1.035l6.626 2.776ZM19.564 1.677a.25.25 0 0 0-.177-.427H15.6a.106.106 0 0 0-.072.03l-4.54 4.543a.25.25 0 0 0 .177.427h3.783c.027 0 .054-.01.073-.03l4.543-4.543ZM22.071 1.318a.047.047 0 0 0-.045.013l-4.492 4.492a.249.249 0 0 0 .038.385.25.25 0 0 0 .14.042h5.784a.5.5 0 0 0 .5-.5v-2a2.5 2.5 0 0 0-1.925-2.432ZM13.014 1.677a.25.25 0 0 0-.178-.427H9.101a.106.106 0 0 0-.073.03l-4.54 4.543a.25.25 0 0 0 .177.427H8.4a.106.106 0 0 0 .073-.03l4.54-4.543ZM6.513 1.677a.25.25 0 0 0-.177-.427H2.5A2.5 2.5 0 0 0 0 3.75v2a.5.5 0 0 0 .5.5h1.4a.106.106 0 0 0 .073-.03l4.54-4.543Z"
-                                        />
-                                    </g>
-                                </svg>
-                            </div>
-
-                            <div class="pt-3 sm:pt-5">
-                                <h2
-                                    class="text-xl font-semibold text-black dark:text-white"
-                                >
-                                    Laracasts
-                                </h2>
-
-                                <p class="mt-4 text-sm/relaxed">
-                                    Laracasts offers thousands of video
-                                    tutorials on Laravel, PHP, and JavaScript
-                                    development. Check them out, see for
-                                    yourself, and massively level up your
-                                    development skills in the process.
-                                </p>
-                            </div>
-
-                            <svg
-                                class="size-6 shrink-0 self-center stroke-[#FF2D20]"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke-width="1.5"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"
-                                />
-                            </svg>
-                        </a>
-
-                        <a
-                            href="https://laravel-news.com"
-                            class="flex items-start gap-4 rounded-lg bg-white p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)] ring-1 ring-white/[0.05] transition duration-300 hover:text-black/70 hover:ring-black/20 focus:outline-none focus-visible:ring-[#FF2D20] lg:pb-10 dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:text-white/70 dark:hover:ring-zinc-700 dark:focus-visible:ring-[#FF2D20]"
-                        >
-                            <div
-                                class="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#FF2D20]/10 sm:size-16"
-                            >
-                                <svg
-                                    class="size-5 sm:size-6"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <g fill="#FF2D20">
-                                        <path
-                                            d="M8.75 4.5H5.5c-.69 0-1.25.56-1.25 1.25v4.75c0 .69.56 1.25 1.25 1.25h3.25c.69 0 1.25-.56 1.25-1.25V5.75c0-.69-.56-1.25-1.25-1.25Z"
-                                        />
-                                        <path
-                                            d="M24 10a3 3 0 0 0-3-3h-2V2.5a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2V20a3.5 3.5 0 0 0 3.5 3.5h17A3.5 3.5 0 0 0 24 20V10ZM3.5 21.5A1.5 1.5 0 0 1 2 20V3a.5.5 0 0 1 .5-.5h14a.5.5 0 0 1 .5.5v17c0 .295.037.588.11.874a.5.5 0 0 1-.484.625L3.5 21.5ZM22 20a1.5 1.5 0 1 1-3 0V9.5a.5.5 0 0 1 .5-.5H21a1 1 0 0 1 1 1v10Z"
-                                        />
-                                        <path
-                                            d="M12.751 6.047h2a.75.75 0 0 1 .75.75v.5a.75.75 0 0 1-.75.75h-2A.75.75 0 0 1 12 7.3v-.5a.75.75 0 0 1 .751-.753ZM12.751 10.047h2a.75.75 0 0 1 .75.75v.5a.75.75 0 0 1-.75.75h-2A.75.75 0 0 1 12 11.3v-.5a.75.75 0 0 1 .751-.753ZM4.751 14.047h10a.75.75 0 0 1 .75.75v.5a.75.75 0 0 1-.75.75h-10A.75.75 0 0 1 4 15.3v-.5a.75.75 0 0 1 .751-.753ZM4.75 18.047h7.5a.75.75 0 0 1 .75.75v.5a.75.75 0 0 1-.75.75h-7.5A.75.75 0 0 1 4 19.3v-.5a.75.75 0 0 1 .75-.753Z"
-                                        />
-                                    </g>
-                                </svg>
-                            </div>
-
-                            <div class="pt-3 sm:pt-5">
-                                <h2
-                                    class="text-xl font-semibold text-black dark:text-white"
-                                >
-                                    Laravel News
-                                </h2>
-
-                                <p class="mt-4 text-sm/relaxed">
-                                    Laravel News is a community driven portal
-                                    and newsletter aggregating all of the latest
-                                    and most important news in the Laravel
-                                    ecosystem, including new package releases
-                                    and tutorials.
-                                </p>
-                            </div>
-
-                            <svg
-                                class="size-6 shrink-0 self-center stroke-[#FF2D20]"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke-width="1.5"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"
-                                />
-                            </svg>
-                        </a>
-
-                        <div
-                            class="flex items-start gap-4 rounded-lg bg-white p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)] ring-1 ring-white/[0.05] lg:pb-10 dark:bg-zinc-900 dark:ring-zinc-800"
-                        >
-                            <div
-                                class="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#FF2D20]/10 sm:size-16"
-                            >
-                                <svg
-                                    class="size-5 sm:size-6"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <g fill="#FF2D20">
-                                        <path
-                                            d="M16.597 12.635a.247.247 0 0 0-.08-.237 2.234 2.234 0 0 1-.769-1.68c.001-.195.03-.39.084-.578a.25.25 0 0 0-.09-.267 8.8 8.8 0 0 0-4.826-1.66.25.25 0 0 0-.268.181 2.5 2.5 0 0 1-2.4 1.824.045.045 0 0 0-.045.037 12.255 12.255 0 0 0-.093 3.86.251.251 0 0 0 .208.214c2.22.366 4.367 1.08 6.362 2.118a.252.252 0 0 0 .32-.079 10.09 10.09 0 0 0 1.597-3.733ZM13.616 17.968a.25.25 0 0 0-.063-.407A19.697 19.697 0 0 0 8.91 15.98a.25.25 0 0 0-.287.325c.151.455.334.898.548 1.328.437.827.981 1.594 1.619 2.28a.249.249 0 0 0 .32.044 29.13 29.13 0 0 0 2.506-1.99ZM6.303 14.105a.25.25 0 0 0 .265-.274 13.048 13.048 0 0 1 .205-4.045.062.062 0 0 0-.022-.07 2.5 2.5 0 0 1-.777-.982.25.25 0 0 0-.271-.149 11 11 0 0 0-5.6 2.815.255.255 0 0 0-.075.163c-.008.135-.02.27-.02.406.002.8.084 1.598.246 2.381a.25.25 0 0 0 .303.193 19.924 19.924 0 0 1 5.746-.438ZM9.228 20.914a.25.25 0 0 0 .1-.393 11.53 11.53 0 0 1-1.5-2.22 12.238 12.238 0 0 1-.91-2.465.248.248 0 0 0-.22-.187 18.876 18.876 0 0 0-5.69.33.249.249 0 0 0-.179.336c.838 2.142 2.272 4 4.132 5.353a.254.254 0 0 0 .15.048c1.41-.01 2.807-.282 4.117-.802ZM18.93 12.957l-.005-.008a.25.25 0 0 0-.268-.082 2.21 2.21 0 0 1-.41.081.25.25 0 0 0-.217.2c-.582 2.66-2.127 5.35-5.75 7.843a.248.248 0 0 0-.09.299.25.25 0 0 0 .065.091 28.703 28.703 0 0 0 2.662 2.12.246.246 0 0 0 .209.037c2.579-.701 4.85-2.242 6.456-4.378a.25.25 0 0 0 .048-.189 13.51 13.51 0 0 0-2.7-6.014ZM5.702 7.058a.254.254 0 0 0 .2-.165A2.488 2.488 0 0 1 7.98 5.245a.093.093 0 0 0 .078-.062 19.734 19.734 0 0 1 3.055-4.74.25.25 0 0 0-.21-.41 12.009 12.009 0 0 0-10.4 8.558.25.25 0 0 0 .373.281 12.912 12.912 0 0 1 4.826-1.814ZM10.773 22.052a.25.25 0 0 0-.28-.046c-.758.356-1.55.635-2.365.833a.25.25 0 0 0-.022.48c1.252.43 2.568.65 3.893.65.1 0 .2 0 .3-.008a.25.25 0 0 0 .147-.444c-.526-.424-1.1-.917-1.673-1.465ZM18.744 8.436a.249.249 0 0 0 .15.228 2.246 2.246 0 0 1 1.352 2.054c0 .337-.08.67-.23.972a.25.25 0 0 0 .042.28l.007.009a15.016 15.016 0 0 1 2.52 4.6.25.25 0 0 0 .37.132.25.25 0 0 0 .096-.114c.623-1.464.944-3.039.945-4.63a12.005 12.005 0 0 0-5.78-10.258.25.25 0 0 0-.373.274c.547 2.109.85 4.274.901 6.453ZM9.61 5.38a.25.25 0 0 0 .08.31c.34.24.616.561.8.935a.25.25 0 0 0 .3.127.631.631 0 0 1 .206-.034c2.054.078 4.036.772 5.69 1.991a.251.251 0 0 0 .267.024c.046-.024.093-.047.141-.067a.25.25 0 0 0 .151-.23A29.98 29.98 0 0 0 15.957.764a.25.25 0 0 0-.16-.164 11.924 11.924 0 0 0-2.21-.518.252.252 0 0 0-.215.076A22.456 22.456 0 0 0 9.61 5.38Z"
-                                        />
-                                    </g>
-                                </svg>
-                            </div>
-
-                            <div class="pt-3 sm:pt-5">
-                                <h2
-                                    class="text-xl font-semibold text-black dark:text-white"
-                                >
-                                    Vibrant Ecosystem
-                                </h2>
-
-                                <p class="mt-4 text-sm/relaxed">
-                                    Laravel's robust library of first-party
-                                    tools and libraries, such as
-                                    <a
-                                        href="https://forge.laravel.com"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white dark:focus-visible:ring-[#FF2D20]"
-                                        >Forge</a
-                                    >,
-                                    <a
-                                        href="https://vapor.laravel.com"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                        >Vapor</a
-                                    >,
-                                    <a
-                                        href="https://nova.laravel.com"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                        >Nova</a
-                                    >,
-                                    <a
-                                        href="https://envoyer.io"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                        >Envoyer</a
-                                    >, and
-                                    <a
-                                        href="https://herd.laravel.com"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                        >Herd</a
-                                    >
-                                    help you take your projects to the next
-                                    level. Pair them with powerful open source
-                                    libraries like
-                                    <a
-                                        href="https://laravel.com/docs/billing"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                        >Cashier</a
-                                    >,
-                                    <a
-                                        href="https://laravel.com/docs/dusk"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                        >Dusk</a
-                                    >,
-                                    <a
-                                        href="https://laravel.com/docs/broadcasting"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                        >Echo</a
-                                    >,
-                                    <a
-                                        href="https://laravel.com/docs/horizon"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                        >Horizon</a
-                                    >,
-                                    <a
-                                        href="https://laravel.com/docs/sanctum"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                        >Sanctum</a
-                                    >,
-                                    <a
-                                        href="https://laravel.com/docs/telescope"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                        >Telescope</a
-                                    >, and more.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </main>
-
-                <footer
-                    class="py-16 text-center text-sm text-black dark:text-white/70"
+                <a
+                    href="#"
+                    @click.prevent="scrollToSection('acerca')"
+                    class="block md:inline-block text-white px-4 py-2 hover:text-red-500 transition-colors duration-200"
+                    >Acerca</a
                 >
-                    Laravel v{{ laravelVersion }} (PHP v{{ phpVersion }})
-                </footer>
+                <a
+                    href="#"
+                    @click.prevent="scrollToSection('caracteristicas')"
+                    class="block md:inline-block text-white px-4 py-2 hover:text-red-500 transition-colors duration-200"
+                    >Características</a
+                >
+                <a
+                    href="#"
+                    @click.prevent="scrollToSection('contacto')"
+                    class="block md:inline-block text-white px-4 py-2 hover:text-red-500 transition-colors duration-200"
+                    >Contacto</a
+                >
+
+                <!-- Botones ajustables para móviles -->
+                <div class="flex flex-col md:flex-row gap-2 mt-4 md:mt-0">
+                    <Link
+                        v-if="!isAuthenticated"
+                        href="/login"
+                        class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center"
+                        >Iniciar Sesión</Link
+                    >
+                    <Link
+                        v-if="!isAuthenticated"
+                        href="/register"
+                        class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors duration-200 text-center"
+                        >Registrarse</Link
+                    >
+                    <Link
+                        v-if="isAuthenticated"
+                        href="/dashboard"
+                        class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center"
+                        >Dashboard</Link
+                    >
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <style>
+        .nav-enter-active,
+        .nav-leave-active {
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .nav-enter-from,
+        .nav-leave-to {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        /* Medida para pantallas pequeñas */
+        @media (max-width: 768px) {
+            .flex-col {
+                flex-direction: column;
+            }
+            .text-center {
+                text-align: center;
+            }
+            .px-4 {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            .py-2 {
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
+            }
+        }
+    </style>
+
+    <section id="inicio" class="relative h-screen flex items-center justify-center text-center bg-gray-900 text-white overflow-hidden mt-16">
+    <!-- Fondo del Carrusel -->
+    <div class="absolute inset-0 z-0">
+        <div class="flex transition-transform duration-1000 ease-in-out" :style="{ transform: `translateX(-${currentSlideWelcome * 100}%)` }">
+            <div v-for="(image, index) in imagesWelcome" :key="index" class="w-full h-screen flex-shrink-0">
+                <img :src="image" :alt="`Slide ${index + 1}`" class="w-full h-full object-cover opacity-50" />
             </div>
         </div>
     </div>
+
+    <!-- Contenido de Bienvenida -->
+    <div class="relative z-10 max-w-4xl px-4">
+        <h1 class="text-5xl md:text-6xl font-bold mb-6">Bienvenido al Sistema DGETI</h1>
+        <p class="text-xl md:text-2xl mb-8">
+            Gestión de proyectos para concursos de prototipos y emprendimiento.
+        </p>
+        <div class="flex justify-center gap-4">
+            <Link v-if="!isAuthenticated" href="/register" class="bg-[#D39D55] text-white px-8 py-3 rounded-lg hover:bg-[#c58d4a] transition-colors">Registrarse</Link>
+            <a href="#" @click.prevent="scrollToSection('acerca')" class="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg hover:bg-white hover:text-[#611232] transition-colors">Más información</a>
+        </div>
+        <p class="mt-6 text-lg text-gray-300">#DGETI</p>
+    </div>
+</section>
+
+    <!-- Sección DGETI Mejorada -->
+    <section id="acerca" class="bg-[#FFF8E6] py-16">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <!-- Título destacado con sombra y animación sutil -->
+            <h2 class="text-4xl md:text-5xl font-bold text-[#611232] mb-8 animate-fade-in">
+                ¿Qué es la <span class="text-[#8A1C4A]">DGETI</span>?
+            </h2>
+
+            <!-- Contenedor de información con fondo y sombra -->
+            <div class="bg-white p-8 md:p-12 rounded-lg shadow-lg transform hover:scale-102 transition-transform duration-300">
+                <!-- Información clave con mejor tipografía y espaciado -->
+                <p class="text-lg md:text-xl text-[#555] leading-relaxed max-w-3xl mx-auto">
+                    La <span class="font-semibold text-[#611232]">Dirección General de Educación Tecnológica Industrial y de Servicios</span> (DGETI) es una dependencia adscrita a la Subsecretaría de Educación Media Superior (SEMS), dependiente de la Secretaría de Educación Pública (SEP). Ofrece el servicio educativo del nivel medio superior tecnológico, formando a jóvenes con habilidades técnicas y profesionales para el futuro.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-[#FFF8E6] text-center">
+        <div class="w-full overflow-hidden relative">
+            <!-- Flechas de navegación -->
+            <button @click="prevSlideAbout" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 p-2 rounded-full hover:bg-opacity-75 z-10 transition-opacity">
+                &larr;
+            </button>
+            <button @click="nextSlideAbout" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 p-2 rounded-full hover:bg-opacity-75 z-10 transition-opacity">
+                &rarr;
+            </button>
+
+            <!-- Slider -->
+            <div class="flex transition-transform ease-in-out duration-500" :style="{ transform: `translateX(-${currentSlideAbout * 100}%)` }">
+                <div v-for="(image, index) in imagesAbout" :key="index" class="w-full flex-shrink-0">
+                    <img :src="image" :alt="`Slide ${index + 1}`" class="w-full h-auto object-cover max-h-[80vh]" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Características Section - Mejorada -->
+    <section id="caracteristicas" class="py-20 bg-[#FBFBFB] overflow-hidden relative">
+        <!-- Fondo decorativo -->
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+        <div class="max-w-7xl mx-auto px-4 relative z-10">
+            <!-- Título -->
+            <h2 class="text-4xl font-bold text-center text-[#212121] mb-12 animate-fade-in">
+                Características principales
+            </h2>
+            <!-- Grid de tarjetas -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Tarjeta 1 -->
+                <div class="bg-[#FFF8E6] p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 relative overflow-hidden group animate-fade-in-up">
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#611232] to-[#FF6B6B] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <!-- Ícono -->
+                    <svg class="w-12 h-12 text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    <h3 class="text-2xl font-bold text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500">
+                        Registro Centralizado
+                    </h3>
+                    <p class="text-[#212121] relative z-10 group-hover:text-white transition-colors duration-500">
+                        Permite el registro de participantes y proyectos en una plataforma única, facilitando la gestión de la información.
+                    </p>
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-[#611232] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                </div>
+
+                <!-- Tarjeta 2 -->
+                <div class="bg-[#FFF8E6] p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 relative overflow-hidden group animate-fade-in-up delay-1">
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#611232] to-[#FF6B6B] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <!-- Ícono -->
+                    <svg class="w-12 h-12 text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <h3 class="text-2xl font-bold text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500">
+                        Evaluación Automatizada
+                    </h3>
+                    <p class="text-[#212121] relative z-10 group-hover:text-white transition-colors duration-500">
+                        Incorpora rúbricas configurables para la evaluación de proyectos, asegurando criterios uniformes y minimizando errores.
+                    </p>
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-[#611232] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                </div>
+
+                <!-- Tarjeta 3 -->
+                <div class="bg-[#FFF8E6] p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 relative overflow-hidden group animate-fade-in-up delay-2">
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#611232] to-[#FF6B6B] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <!-- Ícono -->
+                    <svg class="w-12 h-12 text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    <h3 class="text-2xl font-bold text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500">
+                        Generación de Reportes
+                    </h3>
+                    <p class="text-[#212121] relative z-10 group-hover:text-white transition-colors duration-500">
+                        Genera reportes detallados y constancias automáticas para cada fase del concurso (local, estatal y nacional).
+                    </p>
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-[#611232] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                </div>
+
+                <!-- Tarjeta 4 -->
+                <div class="bg-[#FFF8E6] p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 relative overflow-hidden group animate-fade-in-up delay-3">
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#611232] to-[#FF6B6B] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <!-- Ícono -->
+                    <svg class="w-12 h-12 text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    <h3 class="text-2xl font-bold text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500">
+                        Interacción entre Perfiles
+                    </h3>
+                    <p class="text-[#212121] relative z-10 group-hover:text-white transition-colors duration-500">
+                        Facilita la comunicación y colaboración entre administradores, vinculadores, participantes, asesores y jurados.
+                    </p>
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-[#611232] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                </div>
+
+                <!-- Tarjeta 5 -->
+                <div class="bg-[#FFF8E6] p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 relative overflow-hidden group animate-fade-in-up delay-4">
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#611232] to-[#FF6B6B] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <!-- Ícono -->
+                    <svg class="w-12 h-12 text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h3 class="text-2xl font-bold text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500">
+                        Transparencia y Equidad
+                    </h3>
+                    <p class="text-[#212121] relative z-10 group-hover:text-white transition-colors duration-500">
+                        Garantiza la transparencia en los resultados y la equidad en la evaluación mediante herramientas digitales.
+                    </p>
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-[#611232] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                </div>
+
+                <!-- Tarjeta 6 -->
+                <div class="bg-[#FFF8E6] p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 relative overflow-hidden group animate-fade-in-up delay-5">
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#611232] to-[#FF6B6B] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <!-- Ícono -->
+                    <svg class="w-12 h-12 text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                    </svg>
+                    <h3 class="text-2xl font-bold text-[#611232] mb-4 relative z-10 group-hover:text-white transition-colors duration-500">
+                        Plataforma Intuitiva
+                    </h3>
+                    <p class="text-[#212121] relative z-10 group-hover:text-white transition-colors duration-500">
+                        Diseñada para ser fácil de usar, accesible y eficiente, mejorando la experiencia de todos los usuarios.
+                    </p>
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-[#611232] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Animaciones personalizadas -->
+    <style>
+        @keyframes fade-in {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fade-in-up {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fade-in 1s ease-out;
+        }
+        .animate-fade-in-up {
+            animation: fade-in-up 0.8s ease-out forwards;
+        }
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        .delay-3 { animation-delay: 0.6s; }
+        .delay-4 { animation-delay: 0.8s; }
+        .delay-5 { animation-delay: 1s; }
+    </style>
+        
+    <!-- Contador de días -->
+    <section class="text-center bg-[#611232] py-20">
+        <div class="max-w-4xl mx-auto bg-[#FFF8E6] p-8 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300">
+            <h2 class="text-4xl font-bold text-[#212121] mb-8 animate-pulse">Faltan</h2>
+            <div class="flex justify-center items-center space-x-6">
+                <!-- Días -->
+                <div class="text-center">
+                    <div class="text-8xl font-bold text-[#611232] mb-2 animate-bounce">{{ String(days).padStart(2, '0') }}</div>
+                    <p class="text-2xl text-[#212121] font-semibold">Días</p>
+                </div>
+                
+                <!-- Separador -->
+                <div class="text-6xl font-bold text-[#611232]">:</div>
+                
+                <!-- Horas -->
+                <div class="text-center">
+                    <div class="text-8xl font-bold text-[#611232] mb-2 animate-bounce">{{ String(hours).padStart(2, '0') }}</div>
+                    <p class="text-2xl text-[#212121] font-semibold">Horas</p>
+                </div>
+                
+                <!-- Separador -->
+                <div class="text-6xl font-bold text-[#611232]">:</div>
+                
+                <!-- Minutos -->
+                <div class="text-center">
+                    <div class="text-8xl font-bold text-[#611232] mb-2 animate-bounce">{{ String(minutes).padStart(2, '0') }}</div>
+                    <p class="text-2xl text-[#212121] font-semibold">Minutos</p>
+                </div>
+                
+                <!-- Separador -->
+                <div class="text-6xl font-bold text-[#611232]">:</div>
+                
+                <!-- Segundos -->
+                <div class="text-center">
+                    <div class="text-8xl font-bold text-[#611232] mb-2 animate-bounce">{{ String(seconds).padStart(2, '0') }}</div>
+                    <p class="text-2xl text-[#212121] font-semibold">Segundos</p>
+                </div>
+            </div>
+            <p class="text-2xl text-[#212121] mt-8">para el gran evento</p>
+        </div>
+    </section>
+
+    <!-- Sección de Roles -->
+    <section id="roles" class="py-20 bg-[#FFF8E6]">
+        <div class="max-w-7xl mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center text-[#212121] mb-12">Roles en el Sistema</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Rol de Administrador -->
+                <div class="bg-[#FBFBFB] p-8 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                    <i class="fas fa-user-cog text-6xl text-[#611232] mx-auto mb-4"></i>
+                    <h3 class="text-2xl font-bold text-[#611232] mb-4">Administradores</h3>
+                    <p class="text-[#212121]">Gestionan usuarios, proyectos y reportes, asegurando el correcto funcionamiento del sistema y la transparencia en todas las fases del concurso.</p>
+                </div>
+                <!-- Rol de Vinculador -->
+                <div class="bg-[#FBFBFB] p-8 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                    <i class="fas fa-handshake text-6xl text-[#611232] mx-auto mb-4"></i>
+                    <h3 class="text-2xl font-bold text-[#611232] mb-4">Vinculadores</h3>
+                    <p class="text-[#212121]">Coordinan la relación con empresas, instituciones y otros entes externos para facilitar recursos y apoyo a los proyectos participantes.</p>
+                </div>
+                <!-- Rol de Participante -->
+                <div class="bg-[#FBFBFB] p-8 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                    <i class="fas fa-users text-6xl text-[#611232] mx-auto mb-4"></i>
+                    <h3 class="text-2xl font-bold text-[#611232] mb-4">Participantes</h3>
+                    <p class="text-[#212121]">Estudiantes que presentan sus proyectos innovadores y compiten en las fases local, estatal y nacional del concurso de emprendimiento.</p>
+                </div>
+                <!-- Rol de Asesor -->
+                <div class="bg-[#FBFBFB] p-8 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                    <i class="fas fa-chalkboard-teacher text-6xl text-[#611232] mx-auto mb-4"></i>
+                    <h3 class="text-2xl font-bold text-[#611232] mb-4">Asesores</h3>
+                    <p class="text-[#212121]">Brindan orientación y apoyo técnico a los participantes durante el desarrollo y presentación de sus proyectos.</p>
+                </div>
+                <!-- Rol de Jurado -->
+                <div class="bg-[#FBFBFB] p-8 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                    <i class="fas fa-gavel text-6xl text-[#611232] mx-auto mb-4"></i>
+                    <h3 class="text-2xl font-bold text-[#611232] mb-4">Jurado</h3>
+                    <p class="text-[#212121]">Evalúan los proyectos participantes con base en criterios predefinidos, garantizando la equidad y transparencia en los resultados.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Contacto -->
+    <section id="contacto" class="py-20 bg-[#611232] text-white">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <h2 class="text-4xl font-bold mb-6 animate-fade-in-up">Contáctanos</h2>
+            <p class="text-xl mb-8 animate-fade-in-up delay-100">Estamos aquí para apoyarte en tu camino hacia la innovación.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left animate-fade-in-up delay-200">
+                <!-- Horario de Atención -->
+                <div class="transform transition-transform duration-300 hover:scale-105">
+                    <div class="flex items-center mb-4">
+                        <!-- Icono de Reloj -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock mr-2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        <h3 class="text-2xl font-bold">Horario de Atención</h3>
+                    </div>
+                    <p class="text-lg">Lunes - Viernes</p>
+                    <p class="text-lg">8:00 am a 5:00 pm</p>
+                </div>
+
+                <!-- Dirección -->
+                <div class="transform transition-transform duration-300 hover:scale-105">
+                    <div class="flex items-center mb-4">
+                        <!-- Icono de Mapa -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-map-pin mr-2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        <h3 class="text-2xl font-bold">Nuestra Dirección</h3>
+                    </div>
+                    <p class="text-lg">Av. Educación Tecnológica 123</p>
+                    <p class="text-lg">Ciudad Innovación, 54321</p>
+                </div>
+
+                <!-- Teléfonos -->
+                <div class="transform transition-transform duration-300 hover:scale-105">
+                    <div class="flex items-center mb-4">
+                        <!-- Icono de Teléfono -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-phone mr-2">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                        </svg>
+                        <h3 class="text-2xl font-bold">Contáctanos</h3>
+                    </div>
+                    <p class="text-lg">+52-800-INNOVAR</p>
+                    <p class="text-lg">+52-800-EDUCACION</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Animaciones personalizadas -->
+    <style>
+        @keyframes fade-in-up {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fade-in-up 0.6s ease-out forwards;
+        }
+
+        .delay-100 {
+            animation-delay: 0.1s;
+        }
+
+        .delay-200 {
+            animation-delay: 0.2s;
+        }
+    </style>
+
+    <!-- Footer -->
+    <footer class="bg-[#212121] text-white text-center py-8">
+        <div class="max-w-7xl mx-auto px-6">
+            <!-- Derechos de autor -->
+            <p class="text-sm text-gray-400">&copy; 2025 Sistema DGETI. Todos los derechos reservados.</p>
+
+            <!-- Enlaces -->
+            <div class="mt-6 flex justify-center gap-8">
+                <a href="#" @click.prevent="scrollToSection('inicio')" class="text-white hover:text-red-500 transition-colors duration-200">Inicio</a>
+                <a href="#" @click.prevent="scrollToSection('acerca')" class="text-white hover:text-red-500 transition-colors duration-200">Acerca</a>
+                <a href="#" @click.prevent="scrollToSection('caracteristicas')" class="text-white hover:text-red-500 transition-colors duration-200">Características</a>
+                <a href="#" @click.prevent="scrollToSection('contacto')" class="text-white hover:text-red-500 transition-colors duration-200">Contacto</a>
+            </div>
+
+            <!-- Redes sociales (opcional) -->
+            <div class="mt-4 flex justify-center gap-6">
+                <a href="#" class="text-white hover:text-red-500 transition-colors duration-200"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="text-white hover:text-red-500 transition-colors duration-200"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="text-white hover:text-red-500 transition-colors duration-200"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+        </div>
+    </footer>
 </template>
