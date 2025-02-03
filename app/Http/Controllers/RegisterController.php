@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Log;
 
 class RegisterController extends Controller
 {
@@ -52,10 +53,14 @@ class RegisterController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'rol' => $request->rol,
+            'email_verified_at' => null, // 🔥 Importante: No marcarlo como verificado
         ]);
-        
-        // 🔥 Dispara el evento para que se envíe el email de verificación
+    
+        Log::info("🔵 Usuario registrado: {$user->email}");
+
         event(new Registered($user));
+    
+        Log::info("🟢 Evento Registered disparado para: {$user->email}");
 
         
 
