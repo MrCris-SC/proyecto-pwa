@@ -162,8 +162,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-
-<!-- Header -->
+    <!-- Header -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <header class="fixed top-0 left-0 w-full bg-[#611232] shadow z-50">
     <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
@@ -223,50 +222,51 @@ onBeforeUnmount(() => {
   </header>
 
   <style>
-  /* Ajustes para los botones en dispositivos móviles */
-  @media (max-width: 768px) {
-    .menu-button {
-      font-size: 1.5rem; /* Tamaño del ícono del menú */
+    /* Ajustes para los botones en dispositivos móviles */
+    @media (max-width: 768px) {
+        .menu-button {
+        font-size: 1.5rem; /* Tamaño del ícono del menú */
+        }
+
+        .sidebar {
+        width: 100%; /* Ocupar todo el ancho en móviles */
+        max-width: 300px; /* Máximo ancho del menú */
+        }
+
+        .sidebar a, .sidebar .flex {
+        padding: 0.5rem 1rem; /* Ajustar el padding */
+        font-size: 0.9rem; /* Reducir el tamaño de la fuente */
+        }
+
+        .sidebar .flex {
+        flex-direction: column; /* Apilar botones verticalmente */
+        gap: 0.5rem; /* Espacio entre botones */
+        }
+
+        .sidebar .flex a {
+        width: 100%; /* Ocupar todo el ancho disponible */
+        text-align: center; /* Centrar el texto */
+        }
     }
 
+    /* Transiciones para el sidebar */
     .sidebar {
-      width: 100%; /* Ocupar todo el ancho en móviles */
-      max-width: 300px; /* Máximo ancho del menú */
+        transition: transform 0.3s ease-in-out;
     }
 
-    .sidebar a, .sidebar .flex {
-      padding: 0.5rem 1rem; /* Ajustar el padding */
-      font-size: 0.9rem; /* Reducir el tamaño de la fuente */
+    /* Fondo oscuro semitransparente */
+    .bg-black {
+        transition: opacity 0.3s ease-in-out;
     }
 
-    .sidebar .flex {
-      flex-direction: column; /* Apilar botones verticalmente */
-      gap: 0.5rem; /* Espacio entre botones */
+    /* Asegurar que el sidebar no se desborde en móviles */
+    @media (max-width: 768px) {
+        .sidebar {
+        overflow-y: auto;
+        }
     }
+    </style>
 
-    .sidebar .flex a {
-      width: 100%; /* Ocupar todo el ancho disponible */
-      text-align: center; /* Centrar el texto */
-    }
-  }
-
-  /* Transiciones para el sidebar */
-  .sidebar {
-    transition: transform 0.3s ease-in-out;
-  }
-
-  /* Fondo oscuro semitransparente */
-  .bg-black {
-    transition: opacity 0.3s ease-in-out;
-  }
-
-  /* Asegurar que el sidebar no se desborde en móviles */
-  @media (max-width: 768px) {
-    .sidebar {
-      overflow-y: auto;
-    }
-  }
-</style>
     <section id="inicio" class="relative h-screen flex items-center justify-center text-center bg-gray-900 text-white overflow-hidden mt-16">
     <!-- Fondo del Carrusel -->
     <div class="absolute inset-0 z-0">
