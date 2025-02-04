@@ -22,7 +22,7 @@ class RegisterController extends Controller
         $rolesPermitidos = [
             'admin' => ['admin', 'vinculador', 'evaluador', 'participante', 'asesor'],
             'vinculador' => ['lider'],
-            'lider' => ['participante'],
+            'lider' => ['participante', 'asesor'],
             'participante' => [],
             'evaluador' => [],
             'asesor' => [],
