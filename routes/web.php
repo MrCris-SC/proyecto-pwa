@@ -5,9 +5,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\RegisterController;
-use App\Http\Controllers\Auth\VerifyEmailController;
-use App\Http\Controllers\Auth\EmailVerificationNotificationController;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use App\Http\Controllers\PerfilController;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -18,21 +17,26 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', function () {
+        $user = Auth::user();
 
-Route::middleware('auth')->group(function () {
+        if (!$user->perfil_completo) {
+            return redirect()->route('perfil.completar');
+        }
+
+        return Inertia::render('Dashboard');
+    })->name('dashboard');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/completar-perfil', [PerfilController::class, 'showForm'])->name('perfil.completar');
+    Route::post('/completar-perfil', [PerfilController::class, 'guardarDatos'])->name('perfil.guardar');
 });
 
 Route::get('/new-user', [RegisterController::class, 'showRegistrationForm'])->middleware(['auth'])->name('new.user');
 Route::post('/register-store', [RegisterController::class, 'register'])->name('register.store');
-
-
-
-
 
 require __DIR__.'/auth.php';

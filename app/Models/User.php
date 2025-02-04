@@ -22,6 +22,11 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'rol',
+        'genero',
+        'telefono',
+        'direccion',
+        'grado_estudio',
+        'perfil_completo',
     ];
 
     public function sendEmailVerificationNotification()

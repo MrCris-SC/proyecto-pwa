@@ -213,17 +213,12 @@ onBeforeUnmount(() => {
                         class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center"
                         >Iniciar Sesión</Link
                     >
-                    <Link
-                        v-if="!isAuthenticated"
-                        href="/register"
-                        class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors duration-200 text-center"
-                        >Registrarse</Link
-                    >
+                    
                     <Link
                         v-if="isAuthenticated"
                         href="/dashboard"
                         class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center"
-                        >Dashboard</Link
+                        >Panel de usuario</Link
                     >
                 </div>
             </nav>

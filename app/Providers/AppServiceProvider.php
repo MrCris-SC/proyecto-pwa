@@ -22,6 +22,10 @@ class AppServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
+
+        \App\Events\UsuarioRegistrado::class => [
+            \App\Listeners\RedirigirUsuarioParaCompletarPerfil::class,
+        ],
     ];
 
     /**

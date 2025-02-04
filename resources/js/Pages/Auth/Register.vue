@@ -43,7 +43,7 @@ const submit = () => {
 
                 <form @submit.prevent="submit">
                     <div>
-                        <InputLabel for="name" value="Name" />
+                        <InputLabel for="name" value="Nombre" />
 
                         <TextInput
                             id="name"
@@ -59,7 +59,7 @@ const submit = () => {
                     </div>
 
                     <div class="mt-4">
-                        <InputLabel for="email" value="Email" />
+                        <InputLabel for="email" value="Correo" />
 
                         <TextInput
                             id="email"
@@ -74,7 +74,7 @@ const submit = () => {
                     </div>
 
                     <div class="mt-4">
-                        <InputLabel for="password" value="Password" />
+                        <InputLabel for="password" value="Contraseña" />
 
                         <TextInput
                             id="password"
@@ -91,7 +91,7 @@ const submit = () => {
                     <div class="mt-4">
                         <InputLabel
                             for="password_confirmation"
-                            value="Confirm Password"
+                            value="Confirma tu Contraseña"
                         />
 
                         <TextInput
@@ -113,6 +113,7 @@ const submit = () => {
                         <InputLabel for="rol" value="Rol" />
 
                         <select id="rol" v-model="form.rol" required>
+                            <option disabled value="">Selecciona un rol</option>
                             <option v-for="rol in rolesParaRegistrar" :key="rol" :value="rol">
                                 {{ rol }}
                             </option>
@@ -123,19 +124,14 @@ const submit = () => {
                     </div>
 
                     <div class="mt-4 flex items-center justify-end">
-                        <Link
-                            :href="route('login')"
-                            class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                        >
-                            Already registered?
-                        </Link>
+                        
 
                         <PrimaryButton
                             class="ml-4"
                             :class="{ 'opacity-25': form.processing }"
                             :disabled="form.processing"
                         >
-                            Register
+                            Registrar usuario
                         </PrimaryButton>
                     </div>
                 </form>

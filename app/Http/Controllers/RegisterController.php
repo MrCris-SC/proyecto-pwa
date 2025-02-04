@@ -13,6 +13,7 @@ use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Log;
+use App\Events\UsuarioRegistrado;
 
 class RegisterController extends Controller
 {
@@ -56,13 +57,11 @@ class RegisterController extends Controller
             'email_verified_at' => null, // 🔥 Importante: No marcarlo como verificado
         ]);
     
-        Log::info("🔵 Usuario registrado: {$user->email}");
+
 
         event(new Registered($user));
     
-        Log::info("🟢 Evento Registered disparado para: {$user->email}");
-
-        
+        event(new UsuarioRegistrado($user));
 
         return redirect()->route('dashboard')->with('success', 'Usuario registrado correctamente.');
     }
