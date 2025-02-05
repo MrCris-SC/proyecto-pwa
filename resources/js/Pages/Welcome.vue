@@ -210,12 +210,27 @@ onBeforeUnmount(() => {
           <Link v-if="!isAuthenticated" href="/login" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center">
             Iniciar Sesión
           </Link>
-          <Link v-if="!isAuthenticated" href="/register" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors duration-200 text-center">
-            Registrarse
-          </Link>
+          
           <Link v-if="isAuthenticated" href="/dashboard" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center">
             Dashboard
           </Link>
+                <!-- Botones ajustables para móviles -->
+                <div class="flex flex-col md:flex-row gap-2 mt-4 md:mt-0">
+                    <Link
+                        v-if="!isAuthenticated"
+                        href="/login"
+                        class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center"
+                        >Iniciar Sesión</Link
+                    >
+                    
+                    <Link
+                        v-if="isAuthenticated"
+                        href="/dashboard"
+                        class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center"
+                        >Panel de usuario</Link
+                    >
+                </div>
+            
         </div>
       </nav>
     </div>
