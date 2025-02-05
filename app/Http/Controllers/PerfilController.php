@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Estados;
+use App\Models\Municipios;
 
 class PerfilController extends Controller
 {
@@ -33,6 +35,8 @@ class PerfilController extends Controller
             'telefono' => 'required|string',
             'direccion' => 'required|string',
             'grado_estudio' => 'required|string',
+            'estado_id' => 'required|exists:estados,idestado',
+            'municipio_id' => 'required|exists:municipios,idmunicipio',
         ]);
 
         $user = auth()->user();
@@ -41,11 +45,23 @@ class PerfilController extends Controller
             'telefono' => $request->telefono,
             'direccion' => $request->direccion,
             'grado_estudio' => $request->grado_estudio,
+            'estado_id' => $request->estado_id,
+            'municipio_id' => $request->municipio_id,
             'perfil_completo' => true, // Marcar el perfil como completo
         ]);
 
         session()->forget('completar_perfil');
 
         return redirect()->route('dashboard')->with('success', 'Perfil completado correctamente.');
+    }
+
+    public function getEstados()
+    {
+        return response()->json(Estados::all());
+    }
+
+    public function getMunicipios($estado_id)
+    {
+        return response()->json(Municipios::where('idestado', $estado_id)->get());
     }
 }

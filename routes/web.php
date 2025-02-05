@@ -39,4 +39,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::get('/new-user', [RegisterController::class, 'showRegistrationForm'])->middleware(['auth'])->name('new.user');
 Route::post('/register-store', [RegisterController::class, 'register'])->name('register.store');
 
+Route::get('/api/estados', [PerfilController::class, 'getEstados']);
+Route::get('/api/estados/{estado}/municipios', [PerfilController::class, 'getMunicipios']);
+
 require __DIR__.'/auth.php';
