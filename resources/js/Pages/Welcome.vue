@@ -1,7 +1,7 @@
 <script setup>
 import { Link, usePage, router } from '@inertiajs/vue3';
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
-
+import { reactive } from 'vue';
 // Props
 defineProps({
     canLogin: Boolean,
@@ -109,11 +109,6 @@ const { props } = usePage();
 // Usar computed para isAuthenticated
 const isAuthenticated = computed(() => props.auth?.user !== null);
 
-// Recargar la página después de iniciar sesión
-if (isAuthenticated.value) {
-    router.reload(); // Recarga la página para asegurar que los datos se actualicen
-}
-
 // Función para actualizar el contador
 const updateCountdown = () => {
     const eventDate = new Date('2025-05-30').getTime(); // Fecha del evento
@@ -133,11 +128,10 @@ const updateCountdown = () => {
         seconds.value = 0;
     }
 };
-
 onMounted(() => {
     if (isAuthenticated.value) {
-        // Redirige automáticamente al dashboard si ya está autenticado
-        router.push('/dashboard');
+        // Mostrar el botón de "Panel de usuario" en lugar de redirigir automáticamente
+        // No hacer nada más aquí
     } else {
         // Iniciar el carrusel de bienvenida
         intervalWelcome = setInterval(nextSlideWelcome, intervalTime);
@@ -211,9 +205,7 @@ onBeforeUnmount(() => {
           <Link v-if="!isAuthenticated" href="/login" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center">
             Iniciar Sesión
           </Link>
-          <Link v-if="!isAuthenticated" href="/register" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors duration-200 text-center">
-            Registrarse
-          </Link>
+        
           <Link v-if="isAuthenticated" href="/dashboard" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center">
             Dashboard
           </Link>
@@ -284,7 +276,7 @@ onBeforeUnmount(() => {
             Gestión de proyectos para concursos de prototipos y emprendimiento.
         </p>
         <div class="flex justify-center gap-4">
-            <Link v-if="!isAuthenticated" href="/register" class="bg-[#D39D55] text-white px-8 py-3 rounded-lg hover:bg-[#c58d4a] transition-colors">Registrarse</Link>
+            
             <a href="#" @click.prevent="scrollToSection('acerca')" class="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg hover:bg-white hover:text-[#611232] transition-colors">Más información</a>
         </div>
         <p class="mt-6 text-lg text-gray-300">#DGETI</p>
