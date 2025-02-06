@@ -1,7 +1,7 @@
 <script setup>
 import { Link, usePage, router } from '@inertiajs/vue3';
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
-
+import { reactive } from 'vue';
 // Props
 defineProps({
     canLogin: Boolean,
@@ -95,10 +95,13 @@ const { props } = usePage();
 
 // Usar computed para isAuthenticated
 const isAuthenticated = computed(() => props.auth?.user !== null);
-
+const state = reactive({
+    pageReloaded: false
+});
 // Recargar la página después de iniciar sesión
-if (isAuthenticated.value) {
-    router.reload(); // Recarga la página para asegurar que los datos se actualicen
+if (isAuthenticated.value && !state.pageReloaded) {
+    router.reload();
+    state.pageReloaded = true;
 }
 
 // Función para actualizar el contador
@@ -273,7 +276,7 @@ onBeforeUnmount(() => {
             Gestión de proyectos para concursos de prototipos y emprendimiento.
         </p>
         <div class="flex justify-center gap-4">
-            <Link v-if="!isAuthenticated" href="/register" class="bg-[#D39D55] text-white px-8 py-3 rounded-lg hover:bg-[#c58d4a] transition-colors">Registrarse</Link>
+            
             <a href="#" @click.prevent="scrollToSection('acerca')" class="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg hover:bg-white hover:text-[#611232] transition-colors">Más información</a>
         </div>
         <p class="mt-6 text-lg text-gray-300">#DGETI</p>
