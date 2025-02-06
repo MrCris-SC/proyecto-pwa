@@ -95,14 +95,6 @@ const { props } = usePage();
 
 // Usar computed para isAuthenticated
 const isAuthenticated = computed(() => props.auth?.user !== null);
-const state = reactive({
-    pageReloaded: false
-});
-// Recargar la página después de iniciar sesión
-if (isAuthenticated.value && !state.pageReloaded) {
-    router.reload();
-    state.pageReloaded = true;
-}
 
 // Función para actualizar el contador
 const updateCountdown = () => {
@@ -123,11 +115,10 @@ const updateCountdown = () => {
         seconds.value = 0;
     }
 };
-
 onMounted(() => {
     if (isAuthenticated.value) {
-        // Redirige automáticamente al dashboard si ya está autenticado
-        router.push('/dashboard');
+        // Mostrar el botón de "Panel de usuario" en lugar de redirigir automáticamente
+        // No hacer nada más aquí
     } else {
         // Iniciar el carrusel de bienvenida
         intervalWelcome = setInterval(nextSlideWelcome, intervalTime);
