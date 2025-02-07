@@ -36,14 +36,27 @@ let intervalAbout;
 // Estado del menú móvil
 const menuOpen = ref(false);
 
-// Estado de visibilidad del header
-const isHeaderVisible = ref(true);
-const lastScrollPosition = ref(0);
+
 
 // Función para alternar el menú móvil
 const toggleMenu = () => {
     menuOpen.value = !menuOpen.value;
 };
+
+// Event listener para cerrar el menú al hacer clic fuera
+onMounted(() => {
+    document.addEventListener('click', closeMenuOnClickOutside);
+});
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', closeMenuOnClickOutside);
+});
+
+
+// Estado de visibilidad del header
+const isHeaderVisible = ref(true);
+const lastScrollPosition = ref(0);
+
 
 // Función para manejar el scroll y ocultar/mostrar el header
 const handleScroll = () => {
@@ -146,110 +159,122 @@ onBeforeUnmount(() => {
 
 <!-- Header -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <header
-        :class="{
-            'fixed top-0 left-0 w-full bg-[#611232] shadow z-50 transition-transform duration-300': true,
-            'transform -translate-y-full': !isHeaderVisible,
-        }"
-    >
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <!-- Logo ajustable -->
-            <img src="/images/dgeti.png" alt="Logo Sistema DGETI" class="h-10 md:h-12 object-contain" />
+    <header class="fixed top-0 left-0 w-full bg-[#611232] shadow z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <!-- Logo -->
+      <img src="/images/dgeti.png" alt="Logo Sistema DGETI" class="h-10 md:h-12 object-contain" />
 
-            <!-- Botón de menú hamburguesa -->
-            <button
-                class="md:hidden text-white text-2xl focus:outline-none"
-                @click="toggleMenu"
-                aria-label="Abrir menú"
-            >
-                ☰
-            </button>
+      <!-- Botón de menú hamburguesa (solo en móviles) -->
+      <button class="md:hidden text-white text-2xl focus:outline-none menu-button" @click="toggleMenu" aria-label="Abrir menú">
+        ☰
+      </button>
 
-            <!-- Navegación -->
-            <nav
-                :class="{
-                    'absolute md:relative top-16 left-0 w-full bg-[#611232] md:flex md:gap-4 md:items-center md:w-auto md:top-0 md:bg-transparent transition-all duration-300 ease-in-out': true,
-                    'flex flex-col items-center': menuOpen,
-                    'hidden': !menuOpen,
-                }"
-            >
-                <!-- Enlaces -->
-                <a
-                    href="#"
-                    @click.prevent="scrollToSection('inicio')"
-                    class="block md:inline-block text-white px-4 py-2 hover:text-red-500 transition-colors duration-200"
-                    >Inicio</a
-                >
-                <a
-                    href="#"
-                    @click.prevent="scrollToSection('acerca')"
-                    class="block md:inline-block text-white px-4 py-2 hover:text-red-500 transition-colors duration-200"
-                    >Acerca</a
-                >
-                <a
-                    href="#"
-                    @click.prevent="scrollToSection('caracteristicas')"
-                    class="block md:inline-block text-white px-4 py-2 hover:text-red-500 transition-colors duration-200"
-                    >Características</a
-                >
-                <a
-                    href="#"
-                    @click.prevent="scrollToSection('contacto')"
-                    class="block md:inline-block text-white px-4 py-2 hover:text-red-500 transition-colors duration-200"
-                    >Contacto</a
-                >
+      <!-- Fondo oscuro semitransparente (solo en móviles) -->
+      <div
+        class="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 md:hidden"
+        :class="{ 'opacity-100 visible': menuOpen, 'opacity-0 invisible': !menuOpen }"
+        @click="toggleMenu">
+      </div>
 
+      <!-- Sidebar (menú móvil) -->
+      <nav
+        class="fixed top-0 left-0 h-full w-64 bg-[#611232] shadow-lg transform transition-transform duration-300 z-50 md:relative md:w-auto md:flex md:gap-4 md:items-center md:bg-transparent md:shadow-none md:transform-none sidebar"
+        :class="{ '-translate-x-full': !menuOpen, 'translate-x-0': menuOpen }">
+
+        <!-- Botón de cierre en móviles -->
+        <button class="absolute top-4 right-4 text-white text-2xl md:hidden" @click="toggleMenu">
+          ✖
+        </button>
+
+        <!-- Enlaces de navegación -->
+        <a href="#" @click.prevent="scrollToSection('inicio')" class="block md:inline-block text-white px-4 py-2 hover:text-red-500 transition-colors duration-200">
+          Inicio
+        </a>
+        <a href="#" @click.prevent="scrollToSection('acerca')" class="block md:inline-block text-white px-4 py-2 hover:text-red-500 transition-colors duration-200">
+          Acerca
+        </a>
+        <a href="#" @click.prevent="scrollToSection('caracteristicas')" class="block md:inline-block text-white px-4 py-2 hover:text-red-500 transition-colors duration-200">
+          Características
+        </a>
+        <a href="#" @click.prevent="scrollToSection('contacto')" class="block md:inline-block text-white px-4 py-2 hover:text-red-500 transition-colors duration-200">
+          Contacto
+        </a>
+
+        <!-- Botones de sesión -->
+        <div class="flex flex-col md:flex-row gap-2 mt-4 md:mt-0">
+          
+        
+          <Link v-if="isAuthenticated" href="/dashboard" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center">
+            Dashboard
+          </Link>
                 <!-- Botones ajustables para móviles -->
-                <div class="flex flex-col md:flex-row gap-2 mt-4 md:mt-0">
-                    <Link
-                        v-if="!isAuthenticated"
-                        href="/login"
-                        class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center"
-                        >Iniciar Sesión</Link
-                    >
-                    
-                    <Link
-                        v-if="isAuthenticated"
-                        href="/dashboard"
-                        class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center"
-                        >Panel de usuario</Link
-                    >
+        <div class="flex flex-col md:flex-row gap-2 mt-4 md:mt-0">
+                        <Link
+                            v-if="!isAuthenticated"
+                            href="/login"
+                            class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center"
+                            >Iniciar Sesión</Link
+                        >
+                        
+                        <Link
+                            v-if="isAuthenticated"
+                            href="/dashboard"
+                            class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center"
+                            >Dashboard</Link
+                        >
+                    </div>
                 </div>
-            </nav>
-        </div>
-    </header>
+                </nav>
+            </div>
+        </header>
+    
+   
 
-    <style>
-        .nav-enter-active,
-        .nav-leave-active {
-            transition: opacity 0.3s, transform 0.3s;
-        }
+  <style>
+  /* Ajustes para los botones en dispositivos móviles */
+  @media (max-width: 768px) {
+    .menu-button {
+      font-size: 1.5rem; /* Tamaño del ícono del menú */
+    }
 
-        .nav-enter-from,
-        .nav-leave-to {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
+    .sidebar {
+      width: 100%; /* Ocupar todo el ancho en móviles */
+      max-width: 300px; /* Máximo ancho del menú */
+    }
 
-        /* Medida para pantallas pequeñas */
-        @media (max-width: 768px) {
-            .flex-col {
-                flex-direction: column;
-            }
-            .text-center {
-                text-align: center;
-            }
-            .px-4 {
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
-            .py-2 {
-                padding-top: 0.5rem;
-                padding-bottom: 0.5rem;
-            }
-        }
-    </style>
+    .sidebar a, .sidebar .flex {
+      padding: 0.5rem 1rem; /* Ajustar el padding */
+      font-size: 0.9rem; /* Reducir el tamaño de la fuente */
+    }
 
+    .sidebar .flex {
+      flex-direction: column; /* Apilar botones verticalmente */
+      gap: 0.5rem; /* Espacio entre botones */
+    }
+
+    .sidebar .flex a {
+      width: 100%; /* Ocupar todo el ancho disponible */
+      text-align: center; /* Centrar el texto */
+    }
+  }
+
+  /* Transiciones para el sidebar */
+  .sidebar {
+    transition: transform 0.3s ease-in-out;
+  }
+
+  /* Fondo oscuro semitransparente */
+  .bg-black {
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  /* Asegurar que el sidebar no se desborde en móviles */
+  @media (max-width: 768px) {
+    .sidebar {
+      overflow-y: auto;
+    }
+  }
+</style>
     <section id="inicio" class="relative h-screen flex items-center justify-center text-center bg-gray-900 text-white overflow-hidden mt-16">
     <!-- Fondo del Carrusel -->
     <div class="absolute inset-0 z-0">
