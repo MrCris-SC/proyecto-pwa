@@ -202,15 +202,33 @@ onBeforeUnmount(() => {
 
         <!-- Botones de sesión -->
         <div class="flex flex-col md:flex-row gap-2 mt-4 md:mt-0">
-          <Link v-if="!isAuthenticated" href="/login" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center">
-            Iniciar Sesión
-          </Link>
+          
         
           <Link v-if="isAuthenticated" href="/dashboard" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center">
             Dashboard
           </Link>
-        </div>
-    </header>
+                <!-- Botones ajustables para móviles -->
+        <div class="flex flex-col md:flex-row gap-2 mt-4 md:mt-0">
+                        <Link
+                            v-if="!isAuthenticated"
+                            href="/login"
+                            class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center"
+                            >Iniciar Sesión</Link
+                        >
+                        
+                        <Link
+                            v-if="isAuthenticated"
+                            href="/dashboard"
+                            class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 text-center"
+                            >Dashboard</Link
+                        >
+                    </div>
+                </div>
+                </nav>
+            </div>
+        </header>
+    
+   
 
   <style>
   /* Ajustes para los botones en dispositivos móviles */
