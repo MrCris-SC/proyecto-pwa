@@ -210,9 +210,7 @@ onBeforeUnmount(() => {
             Dashboard
           </Link>
         </div>
-      </nav>
-    </div>
-  </header>
+    </header>
 
   <style>
   /* Ajustes para los botones en dispositivos móviles */
