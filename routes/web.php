@@ -7,11 +7,12 @@ use Inertia\Inertia;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\PerfilController;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\ConcursoController;
+
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
-        #'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);
@@ -34,6 +35,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/completar-perfil', [PerfilController::class, 'showForm'])->name('perfil.completar');
     Route::post('/completar-perfil', [PerfilController::class, 'guardarDatos'])->name('perfil.guardar');
+
+    Route::get('/concursos', [ConcursoController::class, 'index'])->name('concursos.index');
+    Route::post('/concursos', [ConcursoController::class, 'store'])->name('concursos.store');
 });
 
 Route::get('/new-user', [RegisterController::class, 'showRegistrationForm'])->middleware(['auth'])->name('new.user');
@@ -41,5 +45,6 @@ Route::post('/register-store', [RegisterController::class, 'register'])->name('r
 
 Route::get('/api/estados', [PerfilController::class, 'getEstados']);
 Route::get('/api/estados/{estado}/municipios', [PerfilController::class, 'getMunicipios']);
+
 
 require __DIR__.'/auth.php';
