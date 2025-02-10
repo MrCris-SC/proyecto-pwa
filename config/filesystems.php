@@ -57,6 +57,15 @@ return [
             'throw' => false,
         ],
 
+        'firebase' => [
+            'driver' => 'gcs',
+            'project_id' => env('FIREBASE_PROJECT_ID'),
+            'key_file' => env('FIREBASE_CREDENTIALS'), // Ruta al archivo JSON de credenciales
+            'bucket' => env('FIREBASE_STORAGE_BUCKET'),
+            'path_prefix' => null,
+            'storage_api_uri' => null,
+        ],
+
     ],
 
     /*
