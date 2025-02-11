@@ -18,22 +18,7 @@ const handleMenuSelected = (menu) => {
 // Obtener el rol del usuario autenticado
 const { props } = usePage();
 const userRole = props.auth.user.rol;
-
-// Datos de ejemplo para los concursos
-const concursos = ref([
-    {
-        titulo: 'Concurso de Ciencia',
-        fechaInicio: '2023-01-01',
-        fechaApertura: '2023-01-15',
-        fechaFinalizacion: '2023-02-01',
-    },
-    {
-        titulo: 'Concurso de Tecnología',
-        fechaInicio: '2023-02-01',
-        fechaApertura: '2023-02-15',
-        fechaFinalizacion: '2023-03-01',
-    },
-]);
+const concursos = ref(props.concursos);
 
 const handleCreateClick = () => {
     showForm.value = true;
@@ -64,24 +49,20 @@ const handleCloseForm = () => {
 
                 <!-- Formulario para Registro -->
                 <div v-if="showForm" class="relative">
-                    <NuevoConcurso />
-                    <button @click="handleCloseForm" class="absolute top-0 right-0 mt-0 mr-2 text-gray-600 hover:text-gray-800">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+                    <NuevoConcurso @close="handleCloseForm" />
                 </div>
 
                 <!-- Tarjetas de concursos -->
                 <div v-if="selectedMenu === 'nuevo concurso' && !showForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <TarjetaCrearConcurso @click="handleCreateClick" />
+                    <TarjetaCrearConcurso @click="handleCreateClick" class="transition-transform transform hover:scale-105 hover:shadow-lg" />
                     <TarjetaConcurso
                         v-for="concurso in concursos"
-                        :key="concurso.titulo"
-                        :titulo="concurso.titulo"
-                        :fechaInicio="concurso.fechaInicio"
-                        :fechaApertura="concurso.fechaApertura"
-                        :fechaFinalizacion="concurso.fechaFinalizacion"
+                        :key="concurso.id"
+                        :titulo="concurso.nombre"
+                        :fechaInicio="concurso.fecha_inicio"
+                        :fechaApertura="concurso.fecha_apertura"
+                        :fechaFinalizacion="concurso.fecha_terminacion"
+                        class="transition-transform transform hover:scale-105 hover:shadow-lg"
                     />
                 </div>
 

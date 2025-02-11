@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Concursos;   
 
 class ConcursoController extends Controller
 {
@@ -14,7 +15,8 @@ class ConcursoController extends Controller
      */
     public function index()
     {
-        return Inertia::render('Concursos');
+        $concursos = Concursos::all();
+        return Inertia::render('Concursos', ['concursos' => $concursos]);
     }
 
     /**
@@ -28,13 +30,19 @@ class ConcursoController extends Controller
         // Validar y almacenar el concurso
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'descripcion' => 'required|string',
+            'descripcion' => 'required|string',            
             'fecha_inicio' => 'required|date',
-            'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+            'fecha_terminacion' => 'required|date|after_or_equal:fecha_inicio',
         ]);
 
-        // Crear el concurso (aquí puedes agregar la lógica para almacenar el concurso en la base de datos)
+        // Agregar el status del concurso
 
-        return redirect()->route('Concursos.index')->with('success', 'Concurso creado exitosamente.');
+        $request['status'] = 'abierto';
+
+        $request['fecha_apertura'] = now()->toDateString();
+        // Crear el concurso (aquí puedes agregar la lógica para almacenar el concurso en la base de datos)
+        $concurso = Concursos::create($request->all());
+
+        return redirect()->route('concursos.index')->with('success', 'Concurso creado exitosamente.');
     }
 }
