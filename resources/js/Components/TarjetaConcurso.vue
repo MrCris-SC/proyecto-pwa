@@ -1,6 +1,6 @@
 <template>
-    <div class="w-64 h-64 bg-white rounded-lg shadow-md p-4">
-        <h3 class="text-xl font-semibold text-gray-800">{{ titulo }}</h3>
+    <div class="w-64 h-64 bg-gradient-to-r from-[#e0e0e0] to-[#c0c0c0] rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-300">
+        <h3 class="text-xl font-semibold text-[#611232]">{{ titulo }}</h3>
         <p class="text-gray-600 mt-2">Fecha de inicio: {{ fechaInicio }}</p>
         <p class="text-gray-600 mt-2">Fecha de apertura: {{ fechaApertura }}</p>
         <p class="text-gray-600 mt-2">Fecha de finalización: {{ fechaFinalizacion }}</p>

@@ -37,19 +37,16 @@ const showingNavigationDropdown = ref(false);
                                 </NavLink>
 
                                 <!-- Registro Links -->
-                                <NavLink v-if="$page.props.auth.user.rol === 'admin'" :href="route('concursos.index')" :active="route().current('concursos.index')">
+                                <NavLink :href="route('concursos.index')" :active="route().current('concursos.index')">
                                     Concursos
                                 </NavLink>
-
+                                
                                 <!-- Registro Links -->
                                 <NavLink v-if="$page.props.auth.user.rol === 'vinculador'" :href="route('new.user')">
                                     Registrar Lideres
                                 </NavLink>
 
-                                <!-- Registro Links -->
-                                <NavLink v-if="$page.props.auth.user.rol === 'lider'" :href="route('new.user')">
-                                    Registrar Participantes
-                                </NavLink>
+                                
                             </div>
                         </div>
 

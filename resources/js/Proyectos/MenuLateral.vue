@@ -12,7 +12,7 @@ const menuItems = ref([]);
 
 if (props.auth.user.rol === 'lider') {
     menuItems.value = [
-        { name: 'Registro', icon: 'fas fa-file-alt' },
+        { name: 'Concursos', icon: 'fas fa-file-alt' },
         { name: 'Gestión de proyectos', icon: 'fas fa-tasks' },
         { name: 'Proceso', icon: 'fas fa-cogs' },
         { name: 'Resultados', icon: 'fas fa-chart-line' },
@@ -21,7 +21,7 @@ if (props.auth.user.rol === 'lider') {
 } else if (props.auth.user.rol === 'admin') {
     menuItems.value = [
         { name: 'Usuarios', icon: 'fas fa-users-cog' },
-        { name: 'Nuevo Concurso', icon: 'fas fa-trophy' },
+        { name: 'Concursos', icon: 'fas fa-trophy' },
         { name: 'Configuración', icon: 'fas fa-cog' },
         { name: 'Reportes', icon: 'fas fa-chart-pie' }
     ];

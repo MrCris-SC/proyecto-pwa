@@ -53,9 +53,12 @@ const handleCloseForm = () => {
                 </div>
 
                 <!-- Tarjetas de concursos -->
-                <div v-if="selectedMenu === 'nuevo concurso' && !showForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <TarjetaCrearConcurso @click="handleCreateClick" class="transition-transform transform hover:scale-105 hover:shadow-lg" />
-                    <TarjetaConcurso
+                <div v-if="selectedMenu === 'concursos' && !showForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <TarjetaCrearConcurso 
+                    v-if="$page.props.auth.user.rol === 'admin' || $page.props.auth.user.rol === 'vinculador'"
+                    @click="handleCreateClick" 
+                    class="transition-transform transform hover:scale-105 hover:shadow-lg" />
+                    <TarjetaConcurso                        
                         v-for="concurso in concursos"
                         :key="concurso.id"
                         :titulo="concurso.nombre"
