@@ -54,6 +54,5 @@ Route::post('/register-store', [RegisterController::class, 'register'])->name('r
 Route::get('/api/estados', [PerfilController::class, 'getEstados']);
 Route::get('/api/estados/{estado}/municipios', [PerfilController::class, 'getMunicipios']);
 
-Route::post('/api/equipos', [EquipoController::class, 'store']);
 
 require __DIR__.'/auth.php';

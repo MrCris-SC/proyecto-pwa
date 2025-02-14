@@ -11,6 +11,7 @@ use App\Models\Equipo;
 use App\Models\Proyectos;
 use App\Models\Concurso; // Importar el modelo Concurso
 use Illuminate\Support\Facades\Log; // Importar la clase Log
+use Illuminate\Support\Facades\Auth;
 
 class ProyectosController extends Controller
 {
@@ -56,7 +57,12 @@ class ProyectosController extends Controller
             'nombre' => $integranteData['nombre']
         ]);
     }
-
-        return response()->json(['id' => $proyecto->id]);
+    
+    if (auth()->user()->rol === 'lider' && $request->concurso_id) {
+        auth()->user()->update(['concurso_registrado_id' => $request->concurso_id]);
+    }
+        //return response()->json(['id' => $proyecto->id]);
+        // Redirigir al usuario a /concursos
+        return redirect('/concursos');
     }
 }

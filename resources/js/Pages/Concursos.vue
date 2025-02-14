@@ -9,7 +9,7 @@ import { ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 // Estado del menú
-const selectedMenu = ref('registro');
+const selectedMenu = ref('Concursos');
 const showForm = ref(false);
 const concursoSeleccionado = ref(null);
 
@@ -79,10 +79,7 @@ const handleConcursoClick = (concurso) => {
                     />
                 </div>
 
-                <!-- Secciones en construcción -->
-                <p v-if="selectedMenu !== 'registro' && selectedMenu !== 'nuevo concurso'" class="text-gray-600 text-center mt-6">
-                    Sección en construcción: {{ selectedMenu.charAt(0).toUpperCase() + selectedMenu.slice(1) }}
-                </p>
+               
             </main>
         </div>
     </AuthenticatedLayout>

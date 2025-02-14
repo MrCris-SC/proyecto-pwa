@@ -29,6 +29,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'municipio_id',
         'grado_estudio',
         'perfil_completo',
+        'concurso_registrado_id',
     ];
 
     public function sendEmailVerificationNotification()
@@ -56,6 +57,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'concurso_registrado_id' => 'integer',
         ];
     }
 }

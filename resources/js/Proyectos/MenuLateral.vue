@@ -4,7 +4,7 @@ import { usePage } from '@inertiajs/vue3';
 
 const { props } = usePage();
 const emit = defineEmits(['menu-selected']);
-const selectedMenu = ref('registro');
+const selectedMenu = ref('Concursos');
 const isMenuMinimized = ref(false); // Estado para controlar la minimización del menú
 import '@fortawesome/fontawesome-free/css/all.min.css';
 

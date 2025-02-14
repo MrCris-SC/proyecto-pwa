@@ -58,6 +58,8 @@ export default {
         });
         this.proyecto_id = response.data.id;
         alert("Proyecto y equipo registrados correctamente");
+        window.location.href = '/concursos'; // Redireccionar al usuario a /concursos
+      
       } catch (error) {
         console.error(error);
       }
