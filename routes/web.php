@@ -8,6 +8,8 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\PerfilController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ConcursoController;
+use App\Http\Controllers\ProyectosController;
+use App\Http\Controllers\EquipoController;
 
 
 Route::get('/', function () {
@@ -36,7 +38,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/completar-perfil', [PerfilController::class, 'showForm'])->name('perfil.completar');
     Route::post('/completar-perfil', [PerfilController::class, 'guardarDatos'])->name('perfil.guardar');
 
-    // Concursos
+
     Route::prefix('concursos')->group(function () {
         Route::get('/', [ConcursoController::class, 'index'])->name('concursos.index');
         Route::post('/', [ConcursoController::class, 'store'])->name('concursos.store');
@@ -44,10 +46,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/{id}', [ConcursoController::class, 'update'])->name('concursos.update');
         Route::delete('/{id}', [ConcursoController::class, 'destroy'])->name('concursos.destroy');
     });
+
+    Route::get('/concursos', [ConcursoController::class, 'index'])->name('concursos.index');
+    Route::post('/concursos', [ConcursoController::class, 'store'])->name('concursos.store');
+
+    Route::get('/api/modalidades', [ProyectosController::class, 'index']);
+    Route::post('/api/proyectos', [ProyectosController::class, 'store']);
+    Route::post('/api/proyectos/{proyecto}/equipo', [ProyectosController::class, 'storeEquipo']);
+
 });
 
 Route::get('/new-user', [RegisterController::class, 'showRegistrationForm'])->middleware(['auth'])->name('new.user');
 Route::post('/register-store', [RegisterController::class, 'register'])->name('register.store');
+
+
 
 Route::get('/api/estados', [PerfilController::class, 'getEstados']);
 Route::get('/api/estados/{estado}/municipios', [PerfilController::class, 'getMunicipios']);

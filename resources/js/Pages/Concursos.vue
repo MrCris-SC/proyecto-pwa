@@ -4,12 +4,14 @@ import NuevoConcurso from '@/Proyectos/NuevoConcurso.vue';
 import MenuLateral from '@/Proyectos/MenuLateral.vue';
 import TarjetaCrearConcurso from '@/Components/TarjetaCrearConcurso.vue';
 import TarjetaConcurso from '@/Components/TarjetaConcurso.vue';
+import RegistroProyectos from '@/ComponentsConcursos/RegistroProyectos.vue';
 import { ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 // Estado del menú
-const selectedMenu = ref('registro');
+const selectedMenu = ref('Concursos');
 const showForm = ref(false);
+const concursoSeleccionado = ref(null);
 
 const handleMenuSelected = (menu) => {
     selectedMenu.value = menu;
@@ -26,6 +28,12 @@ const handleCreateClick = () => {
 
 const handleCloseForm = () => {
     showForm.value = false;
+};
+
+const handleConcursoClick = (concurso) => {
+    selectedMenu.value = 'registro';
+    showForm.value = true;
+    concursoSeleccionado.value = concurso.id;
 };
 </script>
 
@@ -49,7 +57,8 @@ const handleCloseForm = () => {
 
                 <!-- Formulario para Registro -->
                 <div v-if="showForm" class="relative">
-                    <NuevoConcurso @close="handleCloseForm" />
+                    <NuevoConcurso v-if="selectedMenu === 'nuevo concurso'" @close="handleCloseForm" />
+                    <RegistroProyectos v-if="selectedMenu === 'registro'" :concurso-id="concursoSeleccionado" @close="handleCloseForm" />
                 </div>
 
                 <!-- Tarjetas de concursos -->
@@ -65,14 +74,12 @@ const handleCloseForm = () => {
                         :fechaInicio="concurso.fecha_inicio"
                         :fechaApertura="concurso.fecha_apertura"
                         :fechaFinalizacion="concurso.fecha_terminacion"
+                        @click="handleConcursoClick(concurso)"
                         class="transition-transform transform hover:scale-105 hover:shadow-lg"
                     />
                 </div>
 
-                <!-- Secciones en construcción -->
-                <p v-if="selectedMenu !== 'registro' && selectedMenu !== 'nuevo concurso'" class="text-gray-600 text-center mt-6">
-                    Sección en construcción: {{ selectedMenu.charAt(0).toUpperCase() + selectedMenu.slice(1) }}
-                </p>
+               
             </main>
         </div>
     </AuthenticatedLayout>

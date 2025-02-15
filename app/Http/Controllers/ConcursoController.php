@@ -15,8 +15,15 @@ class ConcursoController extends Controller
      */
     public function index()
     {
-        $concursos = Concursos::all();
-        return Inertia::render('Concursos', ['concursos' => $concursos]);
+        $user = auth()->user();
+    $concursos = Concursos::all();
+
+    // Si el usuario es líder y ya está inscrito en un concurso, filtrar la lista
+    if ($user->rol === 'lider' && $user->concurso_registrado_id) {
+        $concursos = $concursos->where('id', $user->concurso_registrado_id);
+    }
+
+    return Inertia::render('Concursos', ['concursos' => $concursos]);
     }
 
     /**
