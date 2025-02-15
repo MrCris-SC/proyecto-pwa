@@ -16,14 +16,14 @@ class ConcursoController extends Controller
     public function index()
     {
         $user = auth()->user();
-    $concursos = Concursos::all();
+        $concursos = Concursos::all();
 
-    // Si el usuario es líder y ya está inscrito en un concurso, filtrar la lista
-    if ($user->rol === 'lider' && $user->concurso_registrado_id) {
-        $concursos = $concursos->where('id', $user->concurso_registrado_id);
-    }
+        // Si el usuario es líder y ya está inscrito en un concurso, filtrar la lista
+        if ($user->rol === 'lider' && $user->concurso_registrado_id) {
+            $concursos = $concursos->where('id', $user->concurso_registrado_id);
+        }
 
-    return Inertia::render('Concursos', ['concursos' => $concursos]);
+        return Inertia::render('ConcursosLayouts/Concursos', ['concursos' => $concursos]);
     }
 
     /**
@@ -58,10 +58,10 @@ class ConcursoController extends Controller
      * @param  int  $id
      * @return \Inertia\Response
      */
-    public function edit($id)
+    public function edit(Concursos $concurso)
     {
-        $concurso = Concursos::findOrFail($id);
-        return Inertia::render('EditarConcurso', ['concurso' => $concurso]);
+        // Al consultar el concurso, Inertia pasará el objeto completo
+        return Inertia::render('ConcursosLayouts/EditarConcurso', ['concurso' => $concurso]);
     }
 
     /**

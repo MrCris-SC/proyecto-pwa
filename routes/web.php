@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ConcursoController;
 use App\Http\Controllers\ProyectosController;
 use App\Http\Controllers\EquipoController;
+use App\Models\Concursos;
 
 
 Route::get('/', function () {
@@ -39,16 +40,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/completar-perfil', [PerfilController::class, 'guardarDatos'])->name('perfil.guardar');
 
 
-    Route::prefix('concursos')->group(function () {
-        Route::get('/', [ConcursoController::class, 'index'])->name('concursos.index');
-        Route::post('/', [ConcursoController::class, 'store'])->name('concursos.store');
-        Route::get('/{id}/edit', [ConcursoController::class, 'edit'])->name('concursos.edit');
-        Route::put('/{id}', [ConcursoController::class, 'update'])->name('concursos.update');
-        Route::delete('/{id}', [ConcursoController::class, 'destroy'])->name('concursos.destroy');
-    });
-
+   // Rutas para editar y eliminar concursos
+    Route::get('/concursos/{concurso}/edit', [ConcursoController::class, 'edit'])->name('concursos.edit');
+    Route::put('/concursos/{concurso}', [ConcursoController::class, 'update'])->name('concursos.update');
+    Route::delete('/concursos/{concurso}', [ConcursoController::class, 'destroy'])->name('concursos.destroy');
+    
     Route::get('/concursos', [ConcursoController::class, 'index'])->name('concursos.index');
     Route::post('/concursos', [ConcursoController::class, 'store'])->name('concursos.store');
+
+    
 
     Route::get('/api/modalidades', [ProyectosController::class, 'index']);
     Route::post('/api/proyectos', [ProyectosController::class, 'store']);

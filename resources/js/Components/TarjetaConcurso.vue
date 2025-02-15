@@ -1,5 +1,5 @@
 <template>
-    <div class="w-64 h-80 bg-white rounded-lg shadow-md p-5 hover:shadow-lg transition-shadow duration-300 relative border border-gray-200">
+    <div @click="handleClick" class="w-64 h-80 bg-white rounded-lg shadow-md p-5 hover:shadow-lg transition-shadow duration-300 relative border border-gray-200">
         <!-- Indicador de estado -->
         <div 
             class="absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-semibold flex items-center space-x-1"
@@ -65,7 +65,7 @@
             <!-- Icono de editar -->
             <div class="relative group">
                 <button 
-                    @click="editarConcurso" 
+                    @click.stop="handleEditar" 
                     class="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors duration-200 border border-gray-300"
                     aria-label="Editar concurso"
                 >
@@ -82,7 +82,7 @@
             <!-- Icono de eliminar -->
             <div class="relative group">
                 <button 
-                    @click="eliminarConcurso" 
+                    @click.stop="handleEliminar" 
                     class="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors duration-200 border border-gray-300"
                     aria-label="Eliminar concurso"
                 >
@@ -95,80 +95,44 @@
                     Eliminar
                 </span>
             </div>
-
-            
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { defineProps, defineEmits } from 'vue';
 
-// Props
 const props = defineProps({
-    id: {
-        type: Number,
-        required: true,
-    },
-    titulo: {
-        type: String,
-        required: true,
-    },
-    fechaInicio: {
-        type: String,
-        required: true,
-    },
-    fechaApertura: {
-        type: String,
-        required: true,
-    },
-    fechaFinalizacion: {
-        type: String,
-        required: true,
-    },
-    status: {
-        type: String,
-        required: true,
-    },
+  concurso: {
+    type: Object,
+    required: true
+  },
+  titulo: String,
+  fechaInicio: String,
+  fechaApertura: String,
+  fechaFinalizacion: String
 });
 
-// Estado del menú desplegable
-const menuAbierto = ref(false);
+const emit = defineEmits(['click', 'editar', 'eliminar']);
 
-// Estado local para el status
-const estadoLocal = ref(props.status);
-
-// Watch para reaccionar a cambios en la prop status
-watch(() => props.status, (nuevoStatus) => {
-    estadoLocal.value = nuevoStatus;
-});
-
-// Función para abrir el menú
-const abrirMenu = () => {
-    menuAbierto.value = true;
+const handleClick = () => {
+  emit('click', props.concurso);
 };
 
-// Función para cerrar el menú
-const cerrarMenu = () => {
-    menuAbierto.value = false;
+const handleEditar = () => {
+  emit('editar', props.concurso);
 };
 
-
-// Función para eliminar el concurso
-const eliminarConcurso = () => {
-    if (confirm('¿Estás seguro de que deseas eliminar este concurso?')) {
-        router.delete(`/concursos/${props.id}`);
-    }
-};
-
-// Función para editar el concurso
-const editarConcurso = () => {
-    if (!props.id) {
-        console.error('ID del concurso no definido.');
-        return;
-    }
-    console.log('Redirigiendo a la página de edición...');
-    router.get(`/concursos/${props.id}/edit`);
+const handleEliminar = () => {
+  emit('eliminar', props.concurso);
 };
 </script>
+
+<style scoped>
+.card {
+  border: 1px solid #ccc;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+</style>
