@@ -1,7 +1,7 @@
 <script setup>
 import { useForm } from '@inertiajs/vue3';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 
 const form = useForm({
@@ -11,10 +11,12 @@ const form = useForm({
     grado_estudio: '',
     estado_id: '',
     municipio_id: '',
+    plantel_id: '',
 });
 
 const estados = ref([]);
 const municipios = ref([]);
+const planteles = ref([]);
 
 onMounted(async () => {
     const response = await axios.get('/api/estados');
@@ -25,16 +27,28 @@ const fetchMunicipios = async () => {
     if (form.estado_id) {
         const response = await axios.get(`/api/estados/${form.estado_id}/municipios`);
         municipios.value = response.data;
+        fetchPlanteles(); // Fetch planteles when municipios are fetched
     } else {
         municipios.value = [];
+        planteles.value = [];
     }
 };
 
-onBeforeUnmount(() => {
-    if (!form.genero || !form.telefono || !form.direccion || !form.grado_estudio || !form.estado_id || !form.municipio_id) {
-        axios.post('/logout').then(() => {
-            window.location.href = '/login';
-        });
+const fetchPlanteles = async () => {
+    if (form.estado_id) {
+        const response = await axios.get(`/api/estados/${form.estado_id}/planteles`);
+        planteles.value = response.data;
+    } else {
+        planteles.value = [];
+    }
+};
+
+watch(() => form.estado_id, (newEstado) => {
+    if (newEstado) {
+        fetchMunicipios();
+    } else {
+        municipios.value = [];
+        planteles.value = [];
     }
 });
 
@@ -110,10 +124,17 @@ const submit = () => {
                         </select>
                     </div>
 
+                    <div class="mb-6">
+                        <label class="block text-gray-700 mb-2">Seleccione el plantel donde estudia o trabaja</label>
+                        <select v-model="form.plantel_id" class="w-full border p-3 rounded-lg bg-gray-50">
+                            <option value="">Seleccione un plantel</option>
+                            <option v-for="plantel in planteles" :key="plantel.id_plantel" :value="plantel.id_plantel">{{ plantel.nombre_corto }}</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-6"></div>
                     <button type="submit" class="bg-blue-600 text-white p-3 rounded-lg w-full hover:bg-blue-700 transition duration-150 ease-in-out">Guardar</button>
                 </form>
-
-                
             </div>
         </div>
     </div>

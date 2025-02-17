@@ -45,7 +45,8 @@ class ProyectosController extends Controller
     // Crear el equipo asociado al proyecto con un ID generado
     $equipo = Equipo::create([
         'id' => $equipoId,
-        'proyecto_id' => $proyecto->id
+        'proyecto_id' => $proyecto->id,
+        'concurso_id' => $request->concurso_id,
     ]);
     Log::info('Equipo creado', ['equipo_id' => $equipo->id]);
 

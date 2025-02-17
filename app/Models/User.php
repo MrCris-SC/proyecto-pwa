@@ -29,6 +29,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'municipio_id',
         'grado_estudio',
         'perfil_completo',
+        'plantel_id',
         'concurso_registrado_id',
     ];
 

@@ -45,7 +45,7 @@ class ConcursoController extends Controller
             'fecha_inicio' => 'required|date',
             'fecha_terminacion' => 'required|date|after_or_equal:fecha_inicio',
             'fase' => 'required|string',            
-            'plantel' => 'required_if:fase,local|exists:planteles,id',
+            'plantel_id' => 'required|integer|exists:planteles,id_plantel',
         ]);
 
         // Agregar el status del concurso

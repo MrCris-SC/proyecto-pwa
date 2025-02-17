@@ -14,12 +14,12 @@ return new class extends Migration
         if (!Schema::hasTable('planteles')) {
             Schema::create('planteles', function (Blueprint $table) {
                 $table->id('id_plantel');
-                $table->string('nombre_completo');
+                $table->string('nombre_completo')->nullable();
                 $table->string('nombre_corto');
                 $table->string('direccion')->nullable();
                 $table->string('telefono')->nullable();
                 $table->string('correo')->unique()->nullable();
-                $table->integer('estado_id');
+                $table->integer('estado_id'); // Ensure this matches the data type of idestado in estados table
                 $table->foreign('estado_id')->references('idestado')->on('estados')->onDelete('cascade');
                 $table->timestamps();
             });

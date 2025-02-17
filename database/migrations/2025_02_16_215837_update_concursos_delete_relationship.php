@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('concursos', function (Blueprint $table) {
-            $table->string('fase')->nullable();
+            if (!Schema::hasColumn('concursos', 'fase')) {
+                $table->string('fase')->nullable();
+            }
             if (Schema::hasColumn('concursos', 'fase_id')) {
                 $table->dropForeign(['fase_id']);
                 $table->dropColumn('fase_id');
@@ -26,9 +28,13 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('concursos', function (Blueprint $table) {
-            $table->unsignedBigInteger('fase_id');
-            $table->foreign('fase_id')->references('id')->on('fases');
-            $table->integer('fase')->change();
+            if (!Schema::hasColumn('concursos', 'fase_id')) {
+                $table->unsignedBigInteger('fase_id');
+                $table->foreign('fase_id')->references('id')->on('fases');
+            }
+            if (Schema::hasColumn('concursos', 'fase')) {
+                $table->dropColumn('fase');
+            }
         });
     }
 };

@@ -14,7 +14,7 @@ class Equipo extends Model
     protected $keyType = 'integer';
 
     // Define los campos asignables
-    protected $fillable = ['id', 'proyecto_id'];
+    protected $fillable = ['id', 'proyecto_id', 'concurso_id'];
 
     // Método para generar un código único de 5 dígitos
     public static function generarCodigoEquipo()

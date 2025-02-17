@@ -58,6 +58,7 @@ class PerfilController extends Controller
             'grado_estudio' => 'required|string',
             'estado_id' => 'required|exists:estados,idestado',
             'municipio_id' => 'required|exists:municipios,idmunicipio',
+            'plantel_id' => 'required|exists:planteles,id_plantel',
         ]);
 
         $user = auth()->user();
@@ -68,6 +69,7 @@ class PerfilController extends Controller
             'grado_estudio' => $request->grado_estudio,
             'estado_id' => $request->estado_id,
             'municipio_id' => $request->municipio_id,
+            'plantel_id' => $request->plantel_id,
             'perfil_completo' => true, // Marcar el perfil como completo
         ]);
 

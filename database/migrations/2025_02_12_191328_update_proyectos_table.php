@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::table('proyectos', function (Blueprint $table) {
             $table->dropForeign(['fase_id']);
             $table->dropColumn('fase_id');
-            $table->foreignId('concurso_id')->constrained('concursos')->onDelete('cascade');
+            if (!Schema::hasColumn('proyectos', 'concurso_id')) {
+                $table->foreignId('concurso_id')->constrained('concursos')->onDelete('cascade');
+            }
         });
     }
 

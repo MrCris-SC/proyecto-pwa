@@ -14,7 +14,7 @@
         fecha_terminacion: '',
         fase: '',
         estado: '', // Ensure estado is part of the form
-        plantel: '',
+        plantel_id: '', // Ensure plantel_id is part of the form
     });
 
     const estados = ref([]);
@@ -107,12 +107,13 @@
                     </div>
 
                 <div>
+                    <label class="block text-gray-700 mb-2">Selecciona el plantel</label>
                     <InputLabel for="plantel" value="Plantel" class="text-[#611232]" />
-                    <select id="plantel" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-[#FF6B6B] focus:ring-[#FF6B6B]" v-model="form.plantel" required>
+                    <select id="plantel" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-[#FF6B6B] focus:ring-[#FF6B6B]" v-model="form.plantel_id" required>
                         <option value="">Seleccione un plantel</option>
                         <option v-for="plantel in planteles" :key="plantel.id_plantel" :value="plantel.id_plantel">{{ plantel.nombre_corto }}</option>
                     </select>
-                    <InputError class="mt-2" :message="form.errors.plantel" />
+                    <InputError class="mt-2" :message="form.errors.plantel_id" />
                 </div>
 
                 <div class="flex justify-end">
