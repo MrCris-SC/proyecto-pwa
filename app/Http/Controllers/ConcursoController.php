@@ -23,7 +23,11 @@ class ConcursoController extends Controller
             $concursos = $concursos->where('id', $user->concurso_registrado_id);
         }
 
-        return Inertia::render('ConcursosLayouts/Concursos', ['concursos' => $concursos]);
+        // Pasar información de inscripción del usuario
+        $inscrito = $user->concurso_registrado_id ? true : false;
+
+
+        return Inertia::render('ConcursosLayouts/Concursos', ['concursos' => $concursos,'inscrito' => $inscrito]);
     }
 
     /**
@@ -40,6 +44,8 @@ class ConcursoController extends Controller
             'descripcion' => 'required|string',
             'fecha_inicio' => 'required|date',
             'fecha_terminacion' => 'required|date|after_or_equal:fecha_inicio',
+            'fase' => 'required|string',            
+            'plantel' => 'required_if:fase,local|exists:planteles,id',
         ]);
 
         // Agregar el status del concurso

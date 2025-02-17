@@ -53,6 +53,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/api/modalidades', [ProyectosController::class, 'index']);
     Route::post('/api/proyectos', [ProyectosController::class, 'store']);
     Route::post('/api/proyectos/{proyecto}/equipo', [ProyectosController::class, 'storeEquipo']);
+    Route::get('/api/estados/{estado}/planteles', [PerfilController::class, 'getPlanteles']);
 
 });
 

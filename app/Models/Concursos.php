@@ -1,12 +1,13 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-
 class Concursos extends Model
 {
+    use HasFactory;
 
     protected $table = 'concursos';
     protected $primaryKey = 'id';
@@ -16,7 +17,16 @@ class Concursos extends Model
         'descripcion',
         'fecha_inicio',
         'fecha_apertura',
-        'fecha_terminacion',        
+        'fecha_terminacion',
         'status',
+        'fase',
+        'plantel_id',
     ];
+
+    
+
+    public function plantel()
+    {
+        return $this->belongsTo(Planteles::class, 'plantel_id');
+    }
 }

@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Estados;
 use App\Models\Municipios;
+use App\Models\Planteles;
 
 class PerfilController extends Controller
 {
@@ -21,6 +22,26 @@ class PerfilController extends Controller
         return Inertia::render('Auth/CompleteProfile', [
             'user' => $user,
         ]);
+    }
+
+    public function getPlanteles($estadoId)
+    {
+        try {
+            // Log the estadoId to ensure it's being received correctly
+            \Log::info('Fetching planteles for estado_id: ' . $estadoId);
+
+            $planteles = Planteles::where('estado_id', $estadoId)->get();
+
+            // Log the retrieved planteles
+            \Log::info('Retrieved planteles: ' . $planteles->toJson());
+
+            return response()->json($planteles);
+        } catch (\Exception $e) {
+            // Log any errors
+            \Log::error('Error fetching planteles: ' . $e->getMessage());
+
+            return response()->json(['error' => 'Error fetching planteles'], 500);
+        }
     }
 
     public function completarPerfil()

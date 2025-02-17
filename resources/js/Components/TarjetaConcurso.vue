@@ -32,7 +32,10 @@
             <!-- Texto del estado -->
             <span>{{ estadoLocal === 'abierto' ? 'Abierto' : 'Cerrado' }}</span>
         </div>
-
+         <!-- Indicador de inscripción -->
+        <div v-if="inscrito" class="absolute bottom-4 left-2 px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+            En Curso
+        </div>
         <!-- Contenido de la tarjeta -->
         <h3 class="text-xl font-semibold text-[#611232] mb-4">{{ titulo }}</h3>
 
@@ -110,7 +113,8 @@ const props = defineProps({
   titulo: String,
   fechaInicio: String,
   fechaApertura: String,
-  fechaFinalizacion: String
+  fechaFinalizacion: String,
+  inscrito: Boolean
 });
 
 const emit = defineEmits(['click', 'editar', 'eliminar']);

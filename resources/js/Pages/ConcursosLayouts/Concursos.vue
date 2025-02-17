@@ -15,10 +15,14 @@ const concursoSeleccionado = ref(null);
 const { props } = usePage();
 const userRole = props.auth.user.rol;
 const concursos = ref(props.concursos || []);
+const inscrito = ref(props.inscrito || false);
 
 const handleMenuSelected = (menu) => {
-  selectedMenu.value = menu;
-  showForm.value = false;
+  selectedMenu.value = menu.toLowerCase(); // forzamos a minúsculas
+  showForm.value = selectedMenu.value !== 'concursos';
+  if (selectedMenu.value === 'concursos') {
+    concursoSeleccionado.value = null;
+  }
 };
 
 const handleCreateClick = () => {
@@ -84,7 +88,7 @@ const handleConcursoClick = (concurso) => {
         </div>
 
         <!-- Tarjetas de concursos -->
-        <div v-if="selectedMenu === 'Concursos' && !showForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-if="selectedMenu === 'concursos'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <TarjetaCrearConcurso 
             v-if="$page.props.auth.user.rol === 'admin' || $page.props.auth.user.rol === 'vinculador'"
             @click="handleCreateClick" 
@@ -98,6 +102,7 @@ const handleConcursoClick = (concurso) => {
             :fechaInicio="concurso.fecha_inicio"
             :fechaApertura="concurso.fecha_apertura"
             :fechaFinalizacion="concurso.fecha_terminacion"
+            :inscrito="inscrito"
             @click="handleConcursoClick(concurso)"
             @editar="handleEditar"
             @eliminar="handleEliminar"
