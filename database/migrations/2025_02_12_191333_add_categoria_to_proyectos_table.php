@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('proyectos', function (Blueprint $table) {
-            $table->enum('categoria', ['Investigación', 'Desarrollo', 'Innovación'])->after('nombre');
+            $table->string('categoria')->after('nombre');
         });
     }
 
