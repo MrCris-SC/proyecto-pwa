@@ -98,15 +98,16 @@
                     <InputError class="mt-2" :message="form.errors.fase" />
                 </div>
 
-                <div class="mb-6">
-                        <label class="block text-gray-700 mb-2">Estado</label>
-                        <select v-model="form.estado" @change="fetchPlanteles" class="w-full border p-3 rounded-lg bg-gray-50">
-                            <option value="">Seleccione un estado</option>
-                            <option v-for="estado in estados" :key="estado.idestado" :value="estado.idestado">{{ estado.nombre }}</option>
-                        </select>
-                    </div>
+                    
+                <div v-if="form.fase !== 'nacional'" class="mb-6">
+                    <label class="block text-gray-700 mb-2">Estado</label>
+                    <select v-model="form.estado" @change="fetchPlanteles" class="w-full border p-3 rounded-lg bg-gray-50">
+                        <option value="">Seleccione un estado</option>
+                        <option v-for="estado in estados" :key="estado.idestado" :value="estado.idestado">{{ estado.nombre }}</option>
+                    </select>
+                </div>
 
-                <div>
+                <div v-if="form.fase === 'local'">
                     <label class="block text-gray-700 mb-2">Selecciona el plantel</label>
                     <InputLabel for="plantel" value="Plantel" class="text-[#611232]" />
                     <select id="plantel" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-[#FF6B6B] focus:ring-[#FF6B6B]" v-model="form.plantel_id" required>
