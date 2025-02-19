@@ -9,8 +9,8 @@ use Illuminate\Http\Request;
 use App\Models\Linea;
 use App\Models\Equipo;
 use App\Models\Proyectos;
-use App\Models\Concurso; // Importar el modelo Concurso
-use Illuminate\Support\Facades\Log; // Importar la clase Log
+use App\Models\Concurso; // Verifica si este modelo es necesario
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
 class ProyectosController extends Controller
@@ -19,8 +19,13 @@ class ProyectosController extends Controller
     {
         $modalidades = Modalidades::all();
         $lineas = Linea::all();
-        $concursos = Concursos::all(); // Obtener todos los concursos
-        return response()->json(['modalidades' => $modalidades, 'lineas' => $lineas, 'concursos' => $concursos]);
+        $concursos = Concursos::all(); // Datos de concursos
+
+        return response()->json([
+            'modalidades' => $modalidades, 
+            'lineas' => $lineas, 
+            'concursos' => $concursos
+        ]);
     }
 
     public function store(Request $request)
@@ -29,41 +34,51 @@ class ProyectosController extends Controller
             'nombre' => 'required|string|max:255',
             'categoria' => 'required|string',
             'modalidad_id' => 'required|exists:modalidades,id',
-            'linea_investigacion_id' => 'required|exists:lineas_investigacion,id',
+            'linea_investigacion_id' => 'required|exists:lineas_investigacion,id', // Verifica que esta clave sea la correcta
             'concurso_id' => 'nullable|exists:concursos,id',
-            'equipo' => 'required|array',
-            'equipo.*.nombre' => 'required|string|max:255'
+            'equipo' => 'required|array|min:1',
+            'equipo.*.nombre' => 'required|string|max:255',
+            'equipo.*.correo' => 'required|email|max:255',
+            'equipo.*.genero' => 'required|in:femenino,masculino',
+            'equipo.*.telefono' => 'required|string|max:15',
+            'equipo.*.direccion' => 'required|string|max:255'
         ]);
 
         // Crear el proyecto
-        $proyecto = Proyectos::create($request->only(['nombre', 'categoria', 'modalidad_id', 'linea_investigacion_id', 'concurso_id']));
+        $proyecto = Proyectos::create($request->only([
+            'nombre', 'categoria', 'modalidad_id', 'linea_investigacion_id', 'concurso_id'
+        ]));
         Log::info('Proyecto creado', ['proyecto_id' => $proyecto->id]);
 
-         // Generar el ID del equipo
-    $equipoId = Equipo::generarCodigoEquipo();
+        // Generar el ID del equipo
+        $equipoId = Equipo::generarCodigoEquipo();
 
-    // Crear el equipo asociado al proyecto con un ID generado
-    $equipo = Equipo::create([
-        'id' => $equipoId,
-        'proyecto_id' => $proyecto->id,
-        'concurso_id' => $request->concurso_id,
-    ]);
-    Log::info('Equipo creado', ['equipo_id' => $equipo->id]);
-
-    // Crear los integrantes del equipo
-    foreach ($request->equipo as $integranteData) {
-        Log::info('Creando integrante', ['equipo_id' => $equipo->id, 'nombre' => $integranteData['nombre']]);
-        Participantes::create([
-            'equipo_id' => $equipo->id,
-            'nombre' => $integranteData['nombre']
+        // Crear el equipo asociado al proyecto
+        $equipo = Equipo::create([
+            'id' => $equipoId,
+            'proyecto_id' => $proyecto->id,
+            'concurso_id' => $request->concurso_id,
         ]);
-    }
-    
-    if (auth()->user()->rol === 'lider' && $request->concurso_id) {
-        auth()->user()->update(['concurso_registrado_id' => $request->concurso_id]);
-    }
-        //return response()->json(['id' => $proyecto->id]);
-        // Redirigir al usuario a /concursos
+        Log::info('Equipo creado', ['equipo_id' => $equipo->id]);
+
+        // Registrar los integrantes del equipo
+        foreach ($request->equipo as $integranteData) {
+            Participantes::create([
+                'equipo_id' => $equipo->id,
+                'nombre' => $integranteData['nombre'],
+                'correo' => $integranteData['correo'],
+                'genero' => $integranteData['genero'],
+                'telefono' => $integranteData['telefono'],
+                'direccion' => $integranteData['direccion']
+            ]);
+        }
+
+        // Si el usuario es líder, actualizar el concurso registrado
+        if (Auth::user()->rol === 'lider' && $request->concurso_id) {
+            Auth::user()->update(['concurso_registrado_id' => $request->concurso_id]);
+        }
+
+        // Redirigir a /concursos
         return redirect('/concursos');
     }
 }
