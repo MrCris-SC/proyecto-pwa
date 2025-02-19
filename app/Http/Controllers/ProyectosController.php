@@ -34,7 +34,7 @@ class ProyectosController extends Controller
             'nombre' => 'required|string|max:255',
             'categoria' => 'required|string',
             'modalidad_id' => 'required|exists:modalidades,id',
-            'linea_investigacion_id' => 'required|exists:lineas,id', // Verifica que esta clave sea la correcta
+            'linea_investigacion_id' => 'required|exists:lineas_investigacion,id', // Verifica que esta clave sea la correcta
             'concurso_id' => 'nullable|exists:concursos,id',
             'equipo' => 'required|array|min:1',
             'equipo.*.nombre' => 'required|string|max:255',
