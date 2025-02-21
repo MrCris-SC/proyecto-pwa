@@ -11,6 +11,7 @@ import RegistroProyectos from '@/ComponentsConcursos/RegistroProyectos.vue';
 const selectedMenu = ref('Concursos');
 const showForm = ref(false);
 const concursoSeleccionado = ref(null);
+const mensajeExito = ref('');
 
 const { props } = usePage();
 const userRole = props.auth.user.rol;
@@ -70,6 +71,10 @@ const handleConcursoClick = (concurso) => {
         Crear Concurso
       </h2>
     </template>
+    <!-- Mensaje de éxito -->
+    <div v-if="mensajeExito" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+      <span class="block sm:inline">{{ mensajeExito }}</span>
+    </div>
 
     <div class="flex flex-col lg:flex-row min-h-screen py-6 px-4 lg:px-12 bg-[#F8F9FA]">
       <!-- Menú lateral -->

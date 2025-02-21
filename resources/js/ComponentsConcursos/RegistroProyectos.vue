@@ -130,7 +130,7 @@ export default {
         this.proyecto_id = respuesta.data.id;
         this.mensajeExito = 'Proyecto y equipo registrados correctamente'; // Establecer mensaje de éxito
         this.mensajeError = ''; // Limpiar mensaje de error
-        this.$router.push('/concursos'); // Redireccionar usando Vue Router
+        this.$router.push({ name: '/concursos.index'}); // Redireccionar usando Vue Router
       } catch (error) {
         this.manejarError('Error al registrar el proyecto. Por favor, inténtalo de nuevo.');
         console.error(error);

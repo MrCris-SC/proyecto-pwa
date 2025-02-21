@@ -12,6 +12,8 @@ use App\Models\Proyectos;
 use App\Models\Concurso; // Verifica si este modelo es necesario
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
+
 
 class ProyectosController extends Controller
 {
@@ -80,5 +82,12 @@ class ProyectosController extends Controller
 
         // Redirigir a /concursos
         return redirect('/concursos');
+    }
+
+    public function generarPDF($id)
+    {
+        $proyecto = Proyectos::with('equipo', 'concurso')->findOrFail($id);
+        $pdf = PDF::loadView('pdf.proyecto', compact('proyecto'));
+        return $pdf->download('proyecto.pdf');
     }
 }
