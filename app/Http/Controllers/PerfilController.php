@@ -28,17 +28,17 @@ class PerfilController extends Controller
     {
         try {
             // Log the estadoId to ensure it's being received correctly
-            \Log::info('Fetching planteles for estado_id: ' . $estadoId);
+           // \Log::info('Fetching planteles for estado_id: ' . $estadoId);
 
             $planteles = Planteles::where('estado_id', $estadoId)->get();
 
             // Log the retrieved planteles
-            \Log::info('Retrieved planteles: ' . $planteles->toJson());
+            //\Log::info('Retrieved planteles: ' . $planteles->toJson());
 
             return response()->json($planteles);
         } catch (\Exception $e) {
             // Log any errors
-            \Log::error('Error fetching planteles: ' . $e->getMessage());
+            //\Log::error('Error fetching planteles: ' . $e->getMessage());
 
             return response()->json(['error' => 'Error fetching planteles'], 500);
         }

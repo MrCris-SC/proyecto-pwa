@@ -17,14 +17,14 @@ class ConcursoController extends Controller
     {
         $user = auth()->user();
         $concursos = Concursos::with('plantel.estado')->get();
-
+    
         // Si el usuario es líder y ya está inscrito en un concurso, filtrar la lista
         if ($user->rol === 'lider') {
             if ($user->concurso_registrado_id) {
                 $concursos = $concursos->where('id', $user->concurso_registrado_id);
             } else {
                 $concursos = $concursos->filter(function ($concurso) use ($user) {
-                    return $concurso->plantel->estado->id === $user->estado_id;
+                    return $concurso->plantel->estado->idestado === $user->estado_id;
                 });
             }
         }

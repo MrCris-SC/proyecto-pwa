@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed  } from 'vue';
 import { usePage, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import MenuLateral from '@/ComponentsConcursos/MenuLateral.vue';
@@ -11,7 +11,7 @@ import RegistroProyectos from '@/ComponentsConcursos/RegistroProyectos.vue';
 const selectedMenu = ref('Concursos');
 const showForm = ref(false);
 const concursoSeleccionado = ref(null);
-const mensajeExito = ref('');
+const mensajeExito = computed(() => props.flash.success || '');
 
 const { props } = usePage();
 const userRole = props.auth.user.rol;

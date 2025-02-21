@@ -1,5 +1,6 @@
 <script>
 import axios from 'axios';
+import { router } from '@inertiajs/vue3';
 
 export default {
   props: {
@@ -130,7 +131,7 @@ export default {
         this.proyecto_id = respuesta.data.id;
         this.mensajeExito = 'Proyecto y equipo registrados correctamente'; // Establecer mensaje de éxito
         this.mensajeError = ''; // Limpiar mensaje de error
-        this.$router.push({ name: '/concursos.index'}); // Redireccionar usando Vue Router
+        router.visit(route('concursos.index')); //
       } catch (error) {
         this.manejarError('Error al registrar el proyecto. Por favor, inténtalo de nuevo.');
         console.error(error);
