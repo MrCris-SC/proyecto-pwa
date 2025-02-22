@@ -1,5 +1,70 @@
+<template>
+  <AuthenticatedLayout>
+    <template #header>
+      <h2 class="text-xl font-semibold leading-tight text-guinda">
+        Crear Concurso
+      </h2>
+    </template>
+
+    <!-- Mensaje de éxito -->
+    <div v-if="mensajeExito" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 flex items-center animate-fade-in" role="alert">
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      <span class="block sm:inline">{{ mensajeExito }}</span>
+      <button @click="mensajeExito = ''" class="ml-auto text-green-700 hover:text-green-900">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Resto del contenido -->
+    <div class="flex flex-col lg:flex-row min-h-screen py-6 px-4 lg:px-12 bg-fondo">
+      <!-- Menú lateral -->
+      <MenuLateral :rol="userRole" @menu-selected="handleMenuSelected" />
+
+      <!-- Contenido principal -->
+      <main class="w-full max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-lg">
+        <h2 class="text-2xl font-bold mb-6 text-guinda">
+          {{ selectedMenu.charAt(0).toUpperCase() + selectedMenu.slice(1) }}
+        </h2>
+
+        <!-- Formulario para Registro -->
+        <div v-if="showForm" class="relative">
+          <NuevoConcurso v-if="selectedMenu === 'nuevo concurso'" @close="handleCloseForm" />
+          <RegistroProyectos v-if="selectedMenu === 'registro'" :concurso-id="concursoSeleccionado" @close="handleCloseForm" />
+        </div>
+
+        <!-- Tarjetas de concursos -->
+        <div v-if="selectedMenu === 'concursos'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <TarjetaCrearConcurso 
+            v-if="$page.props.auth.user.rol === 'admin' || $page.props.auth.user.rol === 'vinculador'"
+            @click="handleCreateClick" 
+            class="transition-transform transform hover:scale-105 hover:shadow-lg" 
+          />
+          <TarjetaConcurso                        
+            v-for="concurso in concursos"
+            :key="concurso.id"
+            :concurso="concurso"
+            :titulo="concurso.nombre"
+            :fechaInicio="concurso.fecha_inicio"
+            :fechaApertura="concurso.fecha_apertura"
+            :fechaFinalizacion="concurso.fecha_terminacion"
+            :inscrito="inscrito"
+            @click="handleConcursoClick(concurso)"
+            @editar="handleEditar"
+            @eliminar="handleEliminar"
+            class="transition-transform transform hover:scale-105 hover:shadow-lg"
+          />
+        </div>
+      </main>
+    </div>
+  </AuthenticatedLayout>
+</template>
+
 <script setup>
-import { ref, computed  } from 'vue';
+import { ref, computed } from 'vue';
 import { usePage, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import MenuLateral from '@/ComponentsConcursos/MenuLateral.vue';
@@ -11,15 +76,25 @@ import RegistroProyectos from '@/ComponentsConcursos/RegistroProyectos.vue';
 const selectedMenu = ref('Concursos');
 const showForm = ref(false);
 const concursoSeleccionado = ref(null);
-const mensajeExito = computed(() => props.flash.success || '');
 
 const { props } = usePage();
 const userRole = props.auth.user.rol;
 const concursos = ref(props.concursos || []);
 const inscrito = ref(props.inscrito || false);
+const mensajeExito = computed(() => props.flash.success || ''); // Obtener el mensaje flash
+
+// Limpiar el mensaje flash después de mostrarlo
+if (props.flash.success) {
+  setTimeout(() => {
+    router.visit(route('concursos.index'), {
+      method: 'get',
+      data: { flash: {} }, // Limpiar el mensaje flash
+    });
+  }, 3000); // Limpiar después de 3 segundos
+}
 
 const handleMenuSelected = (menu) => {
-  selectedMenu.value = menu.toLowerCase(); // forzamos a minúsculas
+  selectedMenu.value = menu.toLowerCase(); // Forzamos a minúsculas
   showForm.value = selectedMenu.value !== 'concursos';
   if (selectedMenu.value === 'concursos') {
     concursoSeleccionado.value = null;
@@ -64,57 +139,31 @@ const handleConcursoClick = (concurso) => {
 };
 </script>
 
-<template>
-  <AuthenticatedLayout>
-    <template #header>
-      <h2 class="text-xl font-semibold leading-tight text-[#611232]">
-        Crear Concurso
-      </h2>
-    </template>
-    <!-- Mensaje de éxito -->
-    <div v-if="mensajeExito" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-      <span class="block sm:inline">{{ mensajeExito }}</span>
-    </div>
+<style scoped>
+/* Animación para el mensaje de éxito */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
-    <div class="flex flex-col lg:flex-row min-h-screen py-6 px-4 lg:px-12 bg-[#F8F9FA]">
-      <!-- Menú lateral -->
-      <MenuLateral :rol="userRole" @menu-selected="handleMenuSelected" />
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
 
-      <!-- Contenido principal -->
-      <main class="w-full max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-lg">
-        <h2 class="text-2xl font-bold mb-6 text-[#611232]">
-          {{ selectedMenu.charAt(0).toUpperCase() + selectedMenu.slice(1) }}
-        </h2>
+/* Estilos personalizados */
+.bg-guinda {
+  background-color: #6a1b1a;
+}
 
-        <!-- Formulario para Registro -->
-        <div v-if="showForm" class="relative">
-          <NuevoConcurso v-if="selectedMenu === 'nuevo concurso'" @close="handleCloseForm" />
-          <RegistroProyectos v-if="selectedMenu === 'registro'" :concurso-id="concursoSeleccionado" @close="handleCloseForm" />
-        </div>
+.bg-guinda-oscuro:hover {
+  background-color: #4e1413;
+}
 
-        <!-- Tarjetas de concursos -->
-        <div v-if="selectedMenu === 'concursos'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <TarjetaCrearConcurso 
-            v-if="$page.props.auth.user.rol === 'admin' || $page.props.auth.user.rol === 'vinculador'"
-            @click="handleCreateClick" 
-            class="transition-transform transform hover:scale-105 hover:shadow-lg" 
-          />
-          <TarjetaConcurso                        
-            v-for="concurso in concursos"
-            :key="concurso.id"
-            :concurso="concurso"
-            :titulo="concurso.nombre"
-            :fechaInicio="concurso.fecha_inicio"
-            :fechaApertura="concurso.fecha_apertura"
-            :fechaFinalizacion="concurso.fecha_terminacion"
-            :inscrito="inscrito"
-            @click="handleConcursoClick(concurso)"
-            @editar="handleEditar"
-            @eliminar="handleEliminar"
-            class="transition-transform transform hover:scale-105 hover:shadow-lg"
-          />
-        </div>
-      </main>
-    </div>
-  </AuthenticatedLayout>
-</template>
+.text-guinda {
+  color: #611232;
+}
+
+.bg-fondo {
+  background-color: #f8f9fa;
+}
+</style>

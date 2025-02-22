@@ -27,7 +27,7 @@ export default {
       selectedTipoProyecto: 'prototipos', // Nueva propiedad para filtrar por tipo de proyecto
       errores: {}, // Objeto para almacenar errores de validación
       mensajeError: '', // Mensaje de error general
-      mensajeExito: '', // Nuevo estado para mensajes de éxito
+      cargando: false, // Estado para manejar el estado de carga
     };
   },
   methods: {
@@ -123,18 +123,34 @@ export default {
         return;
       }
 
+      this.cargando = true; // Activar estado de carga
       try {
         const respuesta = await axios.post('/api/proyectos', {
           ...this.form,
           equipo: this.equipo,
         });
         this.proyecto_id = respuesta.data.id;
-        this.mensajeExito = 'Proyecto y equipo registrados correctamente'; // Establecer mensaje de éxito
-        this.mensajeError = ''; // Limpiar mensaje de error
-        router.visit(route('concursos.index')); //
+
+        // Redirigir con un mensaje flash
+        router.visit(route('concursos.index'), {
+          method: 'get',
+          data: {
+            flash: {
+              success: 'Proyecto y equipo registrados correctamente',
+            },
+          },
+        });
       } catch (error) {
-        this.manejarError('Error al registrar el proyecto. Por favor, inténtalo de nuevo.');
+        if (error.response && error.response.data.errors) {
+          // Mostrar errores específicos del servidor
+          this.errores = error.response.data.errors;
+          this.mensajeError = 'Por favor, corrige los errores en el formulario.';
+        } else {
+          this.manejarError('Error al registrar el proyecto. Por favor, inténtalo de nuevo.');
+        }
         console.error(error);
+      } finally {
+        this.cargando = false; // Desactivar estado de carga
       }
     },
 
@@ -192,11 +208,6 @@ export default {
     <!-- Mensaje de error -->
     <div v-if="mensajeError" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
       <span class="block sm:inline">{{ mensajeError }}</span>
-    </div>
-
-    <!-- Mensaje de éxito -->
-    <div v-if="mensajeExito" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-      <span class="block sm:inline">{{ mensajeExito }}</span>
     </div>
 
     <!-- Formulario de registro de proyectos -->
@@ -277,8 +288,9 @@ export default {
         Agregar Integrante
       </button>
 
-      <button type="submit" class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300 mt-4">
-        Registrar Proyecto y Equipo
+      <button type="submit" :disabled="cargando" class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300 mt-4">
+        <span v-if="cargando">Cargando...</span>
+        <span v-else>Registrar Proyecto y Equipo</span>
       </button>
     </form>
   </div>
