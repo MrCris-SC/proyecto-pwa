@@ -13,6 +13,7 @@ use App\Models\Concurso; // Verifica si este modelo es necesario
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use Inertia\Inertia;
 
 
 class ProyectosController extends Controller
@@ -81,7 +82,7 @@ class ProyectosController extends Controller
         }
 
         // Redirigir a /concursos
-        return redirect('/concursos');
+        return redirect()->route('dashboard')->with('success', 'Proyecto creado exitosamente.');
     }
 
     public function generarPDF($id)

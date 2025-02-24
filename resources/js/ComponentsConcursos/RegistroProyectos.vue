@@ -120,7 +120,7 @@ export default {
     // Método para enviar el formulario completo
     async submitFormularioCompleto() {
       if (!this.validarFormularioCompleto()) {
-        return;
+      return;
       }
 
       try {
@@ -129,9 +129,10 @@ export default {
           equipo: this.equipo,
         });
         this.proyecto_id = respuesta.data.id;
-        this.mensajeExito = 'Proyecto y equipo registrados correctamente'; // Establecer mensaje de éxito
-        this.mensajeError = ''; // Limpiar mensaje de error
-        router.visit(route('concursos.index')); //
+        this.mensajeExito = 'Proyecto y equipo registrados correctamente';
+        this.mensajeError = '';
+        // Redirige agregando el mensaje como parámetro en la URL
+        router.visit(`${route('concursos.index')}?success=${encodeURIComponent(this.mensajeExito)}`);
       } catch (error) {
         this.manejarError('Error al registrar el proyecto. Por favor, inténtalo de nuevo.');
         console.error(error);
