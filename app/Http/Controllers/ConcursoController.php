@@ -17,7 +17,7 @@ class ConcursoController extends Controller
     {
         $user = auth()->user();
         $concursos = Concursos::with('plantel.estado')->get();
-    
+        $success = request()->query('success', '');
         // Si el usuario es líder y ya está inscrito en un concurso, filtrar la lista
         if ($user->rol === 'lider') {
             if ($user->concurso_registrado_id) {
@@ -32,7 +32,7 @@ class ConcursoController extends Controller
         // Pasar información de inscripción del usuario
         $inscrito = $user->concurso_registrado_id ? true : false;
 
-        return Inertia::render('ConcursosLayouts/Concursos', ['concursos' => $concursos, 'inscrito' => $inscrito]);
+        return Inertia::render('ConcursosLayouts/Concursos', ['concursos' => $concursos, 'inscrito' => $inscrito,'flash' => ['success' => $success]]);
     }
 
     /**

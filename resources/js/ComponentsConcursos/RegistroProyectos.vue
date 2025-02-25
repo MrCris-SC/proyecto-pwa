@@ -120,7 +120,7 @@ export default {
     // Método para enviar el formulario completo
     async submitFormularioCompleto() {
       if (!this.validarFormularioCompleto()) {
-        return;
+      return;
       }
 
       this.cargando = true; // Activar estado de carga
@@ -130,16 +130,10 @@ export default {
           equipo: this.equipo,
         });
         this.proyecto_id = respuesta.data.id;
-
-        // Redirigir con un mensaje flash
-        router.visit(route('concursos.index'), {
-          method: 'get',
-          data: {
-            flash: {
-              success: 'Proyecto y equipo registrados correctamente',
-            },
-          },
-        });
+        this.mensajeExito = 'Proyecto y equipo registrados correctamente';
+        this.mensajeError = '';
+        // Redirige agregando el mensaje como parámetro en la URL
+        router.visit(`${route('concursos.index')}?success=${encodeURIComponent(this.mensajeExito)}`);
       } catch (error) {
         if (error.response && error.response.data.errors) {
           // Mostrar errores específicos del servidor
