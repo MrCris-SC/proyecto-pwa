@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed  } from 'vue';
+import { ref, computed } from 'vue';
 import { usePage, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import MenuLateral from '@/ComponentsConcursos/MenuLateral.vue';
@@ -7,6 +7,7 @@ import TarjetaCrearConcurso from '@/Components/TarjetaCrearConcurso.vue';
 import TarjetaConcurso from '@/Components/TarjetaConcurso.vue';
 import NuevoConcurso from '@/ComponentsConcursos/NuevoConcurso.vue';
 import RegistroProyectos from '@/ComponentsConcursos/RegistroProyectos.vue';
+import GestionProyectos from '@/ComponentsGestionProyectos/GestionProyectos.vue'; // nuevo componente
 
 const selectedMenu = ref('Concursos');
 const showForm = ref(false);
@@ -75,7 +76,6 @@ const handleConcursoClick = (concurso) => {
       <span class="block sm:inline">{{ mensajeExito }}</span>
     </div>
 
-
     <div class="flex flex-col lg:flex-row min-h-screen py-6 px-4 lg:px-12 bg-[#F8F9FA]">
       <!-- Menú lateral -->
       <MenuLateral :rol="userRole" @menu-selected="handleMenuSelected" />
@@ -91,6 +91,9 @@ const handleConcursoClick = (concurso) => {
           <NuevoConcurso v-if="selectedMenu === 'nuevo concurso'" @close="handleCloseForm" />
           <RegistroProyectos v-if="selectedMenu === 'registro'" :concurso-id="concursoSeleccionado" @close="handleCloseForm" />
         </div>
+
+        <!-- Gestión de Proyectos -->
+        <GestionProyectos v-if="selectedMenu === 'gestión de proyectos'" />
 
         <!-- Tarjetas de concursos -->
         <div v-if="selectedMenu === 'concursos'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

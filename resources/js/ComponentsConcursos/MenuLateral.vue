@@ -41,6 +41,8 @@ const selectMenu = (item) => {
 const toggleMenu = () => {
     isMenuMinimized.value = !isMenuMinimized.value;
 };
+
+
 </script>
 
 <template>
