@@ -26,4 +26,14 @@ class Equipo extends Model
 
         return (int)$codigo;
     }
+
+    public function proyecto()
+    {
+        return $this->belongsTo(Proyectos::class, 'proyecto_id');
+    }
+
+    public function participantes()
+    {
+        return $this->hasMany(Participantes::class, 'equipo_id');
+    }
 }

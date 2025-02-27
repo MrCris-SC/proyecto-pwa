@@ -16,4 +16,9 @@ class Linea extends Model
         'nombre',
         
     ];
+
+    public function proyectos()
+    {
+        return $this->hasMany(Proyectos::class, 'linea_investigacion_id');
+    }
 }
