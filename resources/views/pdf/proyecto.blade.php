@@ -16,11 +16,11 @@
             margin-bottom: 20px;
         }
         .header-logo {
-            width: 400px; /* Increase the size of the image */
+            width: 300px; /* Increase the size of the image */
             height: auto;
         }
         .header-logo2 {
-            width: 250px; /* Increase the size of the image */
+            width: 300px; /* Increase the size of the image */
             height: auto;
         }
         .section {
