@@ -55,6 +55,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/api/proyectos/{proyecto}/equipo', [ProyectosController::class, 'storeEquipo']);
     Route::get('/api/estados/{estado}/planteles', [PerfilController::class, 'getPlanteles']);
     Route::get('/proyectos/{id}/pdf', [ProyectosController::class, 'generarPDF'])->name('proyectos.pdf');
+
+    Route::post('/concursos/{concurso}/inscribirse', [ConcursoController::class, 'inscribirse'])->name('concursos.inscribirse');
 });
 
 Route::get('/new-user', [RegisterController::class, 'showRegistrationForm'])->middleware(['auth'])->name('new.user');

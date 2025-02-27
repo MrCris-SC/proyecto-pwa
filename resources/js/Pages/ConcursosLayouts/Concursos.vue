@@ -56,9 +56,16 @@ const handleCloseForm = () => {
 
 const handleConcursoClick = (concurso) => {
   if (concurso && concurso.id) {
-    selectedMenu.value = 'registro';
-    showForm.value = true;
-    concursoSeleccionado.value = concurso.id;
+    if (inscrito.value) {
+      // Si ya está inscrito, mostrar "Gestión de proyectos"
+      selectedMenu.value = 'gestión de proyectos';
+      showForm.value = false;
+    } else {
+      // Si no está inscrito, mostrar el formulario de registro
+      selectedMenu.value = 'registro';
+      showForm.value = true;
+      concursoSeleccionado.value = concurso.id;
+    }
   } else {
     console.error('Invalid concurso object:', concurso);
   }
