@@ -115,14 +115,16 @@ obtenerConcursoEnPantalla();
           {{ selectedMenu.charAt(0).toUpperCase() + selectedMenu.slice(1) }}
         </h2>
 
-        <!-- Botón para descargar PDF -->
-        <button 
-          v-if="selectedMenu === 'concursos'" 
-          @click="handleDownloadPDF" 
-          class="mt-4 bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
-        >
-          Descargar PDF
-        </button>
+        <!-- Contenedor flex para el botón -->
+        <div class="flex justify-end">
+          <button 
+            v-if="selectedMenu === 'concursos'" 
+            @click="handleDownloadPDF" 
+            class="mt-3 bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
+          >
+            Descargar PDF
+          </button>
+        </div>
 
         <!-- Formulario para Registro -->
         <div v-if="showForm" class="relative">
@@ -153,9 +155,7 @@ obtenerConcursoEnPantalla();
             @editar="handleEditar"
             @eliminar="handleEliminar"
             class="transition-transform transform hover:scale-105 hover:shadow-lg"
-            
           />
-          
         </div>
       </main>
     </div>

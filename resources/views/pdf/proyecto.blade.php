@@ -1,59 +1,89 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Equipo PDF</title>
+    <title>Registro de Proyecto</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 40px;
         }
         .header {
-            text-align: center;
+            display: flex;
+            justify-content: space-between; /* Space between logos */
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
             margin-bottom: 20px;
+        }
+        .header-logo {
+            width: 300px; /* Increase the size of the image */
+            height: auto;
+        }
+        .header-logo2 {
+            width: 300px; /* Increase the size of the image */
+            height: auto;
         }
         .section {
             margin-bottom: 20px;
         }
         .section h2 {
+            font-size: 16px;
             margin-bottom: 10px;
         }
-        .section p {
-            margin: 0;
+        .participant {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .photo-box {
+            width: 80px;
+            height: 80px;
+            border: 1px solid #000;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .participant-info {
+            flex-grow: 1;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Detalles del Equipo</h1>
+        <img src="{{ public_path('images/logo.png') }}" alt="Logo" class="header-logo">
+        <img src="{{ public_path('images/logo2.png') }}" alt="Logo" class="header-logo2">
     </div>
 
+    
     <div class="section">
-        <h2>Proyecto</h2>
-        <p><strong>Nombre:</strong> {{ $equipo->proyecto->nombre }}</p>
-        <p><strong>Categoría:</strong> {{ $equipo->proyecto->categoria }}</p>
+        <h2>Nombre del Concurso:</h2>
+        <p><strong>Nombre:</strong> {{ $equipo->proyecto->concurso->nombre ?? 'No especificado' }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Registro de Proyecto</h2>
+        <p><strong>Número de Registro:</strong> {{ $equipo->proyecto->id }}</p>
+        <p><strong>Nombre del Proyecto:</strong> {{ $equipo->proyecto->nombre }}</p>
         <p><strong>Modalidad:</strong> {{ $equipo->proyecto->modalidad_id }}</p>
-        <p><strong>Línea de Investigación:</strong> {{ $equipo->proyecto->linea_investigacion_id }}</p>
     </div>
-
-    <div class="section">
-        <h2>Concurso</h2>
-        @if ($equipo->proyecto->concurso)
-            <p><strong>Nombre:</strong> {{ $equipo->proyecto->concurso->nombre }}</p>
-            <p><strong>Descripción:</strong> {{ $equipo->proyecto->concurso->descripcion }}</p>
-        @else
-            <p>No hay concurso asociado.</p>
-        @endif
-    </div>
-
+    
     <div class="section">
         <h2>Integrantes del Equipo</h2>
         @foreach ($equipo->participantes as $participante)
-            <p><strong>Nombre:</strong> {{ $participante->nombre }}</p>
-            <p><strong>Correo:</strong> {{ $participante->correo }}</p>
-            <p><strong>Género:</strong> {{ $participante->genero }}</p>
-            <p><strong>Teléfono:</strong> {{ $participante->telefono }}</p>
-            <p><strong>Dirección:</strong> {{ $participante->direccion }}</p>
-            <hr>
+            <div class="participant">
+                <div class="photo-box">Foto</div>
+                <div class="participant-info">
+                    <p><strong>Nombre:</strong> {{ $participante->nombre }}</p>
+                </div>
+            </div>
         @endforeach
+    </div>
+    
+    <div class="section">
+        <h2>Asesores</h2>
+        <p><strong>Asesor Técnico:</strong> {{ $equipo->asesor_tecnico ?? 'No especificado' }}</p>
+        <p><strong>Asesor Metodológico:</strong> {{ $equipo->asesor_metodologico ?? 'No especificado' }}</p>
     </div>
 </body>
 </html>
