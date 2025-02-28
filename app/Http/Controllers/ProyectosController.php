@@ -12,7 +12,8 @@ use App\Models\Proyectos;
 use App\Models\Concurso; // Verifica si este modelo es necesario
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
-use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 use Inertia\Inertia;
 
 
@@ -74,8 +75,12 @@ class ProyectosController extends Controller
                 'telefono' => $integranteData['telefono'],
                 'direccion' => $integranteData['direccion']
             ]);
+            
         }
 
+            // Actualizar la columna equipo_id del usuario autenticado
+        $authUser = Auth::user();
+        $authUser->update(['equipo_id' => $equipo->id]);
         // Si el usuario es líder, actualizar el concurso registrado
         if (Auth::user()->rol === 'lider' && $request->concurso_id) {
             Auth::user()->update(['concurso_registrado_id' => $request->concurso_id]);
@@ -85,10 +90,29 @@ class ProyectosController extends Controller
         return redirect()->route('dashboard')->with('success', 'Proyecto creado exitosamente.');
     }
 
-    public function generarPDF($id)
+    public function generarPDF()
     {
-        $proyecto = Proyectos::with('equipo', 'concurso')->findOrFail($id);
-        $pdf = PDF::loadView('pdf.proyecto', compact('proyecto'));
-        return $pdf->download('proyecto.pdf');
+        // Obtener el usuario autenticado
+        $authUser = Auth::user();
+
+        // Obtener el equipo del usuario autenticado
+        $equipo = Equipo::with(['proyecto', 'participantes', 'proyecto.concurso'])
+                        ->where('id', $authUser->equipo_id)
+                        ->first();
+
+        if (!$equipo) {
+            return redirect()->back()->with('error', 'Equipo no encontrado.');
+        }
+
+        // Pasar los datos a la vista del PDF
+        $pdf = Pdf::loadView('pdf.proyecto', ['equipo' => $equipo]);
+
+        // Descargar el PDF
+        return $pdf->download('equipo.pdf');
+    }
+
+
+    public function pruebaVista()
+    {
     }
 }

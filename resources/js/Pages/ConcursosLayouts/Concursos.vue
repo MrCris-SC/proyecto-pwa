@@ -18,14 +18,35 @@ const { props } = usePage();
 const userRole = props.auth.user.rol;
 const concursos = ref(props.concursos || []);
 const inscrito = ref(props.inscrito || false);
+const concursoEnPantalla = ref(null);
+
+const obtenerConcursoEnPantalla = () => {
+  const usuarioLider = props.auth.user;
+  let concurso = concursos.value.find(c => c.lider_id === usuarioLider.id);
+  if (!concurso && concursos.value.length > 0) {
+    concurso = concursos.value[0]; // Selecciona el primer concurso disponible
+  }
+  if (concurso) {
+    concursoEnPantalla.value = concurso;
+  } else {
+    console.error('No se encontró un concurso para el usuario líder ni hay concursos disponibles.');
+  }
+};
 
 const handleMenuSelected = (menu) => {
   selectedMenu.value = menu.toLowerCase(); // forzamos a minúsculas
   showForm.value = selectedMenu.value !== 'concursos';
   if (selectedMenu.value === 'concursos') {
     concursoSeleccionado.value = null;
+    obtenerConcursoEnPantalla();
   }
 };
+
+
+const handleDownloadPDF = () => {
+  window.open(route('proyectos.pdf'), '_blank');
+};
+
 
 const handleCreateClick = () => {
   selectedMenu.value = 'nuevo concurso';
@@ -70,6 +91,7 @@ const handleConcursoClick = (concurso) => {
     console.error('Invalid concurso object:', concurso);
   }
 };
+obtenerConcursoEnPantalla();
 </script>
 
 <template>
@@ -92,6 +114,15 @@ const handleConcursoClick = (concurso) => {
         <h2 class="text-2xl font-bold mb-6 text-[#611232]">
           {{ selectedMenu.charAt(0).toUpperCase() + selectedMenu.slice(1) }}
         </h2>
+
+        <!-- Botón para descargar PDF -->
+        <button 
+          v-if="selectedMenu === 'concursos'" 
+          @click="handleDownloadPDF" 
+          class="mt-4 bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
+        >
+          Descargar PDF
+        </button>
 
         <!-- Formulario para Registro -->
         <div v-if="showForm" class="relative">
@@ -122,7 +153,9 @@ const handleConcursoClick = (concurso) => {
             @editar="handleEditar"
             @eliminar="handleEliminar"
             class="transition-transform transform hover:scale-105 hover:shadow-lg"
+            
           />
+          
         </div>
       </main>
     </div>

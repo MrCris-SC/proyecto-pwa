@@ -31,11 +31,17 @@ class User extends Authenticatable implements MustVerifyEmail
         'perfil_completo',
         'plantel_id',
         'concurso_registrado_id',
+        'equipo_id',
     ];
 
     public function sendEmailVerificationNotification()
     {
         $this->notify(new CustomVerifyEmail());
+    }
+
+    public function equipo()
+    {
+        return $this->belongsTo(Equipo::class);
     }
 
     /**

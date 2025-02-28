@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Proyectos extends Model
 {
+    use HasFactory;
+
     protected $table = 'proyectos';
 
     protected $fillable = [
@@ -30,5 +33,9 @@ class Proyectos extends Model
     {
         return $this->belongsTo(Concursos::class);
     }
-}
 
+    public function equipo()
+    {
+        return $this->hasOne(Equipo::class, 'proyecto_id');
+    }
+}
