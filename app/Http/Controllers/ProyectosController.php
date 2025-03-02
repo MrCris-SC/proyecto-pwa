@@ -112,7 +112,12 @@ class ProyectosController extends Controller
     }
 
 
-    public function pruebaVista()
+    public function gestionProyectos()
     {
+        return Inertia::render('ConcursosLayouts/GestionProyectos', [
+            'inscrito' => auth()->user()->inscrito,
+            'concursoId' => auth()->user()->concurso_id,
+        ]);
     }
+    
 }

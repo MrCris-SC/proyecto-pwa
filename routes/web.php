@@ -56,6 +56,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/api/estados/{estado}/planteles', [PerfilController::class, 'getPlanteles']);
     Route::get('/proyectos/{id}/pdf', [ProyectosController::class, 'pruebaVista'])->name('generar');
     Route::get('/generar-pdf', [ProyectosController::class, 'generarPDF'])->name('proyectos.pdf');
+
+    // RUtas para gestion de proyectos
+    Route::get('/gestion-de-proyectos', [ProyectosController::class, 'gestionProyectos'])->name('gestion.proyectos');
+    
 });
 
 Route::get('/new-user', [RegisterController::class, 'showRegistrationForm'])->middleware(['auth'])->name('new.user');
