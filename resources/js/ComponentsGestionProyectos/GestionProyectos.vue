@@ -14,6 +14,34 @@
       </p>
     </div>
 
+    <!-- Botón para abrir el formulario de registro de asesores -->
+    <div class="mb-8">
+      <button
+        class="bg-[#611232] text-white px-6 py-2 rounded-lg hover:bg-[#8A1C4A] transition duration-200"
+        @click="mostrarFormulario = true"
+      >
+        Registrar Asesores
+      </button>
+    </div>
+
+    <!-- Modal para el formulario de registro de asesores -->
+    <div v-if="mostrarFormulario" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-lg p-6 w-full max-w-2xl shadow-xl">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-semibold text-[#611232]">Registro de Asesores</h2>
+          <button
+            @click="mostrarFormulario = false"
+            class="text-gray-500 hover:text-gray-700"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <RegistroAsesores @cerrar="mostrarFormulario = false" />
+      </div>
+    </div>
+
     <!-- Resumen del Proyecto -->
     <div class="mb-8 p-6 bg-gray-50 rounded-lg">
       <h2 class="text-xl font-semibold text-[#611232] mb-4">Resumen del Proyecto</h2>
@@ -104,6 +132,9 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { usePage, router } from '@inertiajs/vue3';
+import RegistroAsesores from './RegistroAsesores.vue';
+
+const mostrarFormulario = ref(false);
 
 const { props } = usePage();
 const proyecto = ref({});
@@ -114,7 +145,6 @@ const inscrito = ref(props.inscrito || false);
 
 onMounted(async () => {
   if (inscrito.value) {
-    // Obtener datos del proyecto desde el backend
     try {
       const response = await axios.get(`/api/proyectos/${props.auth.user.proyecto_id}`);
       proyecto.value = response.data.proyecto || {};
@@ -124,7 +154,6 @@ onMounted(async () => {
       console.error('Error al obtener los datos del proyecto:', error);
     }
   } else {
-    // Si no está inscrito, mostrar datos vacíos
     proyecto.value = {};
     documentos.value = [];
     tareas.value = [];
@@ -153,7 +182,6 @@ const enviarMensaje = () => {
 const inscribirse = () => {
   router.post(`/concursos/${props.concursoId}/inscribirse`, {}, {
     onSuccess: () => {
-      // Actualizar el estado y redirigir
       inscrito.value = true;
       router.visit('/gestion-de-proyectos');
     },
