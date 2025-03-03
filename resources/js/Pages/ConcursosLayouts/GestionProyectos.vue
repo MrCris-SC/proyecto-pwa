@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { usePage, router } from '@inertiajs/vue3';
-import RegistroAsesores from '../../ComponentsGestionProyectos/RegistroAsesores.vue';
+import RegistroAsesores from '../../ComponentsConcursos/RegistroAsesores.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';    
 import MenuLateral from '@/ComponentsConcursos/MenuLateral.vue';
 import axios from 'axios';
@@ -10,7 +10,7 @@ const mostrarFormulario = ref(false);
 
 const { props } = usePage();
 const showForm = ref(false);
-const proyecto = ref({});
+const proyecto = ref(props.proyecto || {});
 const documentos = ref([]);
 const tareas = ref([]);
 const mensaje = ref('');
@@ -80,8 +80,6 @@ const handleMenuSelected = (menu) => {
     router.get(route('gestion.proyectos'));
   }
 };
-
-
 </script>
 
 <template>
@@ -227,6 +225,3 @@ const handleMenuSelected = (menu) => {
     </div>
   </AuthenticatedLayout>
 </template>
-
-
-

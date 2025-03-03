@@ -114,9 +114,16 @@ class ProyectosController extends Controller
         // Verificar si el usuario está inscrito en un concurso
         $inscrito = $user->concurso_registrado_id !== null;
 
+        $proyecto = Proyectos::with(['equipo.participantes', 'concurso'])
+            ->whereHas('equipo', function ($query) use ($user) {
+                $query->where('id', $user->equipo_id);
+            })
+            ->first();
+
         return Inertia::render('ConcursosLayouts/GestionProyectos', [
             'inscrito' => $inscrito,
             'concursoId' => $user->concurso_registrado_id,
+            'proyecto' => $proyecto,
         ]);
     }
 
