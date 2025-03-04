@@ -9,11 +9,13 @@ use Illuminate\Http\Request;
 use App\Models\Linea;
 use App\Models\Equipo;
 use App\Models\Proyectos;
+use App\Models\Asesor;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
+
 
 class ProyectosController extends Controller
 {
@@ -141,5 +143,25 @@ class ProyectosController extends Controller
         $user->save();
 
         return redirect()->route('gestion.proyectos')->with('success', 'Inscripción exitosa.');
+    }
+
+    public function registrarAsesor(Request $request)
+    {
+        // Validar los datos del formulario
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'email' => 'required|email|unique:asesores,email',
+            'telefono' => 'required|string|max:15',
+            'tipo_asesor' => 'required|in:Técnico,Metodológico',
+            'clave_presupuestal' => 'nullable|string|max:255',
+            'nivel_academico' => 'required|string|max:255',
+            'perfiles_jurado' => 'nullable|string|max:255',
+            'equipo_id' => 'required|exists:equipos,id',
+        ]);
+    
+        // Crear el asesor
+        Asesor::create($request->all());
+    
+        return response()->json(['message' => 'Asesor registrado correctamente.'], 201);
     }
 }
