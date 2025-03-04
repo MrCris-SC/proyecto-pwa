@@ -12,7 +12,6 @@ use App\Http\Controllers\ProyectosController;
 use App\Http\Controllers\EquipoController;
 use App\Models\Concursos;
 
-
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -39,32 +38,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/completar-perfil', [PerfilController::class, 'showForm'])->name('perfil.completar');
     Route::post('/completar-perfil', [PerfilController::class, 'guardarDatos'])->name('perfil.guardar');
 
-
-   // Rutas para editar y eliminar concursos
     Route::get('/concursos/{concurso}/edit', [ConcursoController::class, 'edit'])->name('concursos.edit');
     Route::put('/concursos/{concurso}', [ConcursoController::class, 'update'])->name('concursos.update');
     Route::delete('/concursos/{concurso}', [ConcursoController::class, 'destroy'])->name('concursos.destroy');
-    
+
     Route::get('/concursos', [ConcursoController::class, 'index'])->name('concursos.index');
     Route::post('/concursos', [ConcursoController::class, 'store'])->name('concursos.store');
 
-    
-
     Route::get('/api/modalidades', [ProyectosController::class, 'index']);
-    Route::post('/api/proyectos', [ProyectosController::class, 'store']) ->name('proyectos.store');
-    Route::post('/api/proyectos/{proyecto}/equipo', [ProyectosController::class, 'storeEquipo']);
+    Route::post('/api/proyectos', [ProyectosController::class, 'store'])->name('proyectos.store');
+    Route::post('/api/proyectos/{proyecto}/documentos', [ProyectosController::class, 'subirDocumento'])->name('proyectos.documentos.subir');
+    Route::put('/api/proyectos/{proyecto}/documentos/{documento}', [ProyectosController::class, 'editarDocumento'])->name('proyectos.documentos.editar');
     Route::get('/api/estados/{estado}/planteles', [PerfilController::class, 'getPlanteles']);
     Route::get('/proyectos/{id}/pdf', [ProyectosController::class, 'pruebaVista'])->name('generar');
     Route::get('/generar-pdf', [ProyectosController::class, 'generarPDF'])->name('proyectos.pdf');
+
+    Route::get('/gestion-de-proyectos', [ProyectosController::class, 'gestionProyectos'])->name('gestion.proyectos');
+    Route::post('/concursos/{concurso}/inscribirse', [ProyectosController::class, 'inscribirse'])->name('concursos.inscribirse');
 });
 
 Route::get('/new-user', [RegisterController::class, 'showRegistrationForm'])->middleware(['auth'])->name('new.user');
 Route::post('/register-store', [RegisterController::class, 'register'])->name('register.store');
 
-
-
 Route::get('/api/estados', [PerfilController::class, 'getEstados']);
 Route::get('/api/estados/{estado}/municipios', [PerfilController::class, 'getMunicipios']);
-
 
 require __DIR__.'/auth.php';

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed  } from 'vue';
+import { ref, computed } from 'vue';
 import { usePage, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import MenuLateral from '@/ComponentsConcursos/MenuLateral.vue';
@@ -7,6 +7,7 @@ import TarjetaCrearConcurso from '@/Components/TarjetaCrearConcurso.vue';
 import TarjetaConcurso from '@/Components/TarjetaConcurso.vue';
 import NuevoConcurso from '@/ComponentsConcursos/NuevoConcurso.vue';
 import RegistroProyectos from '@/ComponentsConcursos/RegistroProyectos.vue';
+import GestionProyectos from '@/Pages/ConcursosLayouts/GestionProyectos.vue'; // nuevo componente
 
 const selectedMenu = ref('Concursos');
 const showForm = ref(false);
@@ -35,11 +36,14 @@ const obtenerConcursoEnPantalla = () => {
 const handleMenuSelected = (menu) => {
   selectedMenu.value = menu.toLowerCase(); // forzamos a minúsculas
   showForm.value = selectedMenu.value !== 'concursos';
-  if (selectedMenu.value === 'concursos') {
+  if (selectedMenu.value === 'gestión de proyectos') {
+    router.get(route('gestion.proyectos'));
+  } else if (selectedMenu.value === 'concursos') {
     concursoSeleccionado.value = null;
     obtenerConcursoEnPantalla();
   }
 };
+
 
 
 const handleDownloadPDF = () => {
@@ -76,9 +80,15 @@ const handleCloseForm = () => {
 
 const handleConcursoClick = (concurso) => {
   if (concurso && concurso.id) {
-    selectedMenu.value = 'registro';
-    showForm.value = true;
-    concursoSeleccionado.value = concurso.id;
+    if (inscrito.value) {
+      // Si ya está inscrito, redirigir a "Gestión de proyectos"
+      router.get(route('gestion.proyectos'));
+    } else {
+      // Si no está inscrito, mostrar el formulario de registro
+      selectedMenu.value = 'registro';
+      showForm.value = true;
+      concursoSeleccionado.value = concurso.id;
+    }
   } else {
     console.error('Invalid concurso object:', concurso);
   }
@@ -104,7 +114,7 @@ obtenerConcursoEnPantalla();
       <!-- Contenido principal -->
       <main class="w-full max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-lg">
         <h2 class="text-2xl font-bold mb-6 text-[#611232]">
-          {{ selectedMenu.charAt(0).toUpperCase() + selectedMenu.slice(1) }}
+          {{ selectedMenu ? selectedMenu.charAt(0).toUpperCase() + selectedMenu.slice(1) : '' }}
         </h2>
 
         <!-- Contenedor flex para el botón -->
@@ -124,6 +134,7 @@ obtenerConcursoEnPantalla();
           <RegistroProyectos v-if="selectedMenu === 'registro'" :concurso-id="concursoSeleccionado" @close="handleCloseForm" />
         </div>
 
+       
         <!-- Tarjetas de concursos -->
         <div v-if="selectedMenu === 'concursos'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <TarjetaCrearConcurso 

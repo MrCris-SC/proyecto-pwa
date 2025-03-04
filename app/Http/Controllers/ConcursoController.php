@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Concursos;
+use App\Models\User;
 
 class ConcursoController extends Controller
 {
@@ -18,6 +19,7 @@ class ConcursoController extends Controller
         $user = auth()->user();
         $concursos = Concursos::with('plantel.estado')->get();
         $success = request()->query('success', '');
+
         // Si el usuario es líder y ya está inscrito en un concurso, filtrar la lista
         if ($user->rol === 'lider') {
             if ($user->concurso_registrado_id) {
@@ -32,7 +34,11 @@ class ConcursoController extends Controller
         // Pasar información de inscripción del usuario
         $inscrito = $user->concurso_registrado_id ? true : false;
 
-        return Inertia::render('ConcursosLayouts/Concursos', ['concursos' => $concursos, 'inscrito' => $inscrito,'flash' => ['success' => $success]]);
+        return Inertia::render('ConcursosLayouts/Concursos', [
+            'concursos' => $concursos,
+            'inscrito' => $inscrito,
+            'flash' => ['success' => $success]
+        ]);
     }
 
     /**
@@ -42,27 +48,27 @@ class ConcursoController extends Controller
      * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
-{
-    // Validar y almacenar el concurso
-    $request->validate([
-        'nombre' => 'required|string|max:255',
-        'descripcion' => 'required|string',
-        'fecha_inicio' => 'required|date',
-        'fecha_terminacion' => 'required|date|after_or_equal:fecha_inicio',
-        'fase' => 'required|string',
-        'estado' => 'required_if:fase,estatal,nacional|nullable|integer|exists:estados,idestado',
-        'plantel_id' => 'required_if:fase,nacional|nullable|integer|exists:planteles,id_plantel',
-    ]);
+    {
+        // Validar y almacenar el concurso
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'descripcion' => 'required|string',
+            'fecha_inicio' => 'required|date',
+            'fecha_terminacion' => 'required|date|after_or_equal:fecha_inicio',
+            'fase' => 'required|string',
+            'estado' => 'required_if:fase,estatal,nacional|nullable|integer|exists:estados,idestado',
+            'plantel_id' => 'required_if:fase,nacional|nullable|integer|exists:planteles,id_plantel',
+        ]);
 
-    // Agregar el status del concurso
-    $request['status'] = 'abierto';
-    $request['fecha_apertura'] = now()->toDateString();
+        // Agregar el status del concurso
+        $request['status'] = 'abierto';
+        $request['fecha_apertura'] = now()->toDateString();
 
-    // Crear el concurso
-    $concurso = Concursos::create($request->all());
+        // Crear el concurso
+        $concurso = Concursos::create($request->all());
 
-    return redirect()->route('concursos.index')->with('success', 'Concurso creado exitosamente.');
-} 
+        return redirect()->route('concursos.index')->with('success', 'Concurso creado exitosamente.');
+    }
 
     /**
      * Muestra la página de edición de un concurso.
@@ -119,5 +125,33 @@ class ConcursoController extends Controller
 
         // Redirigir con un mensaje de éxito
         return redirect()->route('concursos.index')->with('success', 'Concurso eliminado exitosamente.');
+    }
+
+    /**
+     * Inscribe al líder en un concurso.
+     *
+     * @param  int  $concursoId
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function inscribirse($concursoId)
+    {
+        $user = auth()->user();
+
+        // Verificar si el líder ya está inscrito en un concurso
+        if ($user->concurso_registrado_id) {
+            return redirect()->route('gestion-de-proyectos')->with('error', 'Ya estás inscrito en un concurso.');
+        }
+
+        // Verificar si el concurso existe
+        $concurso = Concursos::find($concursoId);
+        if (!$concurso) {
+            return redirect()->route('concursos.index')->with('error', 'El concurso no existe.');
+        }
+
+        // Inscribir al líder en el concurso
+        $user->concurso_registrado_id = $concursoId;
+        $user->save();
+
+        return redirect()->route('gestion-de-proyectos')->with('success', 'Inscripción exitosa.');
     }
 }
