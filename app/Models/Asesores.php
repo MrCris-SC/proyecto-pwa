@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Asesor extends Model
+class Asesores extends Model
 {
     use HasFactory;
+    
+    protected $table = 'asesores';
 
     // Campos que se pueden asignar masivamente
     protected $fillable = [
