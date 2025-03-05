@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use App\Models\Linea;
 use App\Models\Equipo;
 use App\Models\Proyectos;
-use App\Models\Asesor;
+use App\Models\Asesores;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -146,22 +146,54 @@ class ProyectosController extends Controller
     }
 
     public function registrarAsesor(Request $request)
-    {
-        // Validar los datos del formulario
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'email' => 'required|email|unique:asesores,email',
-            'telefono' => 'required|string|max:15',
-            'tipo_asesor' => 'required|in:Técnico,Metodológico',
-            'clave_presupuestal' => 'nullable|string|max:255',
-            'nivel_academico' => 'required|string|max:255',
-            'perfiles_jurado' => 'nullable|string|max:255',
-            'equipo_id' => 'required|exists:equipos,id',
-        ]);
-    
-        // Crear el asesor
-        Asesor::create($request->all());
-    
-        return response()->json(['message' => 'Asesor registrado correctamente.'], 201);
+{
+    $validator = Validator::make($request->all(), [
+        'asesorTecnico.nombre' => 'nullable|string|max:255',
+        'asesorTecnico.tipo' => 'nullable|string',
+        'asesorTecnico.clavePresupuestal' => 'nullable|string|max:255',
+        'asesorTecnico.nivelAcademico' => 'nullable|string|max:255',
+        'asesorTecnico.correo' => 'nullable|email|max:255',
+        'asesorTecnico.telefono' => 'nullable|string|max:15',
+        'asesorMetodologico.nombre' => 'nullable|string|max:255',
+        'asesorMetodologico.nivelAcademico' => 'nullable|string|max:255',
+        'asesorMetodologico.correo' => 'nullable|email|max:255',
+        'asesorMetodologico.telefono' => 'nullable|string|max:15',
+    ]);
+
+    if ($validator->fails()) {
+        return redirect()->back()->withErrors($validator)->withInput();
     }
+
+    try {
+        $equipoId = Auth::user()->equipo_id;
+
+        if ($request->filled('asesorTecnico.nombre')) {
+            Asesores::create([
+                'nombre' => $request->asesorTecnico['nombre'],
+                'email' => $request->asesorTecnico['correo'],
+                'telefono' => $request->asesorTecnico['telefono'],
+                'tipo_asesor' => $request->asesorTecnico['tipo'],
+                'clave_presupuestal' => $request->asesorTecnico['clavePresupuestal'],
+                'nivel_academico' => $request->asesorTecnico['nivelAcademico'],
+                'equipo_id' => $equipoId,               
+            ]);
+        }
+
+        if ($request->filled('asesorMetodologico.nombre')) {
+            Asesores::create([
+                'nombre' => $request->asesorMetodologico['nombre'],
+                'email' => $request->asesorMetodologico['correo'],
+                'telefono' => $request->asesorMetodologico['telefono'],
+                'tipo_asesor' => 'Metodológico',
+                'nivel_academico' => $request->asesorMetodologico['nivelAcademico'],
+                'equipo_id' => $equipoId,
+            ]);
+        }
+
+        return redirect()->route('dashboard')->with('success', 'Asesores registrados exitosamente.');
+    } catch (\Exception $e) {
+        Log::error('Error al registrar asesores: ' . $e->getMessage());
+        return redirect()->back()->with('error', 'Error al registrar asesores.');
+    }
+}
 }

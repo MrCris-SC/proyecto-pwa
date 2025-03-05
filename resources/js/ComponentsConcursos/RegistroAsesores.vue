@@ -166,7 +166,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import axios from 'axios';
+import { useForm } from '@inertiajs/vue3';
 
 // Datos del formulario de asesores
 const asesorTecnico = ref({
@@ -288,7 +288,6 @@ const perfilesDisponibles = [
   "Otro"
 ];
 
-
 const categoriasPerfiles = computed(() => {
   const categorias = [
     { nombre: 'Ingenierías', perfiles: [] },
@@ -324,33 +323,23 @@ const cerrar = () => {
   emit('close');
 };
 
-// Función para registrar asesores
 const registrarAsesores = async () => {
-  if (perfilJurado.value.length > 3) {
-    alert('Solo puedes seleccionar hasta 3 perfiles de jurado.');
-    return;
-  }
+  const form = useForm({
+    asesorTecnico: asesorTecnico.value,
+    asesorMetodologico: asesorMetodologico.value,
+    perfilJurado: perfilJurado.value,
+  });
 
-  try {
-    const equipoId = props.equipoId; // Obtener el equipo_id desde las props
-    const response = await axios.post('/registrar-asesor', {
-      nombre: asesorTecnico.value.nombre,
-      email: asesorTecnico.value.correo,
-      telefono: asesorTecnico.value.telefono,
-      tipo_asesor: asesorTecnico.value.tipo,
-      clave_presupuestal: asesorTecnico.value.clavePresupuestal,
-      nivel_academico: asesorTecnico.value.nivelAcademico,
-      perfiles_jurado: perfilJurado.value.join(', '), // Convertir array a string
-      equipo_id: equipoId, // Usar el equipo_id pasado como prop
-    });
-
-    console.log('Asesores registrados:', response.data);
-    alert('Asesores registrados exitosamente.');
-    cerrar(); // Cierra el modal después de registrar
-  } catch (error) {
-    console.error('Error al registrar asesores:', error);
-    alert('Hubo un error al registrar los asesores.');
-  }
+  form.post('/registrar-asesor', {
+    onSuccess: () => {
+      alert('Asesores registrados exitosamente.');
+      cerrar();
+    },
+    onError: (errors) => {
+      console.error('Error al registrar asesores:', errors);
+      alert('Hubo un error al registrar los asesores.');
+    },
+  });
 };
 
 // Definir las props
