@@ -54,7 +54,7 @@ class ProyectosController extends Controller
 
         try {
             $proyecto = Proyectos::create($request->only([
-            'nombre', 'categoria', 'modalidad_id', 'linea_investigacion_id', 'concurso_id',
+            'nombre', 'categoria', 'modalidad_id', 'linea_investigacion_id', 'concurso_id','perfil_jurado'
             ]));
 
             $equipoId = Equipo::generarCodigoEquipo();
@@ -70,7 +70,7 @@ class ProyectosController extends Controller
 
             
 
-
+            // Crear los participantes del equipo
             foreach ($request->equipo as $integranteData) {
                 Participantes::create([
                     'equipo_id' => $equipo->id,
