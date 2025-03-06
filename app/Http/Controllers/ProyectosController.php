@@ -54,15 +54,22 @@ class ProyectosController extends Controller
 
         try {
             $proyecto = Proyectos::create($request->only([
-                'nombre', 'categoria', 'modalidad_id', 'linea_investigacion_id', 'concurso_id',
+            'nombre', 'categoria', 'modalidad_id', 'linea_investigacion_id', 'concurso_id',
             ]));
 
             $equipoId = Equipo::generarCodigoEquipo();
             $equipo = Equipo::create([
-                'id' => $equipoId,
-                'proyecto_id' => $proyecto->id,
-                'concurso_id' => $request->concurso_id,
+            'id' => $equipoId,
+            'proyecto_id' => $proyecto->id,
+            'concurso_id' => $request->concurso_id,
             ]);
+
+            // Actualizar el proyecto con la ID del equipo
+            $proyecto->equipo_id = $equipo->id;
+            $proyecto->save();
+
+            
+
 
             foreach ($request->equipo as $integranteData) {
                 Participantes::create([
@@ -189,6 +196,16 @@ class ProyectosController extends Controller
                 'equipo_id' => $equipoId,
             ]);
         }
+
+        if ($request->filled('perfilJurado')) {
+            $proyecto = Proyectos::where('equipo_id', $equipoId)->first();
+            $proyecto->perfil_jurado = json_encode($request->perfilJurado);
+            $proyecto->save();
+        }
+        else {
+            log::info('No se ha enviado el perfil del jurado');
+        }
+        
 
         return redirect()->route('dashboard')->with('success', 'Asesores registrados exitosamente.');
     } catch (\Exception $e) {
