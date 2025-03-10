@@ -55,6 +55,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/gestion-de-proyectos', [ProyectosController::class, 'gestionProyectos'])->name('gestion.proyectos');
     Route::post('/concursos/{concurso}/inscribirse', [ProyectosController::class, 'inscribirse'])->name('concursos.inscribirse');
+
+    Route::post('/registrar-asesor', [ProyectosController::class, 'registrarAsesor'])->name('registrar.asesor');
 });
 
 Route::get('/new-user', [RegisterController::class, 'showRegistrationForm'])->middleware(['auth'])->name('new.user');

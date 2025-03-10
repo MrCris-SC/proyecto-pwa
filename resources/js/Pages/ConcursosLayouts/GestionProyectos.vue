@@ -1,18 +1,13 @@
 <script setup>
-
 import { ref, onMounted } from 'vue';
 import { usePage, router } from '@inertiajs/vue3';
-import RegistroAsesores from '../../ComponentsConcursos/RegistroAsesores.vue';
-
-import RegistroAsesoresdos from '@/Components/RegistroAsesoresdos.vue';
+import RegistroAsesores from '../../ComponentsConcursos/RegistroAsesores.vue'; // Importa desde ComponentsConcursos
 import ResumenProyecto from '@/Components/ResumenProyecto.vue';
 import InscripcionConcurso from '@/Components/InscripcionConcurso.vue';
 import DocumentosTable from '@/Components/DocumentosTable.vue';
-
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';    
 import MenuLateral from '@/ComponentsConcursos/MenuLateral.vue';
 import axios from 'axios';
-
 
 const mostrarFormulario = ref(false);
 
@@ -110,7 +105,7 @@ const handleMenuSelected = (menu) => {
           <!-- Registro de Asesores -->
           <div v-if="showForm" class="relative">
             <div v-if="mostrarFormulario" class="mb-8 relative">
-              <RegistroAsesores @close="handleCloseForm" />
+              <RegistroAsesores @close="handleCloseForm"/> <!-- Usa el componente desde ComponentsConcursos -->
             </div>
           </div>
 
