@@ -11,6 +11,7 @@ import axios from 'axios';
 
 const mostrarFormulario = ref(false);
 
+
 const { props } = usePage();
 const showForm = ref(false);
 const proyecto = ref(props.proyecto || {});
@@ -79,14 +80,14 @@ const inscribirse = () => {
   });
 };
 
-const handleCloseForm = () => {
-  mostrarFormulario.value = false;
-  showForm.value = false;
-};
-
 const handleRegistroAsesores = () => {
   mostrarFormulario.value = true;
   showForm.value = true;
+};
+
+const handleCloseForm = () => {
+  mostrarFormulario.value = false;
+  showForm.value = false;
 };
 
 const handleMenuSelected = (menu) => {
@@ -105,6 +106,7 @@ const handleFilesDropped = (files) => {
     documentos.value.push({ nombre: file.name, estado: 'Completado' });
   });
 };
+
 </script>
 
 <template>
@@ -124,13 +126,18 @@ const handleFilesDropped = (files) => {
 
         <div class="p-8 bg-white rounded-lg shadow-lg">
           <!-- Inscripción al Concurso -->
-          <InscripcionConcurso :inscrito="inscrito" @inscribirse="inscribirse" />
+          <InscripcionConcurso v-if="!mostrarFormulario" :inscrito="inscrito" @inscribirse="inscribirse" />
 
           <!-- Resumen del Proyecto -->
-          <ResumenProyecto :proyecto="proyecto" />
+          <ResumenProyecto v-if="!mostrarFormulario" :proyecto="proyecto" />
 
-          <!-- Botón para abrir el formulario de registro de asesores -->
-            <div class="mb-8" v-if="!mostrarFormulario && !asesorescheck">
+          <!-- Información sobre el registro de asesores -->
+          <div class="mb-8" v-if="!mostrarFormulario && !asesorescheck">
+            <h3 class="text-xl font-semibold text-[#611232] mb-2">Registro de Asesores</h3>
+            <p class="text-gray-700 mb-4">
+              Para completar tu inscripción, es necesario registrar a los asesores que guiarán tu proyecto. 
+              Debes registrar un asesor técnico y un asesor metodológico.
+            </p>
             <button 
               class="bg-[#611232] text-white px-6 py-2 rounded-lg hover:bg-[#8A1C4A] transition duration-200"
               @click="handleRegistroAsesores"
@@ -138,6 +145,7 @@ const handleFilesDropped = (files) => {
               Registrar Asesores
             </button>
           </div>
+
           <!-- Registro de Asesores -->
           <div v-if="showForm" class="relative">
             <div v-if="mostrarFormulario" class="mb-8 relative">
@@ -147,6 +155,7 @@ const handleFilesDropped = (files) => {
 
           <!-- Documentación Requerida -->
           <DocumentosTable
+            v-if="!mostrarFormulario"
             :documentos="documentos"
             @subir-documento="subirDocumento"
             @editar-documento="editarDocumento"
