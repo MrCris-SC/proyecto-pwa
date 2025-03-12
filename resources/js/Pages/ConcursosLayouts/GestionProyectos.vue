@@ -130,7 +130,7 @@ const handleFilesDropped = (files) => {
           <ResumenProyecto :proyecto="proyecto" />
 
           <!-- Botón para abrir el formulario de registro de asesores -->
-            <div class="mb-8" v-if="!mostrarFormulario && !foregcheck">
+            <div class="mb-8" v-if="!mostrarFormulario && !asesorescheck">
             <button 
               class="bg-[#611232] text-white px-6 py-2 rounded-lg hover:bg-[#8A1C4A] transition duration-200"
               @click="handleRegistroAsesores"
