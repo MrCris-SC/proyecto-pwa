@@ -14,6 +14,7 @@ const mostrarFormulario = ref(false);
 const { props } = usePage();
 const showForm = ref(false);
 const proyecto = ref(props.proyecto || {});
+const foregcheck = ref(props.foregcheck || false); // Agregar foregcheck
 
 // Inicializa la lista de documentos con los tres documentos requeridos
 const documentos = ref([
@@ -129,8 +130,8 @@ const handleFilesDropped = (files) => {
           <ResumenProyecto :proyecto="proyecto" />
 
           <!-- Botón para abrir el formulario de registro de asesores -->
-          <div class="mb-8" v-if="!mostrarFormulario">
-            <button
+            <div class="mb-8" v-if="!mostrarFormulario && !foregcheck">
+            <button 
               class="bg-[#611232] text-white px-6 py-2 rounded-lg hover:bg-[#8A1C4A] transition duration-200"
               @click="handleRegistroAsesores"
             >
