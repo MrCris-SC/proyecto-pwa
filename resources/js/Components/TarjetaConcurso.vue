@@ -64,7 +64,7 @@
         </div>
 
         <!-- Iconos de acciones -->
-        <div class="absolute bottom-4 right-4 flex space-x-3">
+        <div v-if="isAdmin" class="absolute bottom-4 right-4 flex space-x-3">
             <!-- Icono de editar -->
             <div class="relative group">
                 <button 
@@ -114,7 +114,8 @@ const props = defineProps({
   fechaInicio: String,
   fechaApertura: String,
   fechaFinalizacion: String,
-  inscrito: Boolean
+  inscrito: Boolean,
+  isAdmin: Boolean
 });
 
 const emit = defineEmits(['click', 'editar', 'eliminar']);

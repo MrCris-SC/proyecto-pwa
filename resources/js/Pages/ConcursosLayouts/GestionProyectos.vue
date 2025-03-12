@@ -10,12 +10,12 @@ import MenuLateral from '@/ComponentsConcursos/MenuLateral.vue';
 import axios from 'axios';
 
 const mostrarFormulario = ref(false);
-
+const selectedMenu = ref('Gestión de proyectos'); // Agregar selectedMenu con valor inicial
 
 const { props } = usePage();
 const showForm = ref(false);
 const proyecto = ref(props.proyecto || {});
-const asesorescheck = ref(props.asesorescheck || false); // Agregar foregcheck
+const foregcheck = ref(props.asesorescheck || false); // Agregar foregcheck
 
 // Inicializa la lista de documentos con los tres documentos requeridos
 const documentos = ref([
