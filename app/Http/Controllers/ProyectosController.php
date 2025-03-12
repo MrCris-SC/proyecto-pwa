@@ -130,14 +130,14 @@ class ProyectosController extends Controller
             ->first();
 
          // Obtener el valor de foregcheck desde la tabla equipos
-         $foregcheck = $proyecto && $proyecto->equipo ? $proyecto->equipo->foregcheck : false;
+         $asesorescheck = $proyecto && $proyecto->equipo ? $proyecto->equipo->asesorescheck : false;
 
 
         return Inertia::render('ConcursosLayouts/GestionProyectos', [
             'inscrito' => $inscrito,
             'concursoId' => $user->concurso_registrado_id,
             'proyecto' => $proyecto,
-            'foregcheck' => $foregcheck, // Pasar foregcheck a la vista
+            'foregcheck' => $asesorescheck, // Pasar foregcheck a la vista
         ]);
     }
 
@@ -158,64 +158,61 @@ class ProyectosController extends Controller
     }
 
     public function registrarAsesor(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'asesorTecnico.nombre' => 'nullable|string|max:255',
-        'asesorTecnico.tipo' => 'nullable|string',
-        'asesorTecnico.clavePresupuestal' => 'nullable|string|max:255',
-        'asesorTecnico.nivelAcademico' => 'nullable|string|max:255',
-        'asesorTecnico.correo' => 'nullable|email|max:255',
-        'asesorTecnico.telefono' => 'nullable|string|max:15',
-        'asesorMetodologico.nombre' => 'nullable|string|max:255',
-        'asesorMetodologico.nivelAcademico' => 'nullable|string|max:255',
-        'asesorMetodologico.correo' => 'nullable|email|max:255',
-        'asesorMetodologico.telefono' => 'nullable|string|max:15',
-    ]);
+    {
+        $validator = Validator::make($request->all(), [
+            'asesorTecnico.nombre' => 'nullable|string|max:255',
+            'asesorTecnico.tipo' => 'nullable|string',
+            'asesorTecnico.clavePresupuestal' => 'nullable|string|max:255',
+            'asesorTecnico.nivelAcademico' => 'nullable|string|max:255',
+            'asesorTecnico.correo' => 'nullable|email|max:255',
+            'asesorTecnico.telefono' => 'nullable|string|max:15',
+            'asesorMetodologico.nombre' => 'nullable|string|max:255',
+            'asesorMetodologico.nivelAcademico' => 'nullable|string|max:255',
+            'asesorMetodologico.correo' => 'nullable|email|max:255',
+            'asesorMetodologico.telefono' => 'nullable|string|max:15',
+        ]);
 
-    if ($validator->fails()) {
-        return redirect()->back()->withErrors($validator)->withInput();
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        try {
+            $equipoId = Auth::user()->equipo_id;
+
+            if ($request->filled('asesorTecnico.nombre')) {
+                Asesores::create([
+                    'nombre' => $request->asesorTecnico['nombre'],
+                    'email' => $request->asesorTecnico['correo'],
+                    'telefono' => $request->asesorTecnico['telefono'],
+                    'tipo_asesor' => $request->asesorTecnico['tipo'],
+                    'clave_presupuestal' => $request->asesorTecnico['clavePresupuestal'],
+                    'nivel_academico' => $request->asesorTecnico['nivelAcademico'],
+                    'equipo_id' => $equipoId,               
+                ]);
+            }
+
+            if ($request->filled('asesorMetodologico.nombre')) {
+                Asesores::create([
+                    'nombre' => $request->asesorMetodologico['nombre'],
+                    'email' => $request->asesorMetodologico['correo'],
+                    'telefono' => $request->asesorMetodologico['telefono'],
+                    'tipo_asesor' => 'Metodológico',
+                    'nivel_academico' => $request->asesorMetodologico['nivelAcademico'],
+                    'equipo_id' => $equipoId,
+                ]);
+            }
+
+           
+
+            // Actualizar el campo asesorescheck a true en la tabla equipo
+            $equipo = Equipo::find($equipoId);
+            $equipo->asesorescheck = true;
+            $equipo->save();
+
+            return redirect()->route('dashboard')->with('success', 'Asesores registrados exitosamente.');
+        } catch (\Exception $e) {
+            Log::error('Error al registrar asesores: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al registrar asesores.');
+        }
     }
-
-    try {
-        $equipoId = Auth::user()->equipo_id;
-
-        if ($request->filled('asesorTecnico.nombre')) {
-            Asesores::create([
-                'nombre' => $request->asesorTecnico['nombre'],
-                'email' => $request->asesorTecnico['correo'],
-                'telefono' => $request->asesorTecnico['telefono'],
-                'tipo_asesor' => $request->asesorTecnico['tipo'],
-                'clave_presupuestal' => $request->asesorTecnico['clavePresupuestal'],
-                'nivel_academico' => $request->asesorTecnico['nivelAcademico'],
-                'equipo_id' => $equipoId,               
-            ]);
-        }
-
-        if ($request->filled('asesorMetodologico.nombre')) {
-            Asesores::create([
-                'nombre' => $request->asesorMetodologico['nombre'],
-                'email' => $request->asesorMetodologico['correo'],
-                'telefono' => $request->asesorMetodologico['telefono'],
-                'tipo_asesor' => 'Metodológico',
-                'nivel_academico' => $request->asesorMetodologico['nivelAcademico'],
-                'equipo_id' => $equipoId,
-            ]);
-        }
-
-        if ($request->filled('perfilJurado')) {
-            $proyecto = Proyectos::where('equipo_id', $equipoId)->first();
-            $proyecto->perfil_jurado = json_encode($request->perfilJurado);
-            $proyecto->save();
-        }
-        else {
-            log::info('No se ha enviado el perfil del jurado');
-        }
-        
-
-        return redirect()->route('dashboard')->with('success', 'Asesores registrados exitosamente.');
-    } catch (\Exception $e) {
-        Log::error('Error al registrar asesores: ' . $e->getMessage());
-        return redirect()->back()->with('error', 'Error al registrar asesores.');
-    }
-}
 }
