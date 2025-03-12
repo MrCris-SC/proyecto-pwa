@@ -1,26 +1,63 @@
 <template>
   <div class="mb-8">
     <h2 class="text-xl font-semibold text-[#611232] mb-4">Documentación Requerida</h2>
-    <table class="w-full border-collapse">
-      <thead>
-        <tr class="bg-[#8A1C4A] text-white">
-          <th class="p-3 text-left">Documento</th>
-          <th class="p-3 text-left">Estado</th>
-          <th class="p-3 text-left">Acción</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="documentos.length === 0">
-          <td colspan="3" class="p-3 text-center text-gray-500">No hay documentos requeridos.</td>
-        </tr>
-        <tr v-for="(doc, index) in documentos" :key="doc.nombre" class="border-b hover:bg-gray-50">
-          <td class="p-3">{{ doc.nombre }}</td>
-          <td class="p-3">
-            <span :class="doc.estado === 'Completado' ? 'text-green-600' : 'text-yellow-600'">
+
+    <!-- Tabla para pantallas grandes (md en adelante) -->
+    <div class="hidden md:block">
+      <table class="w-full border-collapse">
+        <thead>
+          <tr class="bg-[#8A1C4A] text-white">
+            <th class="p-3 text-left">Documento</th>
+            <th class="p-3 text-left">Estado</th>
+            <th class="p-3 text-left">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-if="documentos.length === 0">
+            <td colspan="3" class="p-3 text-center text-gray-500">No hay documentos requeridos.</td>
+          </tr>
+          <tr v-for="(doc, index) in documentos" :key="doc.nombre" class="border-b hover:bg-gray-50">
+            <td class="p-3">{{ doc.nombre }}</td>
+            <td class="p-3">
+              <span :class="doc.estado === 'Completado' ? 'text-green-600' : 'text-yellow-600'">
+                {{ doc.estado }}
+              </span>
+            </td>
+            <td class="p-3">
+              <button
+                v-if="doc.estado === 'Pendiente'"
+                class="bg-[#611232] text-white px-3 py-1 rounded hover:bg-[#8A1C4A] transition duration-200"
+                @click="openUploadModal(index)"
+              >
+                Subir
+              </button>
+              <button
+                v-else
+                class="bg-[#8A1C4A] text-white px-3 py-1 rounded hover:bg-[#611232] transition duration-200"
+                @click="$emit('editar-documento', doc)"
+              >
+                Editar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Lista para pantallas pequeñas (sm y menos) -->
+    <div class="md:hidden">
+      <div v-if="documentos.length === 0" class="p-3 text-center text-gray-500">
+        No hay documentos requeridos.
+      </div>
+      <div v-for="(doc, index) in documentos" :key="doc.nombre" class="border-b p-3 hover:bg-gray-50">
+        <div class="flex justify-between items-center">
+          <div>
+            <p class="font-semibold">{{ doc.nombre }}</p>
+            <p :class="doc.estado === 'Completado' ? 'text-green-600' : 'text-yellow-600'">
               {{ doc.estado }}
-            </span>
-          </td>
-          <td class="p-3">
+            </p>
+          </div>
+          <div>
             <button
               v-if="doc.estado === 'Pendiente'"
               class="bg-[#611232] text-white px-3 py-1 rounded hover:bg-[#8A1C4A] transition duration-200"
@@ -35,10 +72,10 @@
             >
               Editar
             </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Modal para subir archivos -->
     <div v-if="showUploadModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
