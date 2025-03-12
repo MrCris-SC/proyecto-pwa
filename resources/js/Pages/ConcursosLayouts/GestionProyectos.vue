@@ -1,11 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { usePage, router } from '@inertiajs/vue3';
-import RegistroAsesores from '../../ComponentsConcursos/RegistroAsesores.vue'; // Importa desde ComponentsConcursos
+import RegistroAsesores from '../../ComponentsConcursos/RegistroAsesores.vue';
 import ResumenProyecto from '@/Components/ResumenProyecto.vue';
 import InscripcionConcurso from '@/Components/InscripcionConcurso.vue';
 import DocumentosTable from '@/Components/DocumentosTable.vue';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';    
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import MenuLateral from '@/ComponentsConcursos/MenuLateral.vue';
 import axios from 'axios';
 
@@ -14,7 +14,15 @@ const mostrarFormulario = ref(false);
 const { props } = usePage();
 const showForm = ref(false);
 const proyecto = ref(props.proyecto || {});
-const documentos = ref([]);
+const foregcheck = ref(props.foregcheck || false); // Agregar foregcheck
+
+// Inicializa la lista de documentos con los tres documentos requeridos
+const documentos = ref([
+  { nombre: 'Formato de Registro (FOREG)', estado: 'Pendiente' },
+  { nombre: 'Formato de Autorización de Participación (FOAPA)', estado: 'Pendiente' },
+  { nombre: 'Compromiso de Ética y Originalidad (FOCOMO)', estado: 'Pendiente' },
+]);
+
 const inscrito = ref(props.inscrito || false);
 
 onMounted(async () => {
@@ -22,19 +30,36 @@ onMounted(async () => {
     try {
       const response = await axios.get(`/api/proyectos/${props.auth.user.proyecto_id}`);
       proyecto.value = response.data.proyecto || {};
-      documentos.value = response.data.documentos || [];
+      // Si hay documentos en la respuesta, actualiza la lista
+      if (response.data.documentos && response.data.documentos.length > 0) {
+        documentos.value = response.data.documentos;
+      }
     } catch (error) {
       console.error('Error al obtener los datos del proyecto:', error);
     }
   } else {
     proyecto.value = {};
-    documentos.value = [];
   }
 });
 
-const subirDocumento = (documento) => {
-  console.log('Subir documento:', documento);
-  // Lógica para subir el documento
+const subirDocumento = ({ index, file }) => {
+  console.log('Subir documento:', file);
+  // Aquí puedes agregar la lógica para subir el archivo al servidor
+  // Por ejemplo, usando axios para enviar el archivo
+  const formData = new FormData();
+  formData.append('file', file);
+
+  axios.post('/api/subir-documento', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }).then(response => {
+    // Si la subida es exitosa, actualiza el estado del documento
+    documentos.value[index].estado = 'Completado';
+    documentos.value[index].fecha = new Date().toISOString().split('T')[0]; // Fecha actual
+  }).catch(error => {
+    console.error('Error al subir el documento:', error);
+  });
 };
 
 const editarDocumento = (documento) => {
@@ -71,6 +96,15 @@ const handleMenuSelected = (menu) => {
     router.get(route('gestion.proyectos'));
   }
 };
+
+const handleFilesDropped = (files) => {
+  console.log('Archivos subidos:', files);
+  // Aquí puedes agregar la lógica para actualizar la lista de documentos
+  // Por ejemplo, agregar los archivos subidos a la lista de documentos
+  files.forEach(file => {
+    documentos.value.push({ nombre: file.name, estado: 'Completado' });
+  });
+};
 </script>
 
 <template>
@@ -92,31 +126,31 @@ const handleMenuSelected = (menu) => {
           <!-- Inscripción al Concurso -->
           <InscripcionConcurso :inscrito="inscrito" @inscribirse="inscribirse" />
 
+          <!-- Resumen del Proyecto -->
+          <ResumenProyecto :proyecto="proyecto" />
+
           <!-- Botón para abrir el formulario de registro de asesores -->
-          <div class="mb-8" v-if="!mostrarFormulario">
-            <button
+            <div class="mb-8" v-if="!mostrarFormulario && !foregcheck">
+            <button 
               class="bg-[#611232] text-white px-6 py-2 rounded-lg hover:bg-[#8A1C4A] transition duration-200"
               @click="handleRegistroAsesores"
             >
               Registrar Asesores
             </button>
           </div>
-
           <!-- Registro de Asesores -->
           <div v-if="showForm" class="relative">
             <div v-if="mostrarFormulario" class="mb-8 relative">
-              <RegistroAsesores @close="handleCloseForm"/> <!-- Usa el componente desde ComponentsConcursos -->
+              <RegistroAsesores @close="handleCloseForm"/>
             </div>
           </div>
-
-          <!-- Resumen del Proyecto -->
-          <ResumenProyecto :proyecto="proyecto" />
 
           <!-- Documentación Requerida -->
           <DocumentosTable
             :documentos="documentos"
             @subir-documento="subirDocumento"
             @editar-documento="editarDocumento"
+            @files-dropped="handleFilesDropped"
           />
         </div>
       </main>
