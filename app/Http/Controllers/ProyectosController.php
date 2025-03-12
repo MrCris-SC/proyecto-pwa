@@ -129,10 +129,15 @@ class ProyectosController extends Controller
             })
             ->first();
 
+         // Obtener el valor de foregcheck desde la tabla equipos
+         $foregcheck = $proyecto && $proyecto->equipo ? $proyecto->equipo->foregcheck : false;
+
+
         return Inertia::render('ConcursosLayouts/GestionProyectos', [
             'inscrito' => $inscrito,
             'concursoId' => $user->concurso_registrado_id,
             'proyecto' => $proyecto,
+            'foregcheck' => $foregcheck, // Pasar foregcheck a la vista
         ]);
     }
 
