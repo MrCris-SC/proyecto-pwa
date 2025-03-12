@@ -15,7 +15,7 @@ const selectedMenu = ref('Gestión de proyectos'); // Agregar selectedMenu con v
 const { props } = usePage();
 const showForm = ref(false);
 const proyecto = ref(props.proyecto || {});
-const foregcheck = ref(props.asesorescheck || false); // Agregar foregcheck
+const asesorescheck = ref(props.asesorescheck || false); // Agregar foregcheck
 
 // Inicializa la lista de documentos con los tres documentos requeridos
 const documentos = ref([
