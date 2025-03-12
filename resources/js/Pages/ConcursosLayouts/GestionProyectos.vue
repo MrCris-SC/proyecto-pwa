@@ -15,7 +15,7 @@ const mostrarFormulario = ref(false);
 const { props } = usePage();
 const showForm = ref(false);
 const proyecto = ref(props.proyecto || {});
-const foregcheck = ref(props.foregcheck || false); // Agregar foregcheck
+const asesorescheck = ref(props.asesorescheck || false); // Agregar foregcheck
 
 // Inicializa la lista de documentos con los tres documentos requeridos
 const documentos = ref([
