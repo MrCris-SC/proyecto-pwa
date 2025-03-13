@@ -151,6 +151,7 @@ obtenerConcursoEnPantalla();
             :fechaApertura="concurso.fecha_apertura"
             :fechaFinalizacion="concurso.fecha_terminacion"
             :inscrito="inscrito"
+            :isAdmin="$page.props.auth.user.rol === 'admin'"
             @click="handleConcursoClick(concurso)"
             @editar="handleEditar"
             @eliminar="handleEliminar"

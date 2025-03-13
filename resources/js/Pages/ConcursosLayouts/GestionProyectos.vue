@@ -10,6 +10,7 @@ import MenuLateral from '@/ComponentsConcursos/MenuLateral.vue';
 import axios from 'axios';
 
 const mostrarFormulario = ref(false);
+const selectedMenu = ref('Gestión de proyectos'); // Agregar selectedMenu con valor inicial
 
 
 const { props } = usePage();
