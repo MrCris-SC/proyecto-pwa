@@ -137,7 +137,7 @@ class ProyectosController extends Controller
             'inscrito' => $inscrito,
             'concursoId' => $user->concurso_registrado_id,
             'proyecto' => $proyecto,
-            'foregcheck' => $asesorescheck, // Pasar foregcheck a la vista
+            'asesorescheck' => $asesorescheck, // Pasar foregcheck a la vista
         ]);
     }
 

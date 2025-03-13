@@ -18,7 +18,7 @@ class Equipo extends Model
         'id', 
         'proyecto_id', 
         'concurso_id',
-        'foregcheck',
+        'asesorescheck',
     ];
 
     // Método para generar un código único de 5 dígitos
