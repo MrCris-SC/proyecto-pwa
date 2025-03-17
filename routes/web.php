@@ -55,8 +55,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/gestion-de-proyectos', [ProyectosController::class, 'gestionProyectos'])->name('gestion.proyectos');
     Route::post('/concursos/{concurso}/inscribirse', [ProyectosController::class, 'inscribirse'])->name('concursos.inscribirse');
+    
 
     Route::post('/registrar-asesor', [ProyectosController::class, 'registrarAsesor'])->name('registrar.asesor');
+
+    // filepath: d:\proyecto\proyecto-pwa\routes\web.php
+    Route::get('/descargar-formatos', [ProyectosController::class, 'descargarFormatos'])->name('descargar.formatos');
+
+    // Ruta para descargar un formato individual
+    //Route::get('/descargar-formatos/{archivo}', [ProyectosController::class, 'descargarFormato'])->name('descargar.formato');
 });
 
 Route::get('/new-user', [RegisterController::class, 'showRegistrationForm'])->middleware(['auth'])->name('new.user');

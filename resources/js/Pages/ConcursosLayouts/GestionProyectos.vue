@@ -125,8 +125,12 @@ const handleFilesDropped = (files) => {
         </h2>
 
         <div class="p-8 bg-white rounded-lg shadow-lg">
-          <!-- Inscripción al Concurso -->
-          <InscripcionConcurso v-if="!mostrarFormulario" :inscrito="inscrito" @inscribirse="inscribirse" />
+          <!-- Mensaje de inscripción -->
+          <div v-if="inscrito" class="mb-4"> <!-- Ajusta el margen inferior aquí -->
+            <p class="text-green-600 font-semibold">
+              Ya estás inscrito en este concurso.
+            </p>
+          </div>
 
           <!-- Resumen del Proyecto -->
           <ResumenProyecto v-if="!mostrarFormulario" :proyecto="proyecto" />
@@ -151,6 +155,29 @@ const handleFilesDropped = (files) => {
             <div v-if="mostrarFormulario" class="mb-8 relative">
               <RegistroAsesores @close="handleCloseForm"/>
             </div>
+          </div>
+
+          <!-- Descargar Formatos -->
+          <div class="mb-8">
+            <h3 class="text-xl font-semibold text-[#611232] mb-4">Descargar Formatos</h3>
+            <p class="text-gray-700 mb-4">
+              Descarga los formatos requeridos, llénalos y súbelos una vez completos.
+            </p>
+
+            <!-- Lista de archivos incluidos en el archivo a descargar -->
+            <div class="mb-6">
+              <h4 class="text-lg font-semibold text-[#611232] mb-2">Archivos incluidos:</h4>
+              <ul class="list-disc list-inside text-gray-700">
+                <li>Formato de Registro (FOREG)</li>
+                <li>Formato de Autorización de Participación (FOAPA)</li>
+                <li>Compromiso de Ética y Originalidad (FOCOMO)</li>
+              </ul>
+            </div>
+
+            <!-- Botón de descarga -->
+            <a :href="route('descargar.formatos')" class="bg-[#611232] text-white px-6 py-2 rounded-lg hover:bg-[#8A1C4A] transition duration-200">
+              <i class="fas fa-download mr-2"></i> Descargar Formatos
+            </a>
           </div>
 
           <!-- Documentación Requerida -->
