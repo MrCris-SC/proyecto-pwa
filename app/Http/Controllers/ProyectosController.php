@@ -215,4 +215,36 @@ class ProyectosController extends Controller
             return redirect()->back()->with('error', 'Error al registrar asesores.');
         }
     }
+    
+    public function subirDocumento(Request $request, $proyectoId)
+    {
+        $validator = Validator::make($request->all(), [
+            'documentos.*' => 'required|file|mimes:pdf,doc,docx|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $proyecto = Proyectos::findOrFail($proyectoId);
+            $equipoId = $proyecto->equipo_id;
+
+            // Crear la carpeta con el ID del equipo si no existe
+            $equipoFolder = storage_path("app/public/equipos/{$equipoId}");
+            if (!file_exists($equipoFolder)) {
+                mkdir($equipoFolder, 0777, true);
+            }
+
+            // Guardar los documentos en la carpeta del equipo
+            foreach ($request->file('documentos') as $index => $documento) {
+                $documento->move($equipoFolder, $documento->getClientOriginalName());
+            }
+
+            return response()->json(['success' => 'Documentos subidos exitosamente.']);
+        } catch (\Exception $e) {
+            Log::error('Error al subir documentos: ' . $e->getMessage());
+            return response()->json(['error' => 'Error al subir documentos.'], 500);
+        }
+    }
 }
