@@ -17,11 +17,13 @@ const showForm = ref(false);
 const proyecto = ref(props.proyecto || {});
 const asesorescheck = ref(props.asesorescheck || false); // Agregar foregcheck
 
+
 // Inicializa la lista de documentos con los tres documentos requeridos
 const documentos = ref([
   { nombre: 'Formato de Registro (FOREG)', estado: 'Pendiente' },
   { nombre: 'Formato de Autorización de Participación (FOAPA)', estado: 'Pendiente' },
   { nombre: 'Compromiso de Ética y Originalidad (FOCOMO)', estado: 'Pendiente' },
+  { nombre: 'Formato de Asesores (FOAS)', estado: 'Pendiente', archivo: null }
 ]);
 
 const inscrito = ref(props.inscrito || false);
@@ -42,30 +44,57 @@ onMounted(async () => {
     proyecto.value = {};
   }
 });
-
+// Manejar la carga del documento
+// Manejar la carga de un documento
 const subirDocumento = ({ index, file }) => {
-  console.log('Subir documento:', file);
-  // Aquí puedes agregar la lógica para subir el archivo al servidor
-  // Por ejemplo, usando axios para enviar el archivo
-  const formData = new FormData();
-  formData.append('file', file);
-
-  axios.post('/api/subir-documento', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  }).then(response => {
-    // Si la subida es exitosa, actualiza el estado del documento
-    documentos.value[index].estado = 'Completado';
-    documentos.value[index].fecha = new Date().toISOString().split('T')[0]; // Fecha actual
-  }).catch(error => {
-    console.error('Error al subir el documento:', error);
-  });
+  documentos.value[index].archivo = file;
+  documentos.value[index].estado = 'Completado';
 };
 
-const editarDocumento = (documento) => {
-  console.log('Editar documento:', documento);
-  // Lógica para editar el documento
+const editarDocumento = (doc) => {
+  console.log('Editar documento:', doc);
+};
+
+const eliminarDocumento = (index) => {
+  documentos.value[index].archivo = null;
+  documentos.value[index].estado = 'Pendiente';
+};
+
+const handleFilesDropped = (event) => {
+  console.log('Archivos arrastrados:', event);
+};
+
+// Enviar los documentos al servidor
+const enviarDocumentos = async () => {
+  const formData = new FormData();
+
+  const documentosCompletos = documentos.value.every(doc => doc.archivo !== null);
+  if (!documentosCompletos) {
+    alert('Debes cargar los 4 documentos antes de enviarlos.');
+    return;
+  }
+
+  documentos.value.forEach((doc, index) => {
+    formData.append(`documentos[${index}]`, doc.archivo);
+  });
+
+  try {
+    const response = await axios.post(`/api/proyectos/${proyecto.value.id}/documentos`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    if (response.status === 200) {
+      alert('Documentos subidos exitosamente.');
+      location.reload(); // Refresh the page
+    } else {
+      alert('Error al subir los documentos.');
+    }
+  } catch (error) {
+    console.error('Error en la subida:', error);
+    alert('Hubo un problema al subir los documentos.');
+  }
 };
 
 const inscribirse = () => {
@@ -96,15 +125,6 @@ const handleMenuSelected = (menu) => {
   } else if (menu === 'gestion-proyectos') {
     router.get(route('gestion.proyectos'));
   }
-};
-
-const handleFilesDropped = (files) => {
-  console.log('Archivos subidos:', files);
-  // Aquí puedes agregar la lógica para actualizar la lista de documentos
-  // Por ejemplo, agregar los archivos subidos a la lista de documentos
-  files.forEach(file => {
-    documentos.value.push({ nombre: file.name, estado: 'Completado' });
-  });
 };
 
 </script>
@@ -185,9 +205,17 @@ const handleFilesDropped = (files) => {
             v-if="!mostrarFormulario"
             :documentos="documentos"
             @subir-documento="subirDocumento"
-            @editar-documento="editarDocumento"
+            @eliminar-documento="eliminarDocumento"
             @files-dropped="handleFilesDropped"
           />
+          <button
+            v-if="!mostrarFormulario"
+            class="bg-[#611232] text-white px-6 py-2 rounded-lg hover:bg-[#8A1C4A] transition duration-200 mt-4"
+            @click="enviarDocumentos"
+          >
+            Enviar Documentos
+          </button>
+
         </div>
       </main>
     </div>

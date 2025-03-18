@@ -2,7 +2,7 @@
   <div class="mb-8">
     <h2 class="text-xl font-semibold text-[#611232] mb-4">Documentación Requerida</h2>
 
-    <!-- Tabla para pantallas grandes (md en adelante) -->
+    <!-- Tabla para pantallas grandes -->
     <div class="hidden md:block">
       <table class="w-full border-collapse">
         <thead>
@@ -16,7 +16,7 @@
           <tr v-if="documentos.length === 0">
             <td colspan="3" class="p-3 text-center text-gray-500">No hay documentos requeridos.</td>
           </tr>
-          <tr v-for="(doc, index) in documentos" :key="doc.nombre" class="border-b hover:bg-gray-50">
+          <tr v-for="(doc, index) in documentos" :key="index" class="border-b hover:bg-gray-50">
             <td class="p-3">{{ doc.nombre }}</td>
             <td class="p-3">
               <span :class="doc.estado === 'Completado' ? 'text-green-600' : 'text-yellow-600'">
@@ -34,9 +34,9 @@
               <button
                 v-else
                 class="bg-[#8A1C4A] text-white px-3 py-1 rounded hover:bg-[#611232] transition duration-200"
-                @click="$emit('editar-documento', doc)"
+                @click="$emit('eliminar-documento', index)"
               >
-                Editar
+                Eliminar
               </button>
             </td>
           </tr>
@@ -44,12 +44,12 @@
       </table>
     </div>
 
-    <!-- Lista para pantallas pequeñas (sm y menos) -->
+    <!-- Lista para pantallas pequeñas -->
     <div class="md:hidden">
       <div v-if="documentos.length === 0" class="p-3 text-center text-gray-500">
         No hay documentos requeridos.
       </div>
-      <div v-for="(doc, index) in documentos" :key="doc.nombre" class="border-b p-3 hover:bg-gray-50">
+      <div v-for="(doc, index) in documentos" :key="index" class="border-b p-3 hover:bg-gray-50">
         <div class="flex justify-between items-center">
           <div>
             <p class="font-semibold">{{ doc.nombre }}</p>
@@ -83,7 +83,8 @@
         <h3 class="text-lg font-semibold mb-4">Subir archivo</h3>
         <div
           class="border-2 border-dashed border-[#8A1C4A] p-6 rounded-lg text-center"
-          @dragover.prevent="dragover"
+          @dragover.prevent="isDragging = true"
+          @dragleave.prevent="isDragging = false"
           @drop.prevent="drop"
         >
           <p>Arrastra y suelta tus archivos aquí</p>
@@ -110,12 +111,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, defineEmits, defineProps } from 'vue';
 
 const fileInput = ref(null);
 const showUploadModal = ref(false);
 const selectedDocIndex = ref(null);
 const isDragging = ref(false);
+
+const emit = defineEmits(['subir-documento', 'eliminar-documento']);
+const props = defineProps({
+  documentos: Array,
+});
 
 const openUploadModal = (index) => {
   selectedDocIndex.value = index;
@@ -138,10 +144,6 @@ const onFileChange = (event) => {
   }
 };
 
-const dragover = () => {
-  isDragging.value = true;
-};
-
 const drop = (event) => {
   isDragging.value = false;
   const file = event.dataTransfer.files[0];
@@ -149,10 +151,6 @@ const drop = (event) => {
     emit('subir-documento', { index: selectedDocIndex.value, file });
     closeUploadModal();
   }
-};
 
-const emit = defineEmits(['subir-documento', 'editar-documento']);
-defineProps({
-  documentos: Array,
-});
+};
 </script>
