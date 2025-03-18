@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Models\Concursos;
 use App\Models\Modalidades;
 use App\Models\Participantes;
@@ -15,7 +14,9 @@ use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
-
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\Response;
+use ZipArchive;
 
 class ProyectosController extends Controller
 {
@@ -215,36 +216,39 @@ class ProyectosController extends Controller
             return redirect()->back()->with('error', 'Error al registrar asesores.');
         }
     }
-    
-    public function subirDocumento(Request $request, $proyectoId)
-    {
-        $validator = Validator::make($request->all(), [
-            'documentos.*' => 'required|file|mimes:pdf,doc,docx|max:2048',
-        ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+    // filepath: d:\proyecto\proyecto-pwa\app\Http\Controllers\ProyectosController.php
+     public function descargarFormatos()
+    {
+        // Nombres de los archivos
+        $archivos = [
+            'Formato1.docx',
+            'Formato2.docx',
+            'Formato3.docx',
+            'Formato4.docx',
+        ];
+
+        // Ruta temporal para el archivo ZIP
+        $zipPath = storage_path('app/public/formatos/formatos.zip');
+
+        // Crear un archivo ZIP
+       $zip = new ZipArchive;
+        if ($zip->open($zipPath, ZipArchive::CREATE) === TRUE) {
+            foreach ($archivos as $archivo) {
+                $rutaArchivo = storage_path('app/public/formatos/' . $archivo);
+                if (file_exists($rutaArchivo)) {
+                    $zip->addFile($rutaArchivo, $archivo);
+                }
+            }
+            $zip->close();
         }
 
-        try {
-            $proyecto = Proyectos::findOrFail($proyectoId);
-            $equipoId = $proyecto->equipo_id;
-
-            // Crear la carpeta con el ID del equipo si no existe
-            $equipoFolder = storage_path("app/public/equipos/{$equipoId}");
-            if (!file_exists($equipoFolder)) {
-                mkdir($equipoFolder, 0777, true);
-            }
-
-            // Guardar los documentos en la carpeta del equipo
-            foreach ($request->file('documentos') as $index => $documento) {
-                $documento->move($equipoFolder, $documento->getClientOriginalName());
-            }
-
-            return response()->json(['success' => 'Documentos subidos exitosamente.']);
-        } catch (\Exception $e) {
-            Log::error('Error al subir documentos: ' . $e->getMessage());
-            return response()->json(['error' => 'Error al subir documentos.'], 500);
+        // Descargar el archivo ZIP
+        if (file_exists($zipPath)) {
+            return response()->download($zipPath)->deleteFileAfterSend(true);
+        } else {
+            return redirect()->back()->with('error', 'No se pudo crear el archivo ZIP.');
         }
     }
+
 }
