@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Models\Concursos;
 use App\Models\Modalidades;
 use App\Models\Participantes;
@@ -15,7 +14,9 @@ use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
-
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\Response;
+use ZipArchive;
 
 class ProyectosController extends Controller
 {
@@ -215,6 +216,43 @@ class ProyectosController extends Controller
             return redirect()->back()->with('error', 'Error al registrar asesores.');
         }
     }
+
+
+    // filepath: d:\proyecto\proyecto-pwa\app\Http\Controllers\ProyectosController.php
+     public function descargarFormatos()
+    {
+        // Nombres de los archivos
+        $archivos = [
+            'Formato1.docx',
+            'Formato2.docx',
+            'Formato3.docx',
+            'Formato4.docx',
+        ];
+
+        // Ruta temporal para el archivo ZIP
+        $zipPath = storage_path('app/public/formatos/formatos.zip');
+
+        // Crear un archivo ZIP
+       $zip = new ZipArchive;
+        if ($zip->open($zipPath, ZipArchive::CREATE) === TRUE) {
+            foreach ($archivos as $archivo) {
+                $rutaArchivo = storage_path('app/public/formatos/' . $archivo);
+                if (file_exists($rutaArchivo)) {
+                    $zip->addFile($rutaArchivo, $archivo);
+                }
+            }
+            $zip->close();
+        }
+
+        // Descargar el archivo ZIP
+        if (file_exists($zipPath)) {
+            return response()->download($zipPath)->deleteFileAfterSend(true);
+        } else {
+            return redirect()->back()->with('error', 'No se pudo crear el archivo ZIP.');
+        }
+    }
+
+
     
     public function subirDocumento(Request $request, $proyectoId)
     {
@@ -247,4 +285,5 @@ class ProyectosController extends Controller
             return response()->json(['error' => 'Error al subir documentos.'], 500);
         }
     }
+
 }
