@@ -20,10 +20,22 @@ const asesorescheck = ref(props.asesorescheck || false); // Agregar foregcheck
 
 // Inicializa la lista de documentos con los tres documentos requeridos
 const documentos = ref([
-  { nombre: 'Formato de Registro (FOREG)', estado: 'Pendiente' },
-  { nombre: 'Formato de Autorización de Participación (FOAPA)', estado: 'Pendiente' },
-  { nombre: 'Compromiso de Ética y Originalidad (FOCOMO)', estado: 'Pendiente' },
-  { nombre: 'Formato de Asesores (FOAS)', estado: 'Pendiente', archivo: null }
+  { nombre: 'Formato de Registro (FOREG)', estado: 'Pendiente', archivo: null },
+  { nombre: 'Formato de Autorización de Participación (FOAPA)', estado: 'Pendiente', archivo: null },
+  { nombre: 'Compromiso de Ética y Originalidad (FOCOMO)', estado: 'Pendiente', archivo: null },
+  { nombre: 'Formato de Asesores (FOAS)', estado: 'Pendiente', archivo: null },
+  { nombre: 'Bitácora', estado: 'Pendiente', archivo: null },
+  { nombre: 'Informe de Investigación', estado: 'Pendiente', archivo: null },
+  // Documentos específicos para Prototipos
+  { nombre: 'Manual de Instalación, Operación y/o Usuario', estado: 'Pendiente', archivo: null },
+  { nombre: 'Formato de Continuidad de Proyecto (FOCP)', estado: 'Pendiente', archivo: null },
+  { nombre: 'Formato de Humanos como Sujetos de Estudio (FOHE)', estado: 'Pendiente', archivo: null },
+  { nombre: 'Formato para Uso de Tejidos u Órganos de Animales Vertebrados (FOTAV)', estado: 'Pendiente', archivo: null },
+  { nombre: 'Formato para Uso de Animales Vertebrados (FOPAV)', estado: 'Pendiente', archivo: null },
+  // Documentos específicos para Emprendimientos
+  { nombre: 'Modelo CANVAS', estado: 'Pendiente', archivo: null },
+  { nombre: 'Estudio de Mercado', estado: 'Pendiente', archivo: null },
+  { nombre: 'Plan de Negocios', estado: 'Pendiente', archivo: null }
 ]);
 
 const inscrito = ref(props.inscrito || false);
@@ -44,7 +56,6 @@ onMounted(async () => {
     proyecto.value = {};
   }
 });
-// Manejar la carga del documento
 // Manejar la carga de un documento
 const subirDocumento = ({ index, file }) => {
   documentos.value[index].archivo = file;
@@ -146,7 +157,7 @@ const handleMenuSelected = (menu) => {
 
         <div class="p-8 bg-white rounded-lg shadow-lg">
           <!-- Mensaje de inscripción -->
-          <div v-if="inscrito" class="mb-4"> <!-- Ajusta el margen inferior aquí -->
+          <div v-if="inscrito" class="mb-4">
             <p class="text-green-600 font-semibold">
               Ya estás inscrito en este concurso.
             </p>
@@ -178,19 +189,72 @@ const handleMenuSelected = (menu) => {
           </div>
 
           <!-- Descargar Formatos -->
-          <div class="mb-8">
+          <div class="mb-8" v-if="!mostrarFormulario">
             <h3 class="text-xl font-semibold text-[#611232] mb-4">Descargar Formatos</h3>
             <p class="text-gray-700 mb-4">
               Descarga los formatos requeridos, llénalos y súbelos una vez completos.
             </p>
 
-            <!-- Lista de archivos incluidos en el archivo a descargar -->
+            <!-- Documentos Comunes (Prototipos y Emprendimientos) -->
             <div class="mb-6">
-              <h4 class="text-lg font-semibold text-[#611232] mb-2">Archivos incluidos:</h4>
+              <h4 class="text-lg font-semibold text-[#611232] mb-2">Documentos Comunes (Prototipos y Emprendimientos):</h4>
               <ul class="list-disc list-inside text-gray-700">
-                <li>Formato de Registro (FOREG)</li>
-                <li>Formato de Autorización de Participación (FOAPA)</li>
-                <li>Compromiso de Ética y Originalidad (FOCOMO)</li>
+                <li>
+                  <strong>Formato de Registro (FOREG)</strong> - <span class="text-blue-600">(Plantilla disponible)</span>
+                </li>
+                <li>
+                  <strong>Formato de Autorización de Participación (FOAPA)</strong> - <span class="text-blue-600">(Plantilla disponible)</span>
+                </li>
+                <li>
+                  <strong>Compromiso de Ética y Originalidad (FOCOMO)</strong> - <span class="text-blue-600">(Plantilla disponible)</span>
+                </li>
+                <li>
+                  <strong>Formato de Asesores (FOAS)</strong> - <span class="text-blue-600">(Plantilla disponible)</span>
+                </li>
+                <li>
+                  <strong>Bitácora</strong> - <span class="text-red-600">(Sin plantilla, el participante lo sube)</span>
+                </li>
+                <li>
+                  <strong>Informe de Investigación</strong> - <span class="text-red-600">(Sin plantilla, el participante lo sube)</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Documentos Específicos para Prototipos -->
+            <div class="mb-6">
+              <h4 class="text-lg font-semibold text-[#611232] mb-2">Documentos para Prototipos:</h4>
+              <ul class="list-disc list-inside text-gray-700">
+                <li>
+                  <strong>Manual de Instalación, Operación y/o Usuario</strong> - <span class="text-red-600">(Sin plantilla, el participante lo sube)</span>
+                </li>
+                <li>
+                  <strong>Formato de Continuidad de Proyecto (FOCP)</strong> - <span class="text-blue-600">(Plantilla disponible)</span>
+                </li>
+                <li>
+                  <strong>Formato de Humanos como Sujetos de Estudio (FOHE)</strong> - <span class="text-blue-600">(Plantilla disponible)</span>
+                </li>
+                <li>
+                  <strong>Formato para Uso de Tejidos u Órganos de Animales Vertebrados (FOTAV)</strong> - <span class="text-blue-600">(Plantilla disponible)</span>
+                </li>
+                <li>
+                  <strong>Formato para Uso de Animales Vertebrados (FOPAV)</strong> - <span class="text-blue-600">(Plantilla disponible)</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Documentos Específicos para Emprendimientos -->
+            <div class="mb-6">
+              <h4 class="text-lg font-semibold text-[#611232] mb-2">Documentos para Emprendimientos:</h4>
+              <ul class="list-disc list-inside text-gray-700">
+                <li>
+                  <strong>Modelo CANVAS</strong> - <span class="text-red-600">(Sin plantilla, el participante lo sube)</span>
+                </li>
+                <li>
+                  <strong>Estudio de Mercado</strong> - <span class="text-red-600">(Sin plantilla, el participante lo sube)</span>
+                </li>
+                <li>
+                  <strong>Plan de Negocios</strong> - <span class="text-red-600">(Sin plantilla, el participante lo sube)</span>
+                </li>
               </ul>
             </div>
 

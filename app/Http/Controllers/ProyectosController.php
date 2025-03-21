@@ -223,10 +223,15 @@ class ProyectosController extends Controller
     {
         // Nombres de los archivos
         $archivos = [
-            'Formato1.docx',
-            'Formato2.docx',
-            'Formato3.docx',
-            'Formato4.docx',
+            '2. FOAPA.docx',
+            '3. FOCOMO.docx',
+            '4. FOAS.docx',
+            '5. FOACT.docx',
+            '5A .ACTA DE FOACT.docx',
+            '6. FOCP.docx',
+            '7. FOHE.docx',
+            '8. FOTAV.docx',
+            '9. FOPAV.docx',
         ];
 
         // Ruta temporal para el archivo ZIP
