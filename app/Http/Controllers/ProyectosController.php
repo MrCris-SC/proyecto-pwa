@@ -168,6 +168,8 @@ class ProyectosController extends Controller
             'asesorTecnico.correo' => 'nullable|email|max:255',
             'asesorTecnico.telefono' => 'nullable|string|max:15',
             'asesorMetodologico.nombre' => 'nullable|string|max:255',
+            'asesorMetodologico.tipo' => 'nullable|string', // Nuevo campo
+            'asesorMetodologico.clavePresupuestal' => 'nullable|string|max:255', // Nuevo campo
             'asesorMetodologico.nivelAcademico' => 'nullable|string|max:255',
             'asesorMetodologico.correo' => 'nullable|email|max:255',
             'asesorMetodologico.telefono' => 'nullable|string|max:15',
@@ -195,6 +197,8 @@ class ProyectosController extends Controller
             if ($request->filled('asesorMetodologico.nombre')) {
                 Asesores::create([
                     'nombre' => $request->asesorMetodologico['nombre'],
+                    'tipo_asesor' => $request->asesorMetodologico['tipo'], // Nuevo campo
+                    'clave_presupuestal' => $request->asesorMetodologico['clavePresupuestal'], // Nuevo campo
                     'email' => $request->asesorMetodologico['correo'],
                     'telefono' => $request->asesorMetodologico['telefono'],
                     'tipo_asesor' => 'Metodológico',
@@ -223,10 +227,15 @@ class ProyectosController extends Controller
     {
         // Nombres de los archivos
         $archivos = [
-            'Formato1.docx',
-            'Formato2.docx',
-            'Formato3.docx',
-            'Formato4.docx',
+            '2. FOAPA.docx',
+            '3. FOCOMO.docx',
+            '4. FOAS.docx',
+            '5. FOACT.docx',
+            '5A .ACTA DE FOACT.docx',
+            '6. FOCP.docx',
+            '7. FOHE.docx',
+            '8. FOTAV.docx',
+            '9. FOPAV.docx',
         ];
 
         // Ruta temporal para el archivo ZIP

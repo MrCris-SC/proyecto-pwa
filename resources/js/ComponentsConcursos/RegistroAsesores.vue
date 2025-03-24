@@ -88,6 +88,26 @@
             class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#611232]"
             required
           />
+          <!-- Nuevo campo   -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <select
+              v-model="asesorMetodologico.tipo"
+              class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#611232]"
+              required
+            >
+              <option value="" disabled>Selecciona el tipo de asesor</option>
+              <option value="Docente DGETI">Docente DGETI</option>
+              <option value="Asesor externo">Asesor externo</option>
+            </select>
+            <input
+              v-if="asesorMetodologico.tipo === 'Docente DGETI'"
+              v-model="asesorMetodologico.clavePresupuestal"
+              type="text"
+              placeholder="Clave presupuestal"
+              class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#611232]"
+              required
+            />
+          </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
               v-model="asesorMetodologico.nivelAcademico"
@@ -150,6 +170,8 @@ const asesorTecnico = ref({
 
 const asesorMetodologico = ref({
   nombre: '',
+  tipo: '',                            // Nuevo campo
+  clavePresupuestal: '',               // Nuevo campo
   nivelAcademico: '',
   correo: '',
   telefono: '',
