@@ -101,7 +101,7 @@ class ProyectosController extends Controller
     {
         try {
             $authUser = Auth::user();
-            $equipo = Equipo::with(['proyecto', 'participantes', 'proyecto.concurso'])
+            $equipo = Equipo::with(['proyecto', 'participantes', 'proyecto.concurso', 'asesores'])
                             ->where('id', $authUser->equipo_id)
                             ->first();
 
