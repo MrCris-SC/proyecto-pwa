@@ -20,13 +20,33 @@ class Concursos extends Model
         'fecha_terminacion',
         'status',
         'fase',
+        'estado', // Asegúrate que este campo esté en fillable
         'plantel_id',
     ];
 
-    
+    protected $appends = ['estado_nombre', 'plantel_nombre'];
 
     public function plantel()
     {
         return $this->belongsTo(Planteles::class, 'plantel_id');
+    }
+
+    // Cambiar el nombre de la relación para evitar conflictos
+    public function estadoRelation()
+    {
+        return $this->belongsTo(Estados::class, 'estado', 'idestado');
+    }
+
+    public function getEstadoNombreAttribute()
+    {
+        if ($this->fase === 'estatal') {
+            return $this->estadoRelation->nombre ?? 'No especificado';
+        }
+        return null;
+    }
+
+    public function getPlantelNombreAttribute()
+    {
+        return $this->plantel->nombre_corto ?? null;
     }
 }
