@@ -8,7 +8,7 @@ import DocumentosTable from '@/Components/DocumentosTable.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import MenuLateral from '@/ComponentsConcursos/MenuLateral.vue';
 import axios from 'axios';
-
+import DocumentosOpcionales from '@/ComponentsConcursos/DocumentosOpcionales.vue';
 const mostrarFormulario = ref(false);
 const selectedMenu = ref('Gestión de proyectos'); // Agregar selectedMenu con valor inicial
 
@@ -24,20 +24,9 @@ const documentos = ref([
   { nombre: 'Formato de Autorización de Participación (FOAPA)', estado: 'Pendiente', archivo: null },
   { nombre: 'Compromiso de Ética y Originalidad (FOCOMO)', estado: 'Pendiente', archivo: null },
   { nombre: 'Formato de Asesores (FOAS)', estado: 'Pendiente', archivo: null },
-  { nombre: 'Bitácora', estado: 'Pendiente', archivo: null },
-  { nombre: 'Informe de Investigación', estado: 'Pendiente', archivo: null },
-  // Documentos específicos para Prototipos
-  { nombre: 'Manual de Instalación, Operación y/o Usuario', estado: 'Pendiente', archivo: null },
-  { nombre: 'Formato de Continuidad de Proyecto (FOCP)', estado: 'Pendiente', archivo: null },
-  { nombre: 'Formato de Humanos como Sujetos de Estudio (FOHE)', estado: 'Pendiente', archivo: null },
-  { nombre: 'Formato para Uso de Tejidos u Órganos de Animales Vertebrados (FOTAV)', estado: 'Pendiente', archivo: null },
-  { nombre: 'Formato para Uso de Animales Vertebrados (FOPAV)', estado: 'Pendiente', archivo: null },
-  // Documentos específicos para Emprendimientos
-  { nombre: 'Modelo CANVAS', estado: 'Pendiente', archivo: null },
-  { nombre: 'Estudio de Mercado', estado: 'Pendiente', archivo: null },
-  { nombre: 'Plan de Negocios', estado: 'Pendiente', archivo: null }
+  
 ]);
-
+const opcionales = ref([]); // Cambiar a una lista vacía para manejar archivos directamente
 const inscrito = ref(props.inscrito || false);
 
 onMounted(async () => {
@@ -135,6 +124,43 @@ const handleMenuSelected = (menu) => {
     router.get(route('concursos.index'));
   } else if (menu === 'gestion-proyectos') {
     router.get(route('gestion.proyectos'));
+  }
+};
+
+const handleOpcionalesSubidos = (archivos) => {
+  opcionales.value = archivos;
+};
+
+const enviarDocumentosOpcionales = async () => {
+  if (opcionales.value.length === 0) {
+    alert('No has seleccionado ningún documento opcional.');
+    return;
+  }
+
+  const formData = new FormData();
+  opcionales.value.forEach((archivo, index) => {
+    formData.append(`opcionales[${index}]`, archivo);
+  });
+
+  try {
+    const response = await axios.post(`/api/proyectos/${proyecto.value.id}/opcionales`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    if (response.status === 200) {
+      alert('Documentos opcionales subidos exitosamente.');
+      opcionales.value = []; // Limpiar la lista después de subir
+      // Emitir evento para limpiar el componente
+      const documentosOpcionalesComponent = document.querySelector('DocumentosOpcionales');
+      documentosOpcionalesComponent?.clearFiles();
+    } else {
+      alert('Error al subir los documentos opcionales.');
+    }
+  } catch (error) {
+    console.error('Error en la subida de documentos opcionales:', error);
+    alert('Hubo un problema al subir los documentos opcionales.');
   }
 };
 
@@ -272,6 +298,7 @@ const handleMenuSelected = (menu) => {
             @eliminar-documento="eliminarDocumento"
             @files-dropped="handleFilesDropped"
           />
+
           <button
             v-if="!mostrarFormulario"
             class="bg-[#611232] text-white px-6 py-2 rounded-lg hover:bg-[#8A1C4A] transition duration-200 mt-4"
@@ -279,6 +306,21 @@ const handleMenuSelected = (menu) => {
           >
             Enviar Documentos
           </button>
+
+          <!-- Documentos Opcionales -->
+          <div class="mt-8">
+            <h3 class="text-xl font-semibold text-[#611232] mb-4">Documentos Opcionales</h3>
+            <p class="text-gray-700 mb-4">
+              Puedes subir documentos opcionales en formato Word o PDF.
+            </p>
+              <DocumentosOpcionales @file-selected="handleOpcionalesSubidos" />
+              <button
+                class="bg-[#611232] text-white px-6 py-2 rounded-lg hover:bg-[#8A1C4A] transition duration-200 mt-4"
+                @click="enviarDocumentosOpcionales"
+              >
+                Enviar Documentos Opcionales
+              </button>
+          </div>
 
         </div>
       </main>

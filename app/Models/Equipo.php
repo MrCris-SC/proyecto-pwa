@@ -41,4 +41,8 @@ class Equipo extends Model
     {
         return $this->hasMany(Participantes::class, 'equipo_id');
     }
+    public function asesores()
+    {
+        return $this->hasMany(Asesores::class, 'equipo_id');
+    }
 }

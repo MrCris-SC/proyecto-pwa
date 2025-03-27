@@ -81,9 +81,24 @@
     </div>
     
     <div class="section">
-        <h2>Asesores</h2>
-        <p><strong>Asesor Técnico:</strong> {{ $equipo->asesor_tecnico ?? 'No especificado' }}</p>
-        <p><strong>Asesor Metodológico:</strong> {{ $equipo->asesor_metodologico ?? 'No especificado' }}</p>
+    <h3>Asesores</h3>
+    @php
+        $tiposAsesor = ['Técnico', 'Metodológico'];
+    @endphp
+    @foreach ($tiposAsesor as $tipo)
+        @php
+            $asesor = $equipo->asesores->firstWhere('tipo_asesor', $tipo);
+        @endphp
+        <p><strong>Tipo:</strong> {{ $tipo }}</p>
+        @if ($asesor)
+            <p><strong>Nombre:</strong> {{ $asesor->nombre }}</p>
+            <p><strong>Correo:</strong> {{ $asesor->email }}</p>
+            <p><strong>Teléfono:</strong> {{ $asesor->telefono }}</p>
+        @else
+            <p>No especificado</p>
+        @endif
+        <hr>
+    @endforeach
     </div>
 </body>
 </html>
