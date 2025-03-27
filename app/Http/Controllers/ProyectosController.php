@@ -201,7 +201,6 @@ class ProyectosController extends Controller
                     'clave_presupuestal' => $request->asesorMetodologico['clavePresupuestal'], // Nuevo campo
                     'email' => $request->asesorMetodologico['correo'],
                     'telefono' => $request->asesorMetodologico['telefono'],
-                    'tipo_asesor' => 'Metodológico',
                     'nivel_academico' => $request->asesorMetodologico['nivelAcademico'],
                     'equipo_id' => $equipoId,
                 ]);
@@ -292,6 +291,38 @@ class ProyectosController extends Controller
         } catch (\Exception $e) {
             Log::error('Error al subir documentos: ' . $e->getMessage());
             return response()->json(['error' => 'Error al subir documentos.'], 500);
+        }
+    }
+
+    public function subirDocumentosOpcionales(Request $request, $proyectoId)
+    {
+        $validator = Validator::make($request->all(), [
+            'opcionales.*' => 'required|file|mimes:pdf,doc,docx|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $proyecto = Proyectos::findOrFail($proyectoId);
+            $equipoId = $proyecto->equipo_id;
+
+            // Crear la carpeta con el ID del equipo si no existe
+            $equipoFolder = storage_path("app/public/equipos/{$equipoId}/opcionales");
+            if (!file_exists($equipoFolder)) {
+                mkdir($equipoFolder, 0777, true);
+            }
+
+            // Guardar los documentos opcionales en la carpeta del equipo
+            foreach ($request->file('opcionales') as $index => $documento) {
+                $documento->move($equipoFolder, $documento->getClientOriginalName());
+            }
+
+            return response()->json(['success' => 'Documentos opcionales subidos exitosamente.']);
+        } catch (\Exception $e) {
+            Log::error('Error al subir documentos opcionales: ' . $e->getMessage());
+            return response()->json(['error' => 'Error al subir documentos opcionales.'], 500);
         }
     }
 

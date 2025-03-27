@@ -49,6 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/api/proyectos', [ProyectosController::class, 'store'])->name('proyectos.store');
     Route::post('/api/proyectos/{proyecto}/documentos', [ProyectosController::class, 'subirDocumento'])->name('proyectos.documentos.subir');
     Route::put('/api/proyectos/{proyecto}/documentos/{documento}', [ProyectosController::class, 'editarDocumento'])->name('proyectos.documentos.editar');
+    Route::post('/api/proyectos/{proyecto}/opcionales', [ProyectosController::class, 'subirDocumentosOpcionales'])->name('proyectos.documentos.opcionales');
     Route::get('/api/estados/{estado}/planteles', [PerfilController::class, 'getPlanteles']);
     Route::get('/proyectos/{id}/pdf', [ProyectosController::class, 'pruebaVista'])->name('generar');
     Route::get('/generar-pdf', [ProyectosController::class, 'generarPDF'])->name('proyectos.pdf');
