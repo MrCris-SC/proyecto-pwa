@@ -5,7 +5,7 @@ import { usePage } from '@inertiajs/vue3';
 const { props } = usePage();
 const emit = defineEmits(['menu-selected']);
 const selectedMenu = ref('Concursos');
-const isMenuMinimized = ref(false); // Estado para controlar la minimización del menú
+const isMenuMinimized = ref(false);
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const menuItems = ref([]);
@@ -34,15 +34,13 @@ if (props.auth.user.rol === 'lider') {
 }
 
 const selectMenu = (item) => {
-    selectedMenu.value = item.name.toLowerCase();
-    emit('menu-selected', selectedMenu.value);
+    selectedMenu.value = item.name;
+    emit('menu-selected', item.name);
 };
 
 const toggleMenu = () => {
     isMenuMinimized.value = !isMenuMinimized.value;
 };
-
-
 </script>
 
 <template>
@@ -55,7 +53,7 @@ const toggleMenu = () => {
                 v-for="item in menuItems" 
                 :key="item.name"
                 class="p-3 rounded-lg cursor-pointer flex flex-col lg:flex-row items-center text-center transition duration-200 ease-in-out relative group"
-                :class="selectedMenu === item.name.toLowerCase() ? 'bg-[#8A1C4A] text-white shadow-md' : 'hover:bg-[#9C2755] hover:text-white'"
+                :class="selectedMenu === item.name ? 'bg-[#8A1C4A] text-white shadow-md' : 'hover:bg-[#9C2755] hover:text-white'"
                 @click="selectMenu(item)"
             >
                 <!-- Ícono -->

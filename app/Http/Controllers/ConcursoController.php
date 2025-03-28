@@ -5,85 +5,109 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Concursos;
+use App\Models\Estados;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class ConcursoController extends Controller
 {
     /**
-     * Muestra la página de concursos.
+     * Muestra la página de concursos
      *
      * @return \Inertia\Response
      */
     public function index()
     {
         $user = auth()->user();
-        $concursos = Concursos::with('plantel.estado')->get();
-        $success = request()->query('success', '');
+        
+        // Cargar concursos con relaciones optimizadas
+        $concursos = Concursos::with([
+            'plantel',
+            'estadoRelation' => function($query) {
+                $query->select('idestado', 'nombre');
+            }
+        ])->get();
 
-        // Si el usuario es líder y ya está inscrito en un concurso, filtrar la lista
+        // Procesar los datos para incluir nombres de estado y plantel
+        $concursos->each(function ($concurso) {
+            // Para concursos estatales
+            if ($concurso->fase === 'estatal') {
+                $concurso->estado_nombre = $concurso->estadoRelation->nombre ?? 'No especificado';
+            }
+            
+            // Para concursos locales (opcional)
+            if ($concurso->fase === 'local' && $concurso->plantel) {
+                $concurso->plantel_nombre = $concurso->plantel->nombre_corto ?? null;
+            }
+        });
+
+        // Filtrar para líderes si es necesario
         if ($user->rol === 'lider') {
             if ($user->concurso_registrado_id) {
                 $concursos = $concursos->where('id', $user->concurso_registrado_id);
             } else {
                 $concursos = $concursos->filter(function ($concurso) use ($user) {
-                    return $concurso->plantel->estado->idestado === $user->estado_id;
+                    return $concurso->plantel && $concurso->plantel->estado_id === $user->estado_id;
                 });
             }
         }
 
-        // Pasar información de inscripción del usuario
-        $inscrito = $user->concurso_registrado_id ? true : false;
-
         return Inertia::render('ConcursosLayouts/Concursos', [
             'concursos' => $concursos,
-            'inscrito' => $inscrito,
-            'flash' => ['success' => $success]
+            'inscrito' => (bool)$user->concurso_registrado_id,
+            'flash' => ['success' => request()->query('success', '')]
         ]);
     }
 
     /**
-     * Almacena un nuevo concurso.
+     * Almacena un nuevo concurso
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
     {
-        // Validar y almacenar el concurso
-        $request->validate([
+        $validated = $request->validate([
             'nombre' => 'required|string|max:255',
             'descripcion' => 'required|string',
             'fecha_inicio' => 'required|date',
             'fecha_terminacion' => 'required|date|after_or_equal:fecha_inicio',
-            'fase' => 'required|string',
-            'estado' => 'required_if:fase,estatal,nacional|nullable|integer|exists:estados,idestado',
-            'plantel_id' => 'required_if:fase,nacional|nullable|integer|exists:planteles,id_plantel',
+            'fase' => 'required|string|in:local,estatal,nacional',
+            'estado' => 'required_if:fase,estatal|nullable|integer|exists:estados,idestado',
+            'plantel_id' => 'required_if:fase,local|nullable|integer|exists:planteles,id_plantel',
         ]);
 
-        // Agregar el status del concurso
-        $request['status'] = 'abierto';
-        $request['fecha_apertura'] = now()->toDateString();
-
-        // Crear el concurso
-        $concurso = Concursos::create($request->all());
+        // Crear el concurso con los datos validados
+        $concurso = Concursos::create([
+            'nombre' => $validated['nombre'],
+            'descripcion' => $validated['descripcion'],
+            'fecha_inicio' => $validated['fecha_inicio'],
+            'fecha_terminacion' => $validated['fecha_terminacion'],
+            'fase' => $validated['fase'],
+            'estado' => $validated['estado'] ?? null,
+            'plantel_id' => $validated['plantel_id'] ?? null,
+            'status' => 'abierto',
+            'fecha_apertura' => now()->toDateString(),
+        ]);
 
         return redirect()->route('concursos.index')->with('success', 'Concurso creado exitosamente.');
     }
 
     /**
-     * Muestra la página de edición de un concurso.
+     * Muestra el formulario de edición
      *
-     * @param  int  $id
+     * @param  \App\Models\Concursos  $concurso
      * @return \Inertia\Response
      */
     public function edit(Concursos $concurso)
     {
-        // Al consultar el concurso, Inertia pasará el objeto completo
-        return Inertia::render('ConcursosLayouts/EditarConcurso', ['concurso' => $concurso]);
+        return Inertia::render('ConcursosLayouts/EditarConcurso', [
+            'concurso' => $concurso->load(['estadoRelation', 'plantel'])
+        ]);
     }
 
     /**
-     * Actualiza un concurso existente.
+     * Actualiza un concurso existente
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
@@ -91,44 +115,38 @@ class ConcursoController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Validar los datos del formulario
-        $request->validate([
+        $validated = $request->validate([
             'nombre' => 'required|string|max:255',
             'descripcion' => 'required|string',
             'fecha_inicio' => 'required|date',
             'fecha_terminacion' => 'required|date|after_or_equal:fecha_inicio',
+            'fase' => 'required|string|in:local,estatal,nacional',
+            'estado' => 'required_if:fase,estatal|nullable|integer|exists:estados,idestado',
+            'plantel_id' => 'required_if:fase,local|nullable|integer|exists:planteles,id_plantel',
         ]);
 
-        // Buscar el concurso por ID
         $concurso = Concursos::findOrFail($id);
+        $concurso->update($validated);
 
-        // Actualizar los datos del concurso
-        $concurso->update($request->all());
-
-        // Redirigir con un mensaje de éxito
         return redirect()->route('concursos.index')->with('success', 'Concurso actualizado exitosamente.');
     }
 
     /**
-     * Elimina un concurso existente.
+     * Elimina un concurso
      *
      * @param  int  $id
      * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy($id)
     {
-        // Buscar el concurso por ID
         $concurso = Concursos::findOrFail($id);
-
-        // Eliminar el concurso
         $concurso->delete();
 
-        // Redirigir con un mensaje de éxito
         return redirect()->route('concursos.index')->with('success', 'Concurso eliminado exitosamente.');
     }
 
     /**
-     * Inscribe al líder en un concurso.
+     * Inscribe al usuario en un concurso
      *
      * @param  int  $concursoId
      * @return \Illuminate\Http\RedirectResponse
@@ -137,21 +155,39 @@ class ConcursoController extends Controller
     {
         $user = auth()->user();
 
-        // Verificar si el líder ya está inscrito en un concurso
         if ($user->concurso_registrado_id) {
             return redirect()->route('gestion-de-proyectos')->with('error', 'Ya estás inscrito en un concurso.');
         }
 
-        // Verificar si el concurso existe
         $concurso = Concursos::find($concursoId);
         if (!$concurso) {
             return redirect()->route('concursos.index')->with('error', 'El concurso no existe.');
         }
 
-        // Inscribir al líder en el concurso
         $user->concurso_registrado_id = $concursoId;
         $user->save();
 
         return redirect()->route('gestion-de-proyectos')->with('success', 'Inscripción exitosa.');
+    }
+
+    /**
+     * Método de diagnóstico para verificar estados (temporal)
+     */
+    public function diagnosticarEstados()
+    {
+        $concursosProblema = Concursos::where('fase', 'estatal')
+            ->whereNotNull('estado')
+            ->whereDoesntHave('estadoRelation')
+            ->get();
+
+        if ($concursosProblema->isNotEmpty()) {
+            $resultado = "Los siguientes concursos tienen IDs de estado inválidos:\n";
+            foreach ($concursosProblema as $concurso) {
+                $resultado .= "Concurso ID: {$concurso->id}, Estado ID: {$concurso->estado}\n";
+            }
+            return response($resultado);
+        }
+
+        return response("Todos los concursos estatales tienen estados válidos.");
     }
 }

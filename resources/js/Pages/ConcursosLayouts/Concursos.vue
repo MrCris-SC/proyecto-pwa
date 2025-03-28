@@ -7,7 +7,7 @@ import TarjetaCrearConcurso from '@/Components/TarjetaCrearConcurso.vue';
 import TarjetaConcurso from '@/Components/TarjetaConcurso.vue';
 import NuevoConcurso from '@/ComponentsConcursos/NuevoConcurso.vue';
 import RegistroProyectos from '@/ComponentsConcursos/RegistroProyectos.vue';
-import GestionProyectos from '@/Pages/ConcursosLayouts/GestionProyectos.vue'; // nuevo componente
+import GestionProyectos from '@/Pages/ConcursosLayouts/GestionProyectos.vue';
 
 const selectedMenu = ref('Concursos');
 const showForm = ref(false);
@@ -24,7 +24,7 @@ const obtenerConcursoEnPantalla = () => {
   const usuarioLider = props.auth.user;
   let concurso = concursos.value.find(c => c.lider_id === usuarioLider.id);
   if (!concurso && concursos.value.length > 0) {
-    concurso = concursos.value[0]; // Selecciona el primer concurso disponible
+    concurso = concursos.value[0];
   }
   if (concurso) {
     concursoEnPantalla.value = concurso;
@@ -34,25 +34,23 @@ const obtenerConcursoEnPantalla = () => {
 };
 
 const handleMenuSelected = (menu) => {
-  selectedMenu.value = menu.toLowerCase(); // forzamos a minúsculas
-  showForm.value = selectedMenu.value !== 'concursos';
-  if (selectedMenu.value === 'gestión de proyectos') {
+  selectedMenu.value = menu; // Usamos el valor exacto recibido
+  showForm.value = menu !== 'Concursos'; // Comparación exacta
+  
+  if (menu === 'Gestión de proyectos') {
     router.get(route('gestion.proyectos'));
-  } else if (selectedMenu.value === 'concursos') {
+  } else if (menu === 'Concursos') {
     concursoSeleccionado.value = null;
     obtenerConcursoEnPantalla();
   }
 };
 
-
-
 const handleDownloadPDF = () => {
   window.open(route('proyectos.pdf'), '_blank');
 };
 
-
 const handleCreateClick = () => {
-  selectedMenu.value = 'nuevo concurso';
+  selectedMenu.value = 'Nuevo concurso';
   showForm.value = true;
 };
 
@@ -81,11 +79,9 @@ const handleCloseForm = () => {
 const handleConcursoClick = (concurso) => {
   if (concurso && concurso.id) {
     if (inscrito.value) {
-      // Si ya está inscrito, redirigir a "Gestión de proyectos"
       router.get(route('gestion.proyectos'));
     } else {
-      // Si no está inscrito, mostrar el formulario de registro
-      selectedMenu.value = 'registro';
+      selectedMenu.value = 'Registro';
       showForm.value = true;
       concursoSeleccionado.value = concurso.id;
     }
@@ -114,13 +110,13 @@ obtenerConcursoEnPantalla();
       <!-- Contenido principal -->
       <main class="w-full max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-lg">
         <h2 class="text-2xl font-bold mb-6 text-[#611232]">
-          {{ selectedMenu ? selectedMenu.charAt(0).toUpperCase() + selectedMenu.slice(1) : '' }}
+          {{ selectedMenu }}
         </h2>
 
         <!-- Contenedor flex para el botón -->
         <div class="flex justify-end">
           <button 
-            v-if="selectedMenu === 'concursos'" 
+            v-if="selectedMenu === 'Concursos'" 
             @click="handleDownloadPDF" 
             class="mt-3 bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
           >
@@ -130,13 +126,12 @@ obtenerConcursoEnPantalla();
 
         <!-- Formulario para Registro -->
         <div v-if="showForm" class="relative">
-          <NuevoConcurso v-if="selectedMenu === 'nuevo concurso'" @close="handleCloseForm" />
-          <RegistroProyectos v-if="selectedMenu === 'registro'" :concurso-id="concursoSeleccionado" @close="handleCloseForm" />
+          <NuevoConcurso v-if="selectedMenu === 'Nuevo concurso'" @close="handleCloseForm" />
+          <RegistroProyectos v-if="selectedMenu === 'Registro'" :concurso-id="concursoSeleccionado" @close="handleCloseForm" />
         </div>
 
-       
         <!-- Tarjetas de concursos -->
-        <div v-if="selectedMenu === 'concursos'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-if="selectedMenu === 'Concursos'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <TarjetaCrearConcurso 
             v-if="$page.props.auth.user.rol === 'admin' || $page.props.auth.user.rol === 'vinculador'"
             @click="handleCreateClick" 
@@ -150,6 +145,7 @@ obtenerConcursoEnPantalla();
             :fechaInicio="concurso.fecha_inicio"
             :fechaApertura="concurso.fecha_apertura"
             :fechaFinalizacion="concurso.fecha_terminacion"
+            :fase="concurso.fase" 
             :inscrito="inscrito"
             :isAdmin="$page.props.auth.user.rol === 'admin'"
             @click="handleConcursoClick(concurso)"

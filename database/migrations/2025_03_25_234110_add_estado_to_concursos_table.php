@@ -1,0 +1,37 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('concursos', function (Blueprint $table) {
+            // Cambia a integer (no unsigned) para coincidir con idestado
+            $table->integer('estado')->nullable()->after('fase');
+    
+            // Clave foránea
+            $table->foreign('estado')
+                ->references('idestado')
+                ->on('estados')
+                ->onDelete('set null');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('concursos', function (Blueprint $table) {
+            // Elimina la clave foránea y la columna estado
+            $table->dropForeign(['estado']);
+            $table->dropColumn('estado');
+        });
+    }
+};
