@@ -101,9 +101,8 @@ class ConcursoController extends Controller
      */
     public function edit(Concursos $concurso)
     {
-        $concurso->load(['estadoRelation', 'plantel']);
         return Inertia::render('ConcursosLayouts/EditarConcurso', [
-            'concurso' => $concurso
+            'concurso' => $concurso->load(['estadoRelation', 'plantel'])
         ]);
     }
 

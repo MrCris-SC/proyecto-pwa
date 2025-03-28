@@ -9,24 +9,22 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import MenuLateral from '@/ComponentsConcursos/MenuLateral.vue';
 import axios from 'axios';
 import DocumentosOpcionales from '@/ComponentsConcursos/DocumentosOpcionales.vue';
+
 const mostrarFormulario = ref(false);
-const selectedMenu = ref('Gestión de proyectos'); // Agregar selectedMenu con valor inicial
+const selectedMenu = ref('Gestión de proyectos');
 
 const { props } = usePage();
 const showForm = ref(false);
 const proyecto = ref(props.proyecto || {});
-const asesorescheck = ref(props.asesorescheck || false); // Agregar foregcheck
+const asesorescheck = ref(props.asesorescheck || false);
 
-
-// Inicializa la lista de documentos con los tres documentos requeridos
 const documentos = ref([
   { nombre: 'Formato de Registro (FOREG)', estado: 'Pendiente', archivo: null },
   { nombre: 'Formato de Autorización de Participación (FOAPA)', estado: 'Pendiente', archivo: null },
   { nombre: 'Compromiso de Ética y Originalidad (FOCOMO)', estado: 'Pendiente', archivo: null },
   { nombre: 'Formato de Asesores (FOAS)', estado: 'Pendiente', archivo: null },
-  
 ]);
-const opcionales = ref([]); // Cambiar a una lista vacía para manejar archivos directamente
+const opcionales = ref([]);
 const inscrito = ref(props.inscrito || false);
 
 onMounted(async () => {
@@ -34,7 +32,6 @@ onMounted(async () => {
     try {
       const response = await axios.get(`/api/proyectos/${props.auth.user.proyecto_id}`);
       proyecto.value = response.data.proyecto || {};
-      // Si hay documentos en la respuesta, actualiza la lista
       if (response.data.documentos && response.data.documentos.length > 0) {
         documentos.value = response.data.documentos;
       }
@@ -45,7 +42,7 @@ onMounted(async () => {
     proyecto.value = {};
   }
 });
-// Manejar la carga de un documento
+
 const subirDocumento = ({ index, file }) => {
   documentos.value[index].archivo = file;
   documentos.value[index].estado = 'Completado';
@@ -64,7 +61,6 @@ const handleFilesDropped = (event) => {
   console.log('Archivos arrastrados:', event);
 };
 
-// Enviar los documentos al servidor
 const enviarDocumentos = async () => {
   const formData = new FormData();
 
@@ -87,7 +83,7 @@ const enviarDocumentos = async () => {
 
     if (response.status === 200) {
       alert('Documentos subidos exitosamente.');
-      location.reload(); // Refresh the page
+      location.reload();
     } else {
       alert('Error al subir los documentos.');
     }
@@ -120,11 +116,10 @@ const handleCloseForm = () => {
 };
 
 const handleMenuSelected = (menu) => {
-  if (menu === 'concursos') {
+  if (menu === 'Concursos') {
     router.get(route('concursos.index'));
-  } else if (menu === 'gestion-proyectos') {
-    router.get(route('gestion.proyectos'));
   }
+  // No necesitamos hacer nada si el menú es 'Gestión de proyectos'
 };
 
 const handleOpcionalesSubidos = (archivos) => {
@@ -151,10 +146,7 @@ const enviarDocumentosOpcionales = async () => {
 
     if (response.status === 200) {
       alert('Documentos opcionales subidos exitosamente.');
-      opcionales.value = []; // Limpiar la lista después de subir
-      // Emitir evento para limpiar el componente
-      const documentosOpcionalesComponent = document.querySelector('DocumentosOpcionales');
-      documentosOpcionalesComponent?.clearFiles();
+      opcionales.value = [];
     } else {
       alert('Error al subir los documentos opcionales.');
     }
@@ -163,7 +155,6 @@ const enviarDocumentosOpcionales = async () => {
     alert('Hubo un problema al subir los documentos opcionales.');
   }
 };
-
 </script>
 
 <template>
@@ -178,7 +169,7 @@ const enviarDocumentosOpcionales = async () => {
       <MenuLateral :rol="userRole" @menu-selected="handleMenuSelected" />
       <main class="w-full max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-lg">
         <h2 class="text-2xl font-bold mb-6 text-[#611232]">
-          {{ selectedMenu ? selectedMenu.charAt(0).toUpperCase() + selectedMenu.slice(1) : '' }}
+          {{ selectedMenu }}
         </h2>
 
         <div class="p-8 bg-white rounded-lg shadow-lg">
@@ -308,20 +299,20 @@ const enviarDocumentosOpcionales = async () => {
           </button>
 
           <!-- Documentos Opcionales -->
-          <div class="mt-8">
+          <div class="mt-8" v-if="!mostrarFormulario">
             <h3 class="text-xl font-semibold text-[#611232] mb-4">Documentos Opcionales</h3>
             <p class="text-gray-700 mb-4">
               Puedes subir documentos opcionales en formato Word o PDF.
             </p>
               <DocumentosOpcionales @file-selected="handleOpcionalesSubidos" />
               <button
+                v-if="!mostrarFormulario"
                 class="bg-[#611232] text-white px-6 py-2 rounded-lg hover:bg-[#8A1C4A] transition duration-200 mt-4"
                 @click="enviarDocumentosOpcionales"
               >
                 Enviar Documentos Opcionales
               </button>
           </div>
-
         </div>
       </main>
     </div>
