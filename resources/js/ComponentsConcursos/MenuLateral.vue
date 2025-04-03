@@ -1,17 +1,17 @@
-//D:\proyecto\proyecto-pwa\resources\js\ComponentsConcursos\MenuLateral.vue
 <script setup>
 import { ref, defineProps, defineEmits } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { router } from '@inertiajs/vue3'; // Importación necesaria para manejar rutas
+import { router } from '@inertiajs/vue3';
 
 const { props } = usePage();
 const emit = defineEmits(['menu-selected']);
 const selectedMenu = ref('Concursos');
-const isMenuMinimized = ref(false); // Estado para controlar la minimización del menú
+const isMenuMinimized = ref(false);
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const menuItems = ref([]);
 
+// Configuración del menú según rol
 if (props.auth.user.rol === 'lider') {
     menuItems.value = [
         { name: 'Concursos', icon: 'fas fa-file-alt' },
@@ -44,29 +44,33 @@ if (props.auth.user.rol === 'lider') {
 }
 
 const selectMenu = (item) => {
-    selectedMenu.value = item.name.toLowerCase(); // Convierte el nombre a minúsculas
-    emit('menu-selected', selectedMenu.value); // Emite el evento
-    handleMenuSelected(selectedMenu.value); // Llama a la función para manejar la selección del menú
+    selectedMenu.value = item.name.toLowerCase();
+    emit('menu-selected', selectedMenu.value);
+    
+    // Solo manejar redirección para evaluador (opcional)
+    if (props.auth.user.rol === 'evaluador') {
+        handleEvaluadorMenu(item.name);
+    }
 };
 
 const toggleMenu = () => {
     isMenuMinimized.value = !isMenuMinimized.value;
 };
 
-const handleMenuSelected = (menu) => {
-    if (menu === 'evaluación') {
-        router.get(route('evaluacion.index')); // Redirige a Evaluación
-    } else if (menu === 'proyectos asignados') {
-        router.get(route('proyectos.asignados')); // Redirige a Proyectos Asignados
-    } else if (menu === 'criterios') {
-        router.get(route('criterios.index')); // Redirige a Criterios
-    } else if (menu === 'reportes') {
-        router.get(route('reportes.index')); // Redirige a Reportes
-    } else if (menu === 'perfil') {
-        router.get(route('perfil.index')); // Redirige a Perfil
+// Función específica para evaluador
+const handleEvaluadorMenu = (menuName) => {
+    const routesMap = {
+        'Evaluación': 'evaluacion.index',
+        'Proyectos Asignados': 'proyectos.asignados',
+        'Criterios': 'criterios.index',
+        'Reportes': 'reportes.index',
+        'Perfil': 'perfil.index'
+    };
+
+    if (routesMap[menuName] && route().has(routesMap[menuName])) {
+        router.get(route(routesMap[menuName]));
     }
 };
-
 </script>
 
 <template>
