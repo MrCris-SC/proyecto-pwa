@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ConcursoController;
 use App\Http\Controllers\ProyectosController;
 use App\Http\Controllers\EquipoController;
+use App\Http\Controllers\EvaluadorController; // Nuevo controlador
 use App\Models\Concursos;
 
 Route::get('/', function () {
@@ -18,6 +19,14 @@ Route::get('/', function () {
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);
+});
+
+Route::middleware(['auth', 'verified', 'role:evaluador'])->group(function () {
+    /*Route::get('/evaluacion', [EvaluadorController::class, 'index'])->name('evaluacion.index');
+    Route::get('/proyectos-asignados', [EvaluadorController::class, 'proyectosAsignados'])->name('proyectos.asignados');
+    Route::get('/criterios', [EvaluadorController::class, 'criterios'])->name('criterios.index');
+    Route::get('/reportes', [EvaluadorController::class, 'reportes'])->name('reportes.index');
+    Route::get('/perfil', [EvaluadorController::class, 'perfil'])->name('perfil.index');*/
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -65,6 +74,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Ruta para descargar un formato individual
     //Route::get('/descargar-formatos/{archivo}', [ProyectosController::class, 'descargarFormato'])->name('descargar.formato');
+    Route::get('/evaluacion', [EvaluadorController::class, 'index'])->name('evaluacion.index');
+    Route::get('/proyectos-asignados', [EvaluadorController::class, 'proyectosAsignados'])->name('proyectos.asignados');
+    Route::get('/criterios', [EvaluadorController::class, 'criterios'])->name('criterios.index');
+    Route::get('/reportes', [EvaluadorController::class, 'reportes'])->name('reportes.index');
+    Route::get('/perfil', [EvaluadorController::class, 'perfil'])->name('perfil.index');
+
 });
 
 Route::get('/new-user', [RegisterController::class, 'showRegistrationForm'])->middleware(['auth'])->name('new.user');

@@ -1,6 +1,8 @@
+//D:\proyecto\proyecto-pwa\resources\js\ComponentsConcursos\MenuLateral.vue
 <script setup>
 import { ref, defineProps, defineEmits } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3'; // Importación necesaria para manejar rutas
 
 const { props } = usePage();
 const emit = defineEmits(['menu-selected']);
@@ -25,6 +27,14 @@ if (props.auth.user.rol === 'lider') {
         { name: 'Configuración', icon: 'fas fa-cog' },
         { name: 'Reportes', icon: 'fas fa-chart-pie' }
     ];
+} else if (props.auth.user.rol === 'evaluador') {
+    menuItems.value = [
+        { name: 'Evaluación', icon: 'fas fa-clipboard-check' },
+        { name: 'Proyectos Asignados', icon: 'fas fa-list-ul' },
+        { name: 'Criterios', icon: 'fas fa-check-square' },
+        { name: 'Reportes', icon: 'fas fa-chart-bar' },
+        { name: 'Perfil', icon: 'fas fa-user' }
+    ];
 } else {
     menuItems.value = [
         { name: 'Inicio', icon: 'fas fa-home' },
@@ -34,14 +44,28 @@ if (props.auth.user.rol === 'lider') {
 }
 
 const selectMenu = (item) => {
-    selectedMenu.value = item.name.toLowerCase();
-    emit('menu-selected', selectedMenu.value);
+    selectedMenu.value = item.name.toLowerCase(); // Convierte el nombre a minúsculas
+    emit('menu-selected', selectedMenu.value); // Emite el evento
+    handleMenuSelected(selectedMenu.value); // Llama a la función para manejar la selección del menú
 };
 
 const toggleMenu = () => {
     isMenuMinimized.value = !isMenuMinimized.value;
 };
 
+const handleMenuSelected = (menu) => {
+    if (menu === 'evaluación') {
+        router.get(route('evaluacion.index')); // Redirige a Evaluación
+    } else if (menu === 'proyectos asignados') {
+        router.get(route('proyectos.asignados')); // Redirige a Proyectos Asignados
+    } else if (menu === 'criterios') {
+        router.get(route('criterios.index')); // Redirige a Criterios
+    } else if (menu === 'reportes') {
+        router.get(route('reportes.index')); // Redirige a Reportes
+    } else if (menu === 'perfil') {
+        router.get(route('perfil.index')); // Redirige a Perfil
+    }
+};
 
 </script>
 
