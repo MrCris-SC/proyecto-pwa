@@ -98,6 +98,18 @@
                 </span>
             </div>
 
+            <!-- Botón para cambiar estado a cerrado -->
+            <div class="relative group">
+                <button @click.stop="handleCerrar" class="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors duration-200 border border-gray-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600 group-hover:text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m0 0v6m0-6H9" />
+                    </svg>
+                </button>
+                <span class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    Cerrar
+                </span>
+            </div>
+
             <div class="relative group">
                 <button @click.stop="handleEliminar" class="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors duration-200 border border-gray-300">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600 group-hover:text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
