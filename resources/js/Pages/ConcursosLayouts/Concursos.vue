@@ -8,6 +8,7 @@ import TarjetaConcurso from '@/Components/TarjetaConcurso.vue';
 import NuevoConcurso from '@/ComponentsConcursos/NuevoConcurso.vue';
 import RegistroProyectos from '@/ComponentsConcursos/RegistroProyectos.vue';
 import GestionProyectos from '@/Pages/ConcursosLayouts/GestionProyectos.vue'; // nuevo componente
+import RegistroCriterios from '@/Pages/ConcursosLayouts/RegistroCriterios.vue';
 
 const selectedMenu = ref('Concursos');
 const showForm = ref(false);
@@ -19,6 +20,7 @@ const userRole = props.auth.user.rol;
 const concursos = ref(props.concursos || []);
 const inscrito = ref(props.inscrito || false);
 const concursoEnPantalla = ref(null);
+const criterios = ref(props.criterios || []);
 
 const obtenerConcursoEnPantalla = () => {
   const usuarioLider = props.auth.user;
@@ -34,16 +36,19 @@ const obtenerConcursoEnPantalla = () => {
 };
 
 const handleMenuSelected = (menu) => {
-  selectedMenu.value = menu.toLowerCase(); // forzamos a minúsculas
-  showForm.value = selectedMenu.value !== 'concursos';
-  if (selectedMenu.value === 'gestión de proyectos') {
-    router.get(route('gestion.proyectos'));
-  } else if (selectedMenu.value === 'concursos') {
-    concursoSeleccionado.value = null;
-    obtenerConcursoEnPantalla();
-  }
-};
+    selectedMenu.value = menu.toLowerCase(); // Actualiza el menú seleccionado
+    showForm.value = selectedMenu.value !== 'concursos'; // Controla si se muestra un formulario
 
+    if (selectedMenu.value === 'gestión de proyectos') {
+        router.get(route('gestion.proyectos')); // Redirige a gestión de proyectos
+    } else if (selectedMenu.value === 'registro de criterios') {
+        // Asegúrate de que esta ruta sea válida y no se sobrescriba
+        router.get(route('criterios.registro'));
+    } else if (selectedMenu.value === 'concursos') {
+        concursoSeleccionado.value = null;
+        obtenerConcursoEnPantalla(); // Restablece el concurso en pantalla
+    }
+};
 
 
 const handleDownloadPDF = () => {
@@ -100,12 +105,9 @@ obtenerConcursoEnPantalla();
   <AuthenticatedLayout>
     <template #header>
       <h2 class="text-xl font-semibold leading-tight text-[#611232]">
-        Crear Concurso
+        {{ selectedMenu ? selectedMenu.charAt(0).toUpperCase() + selectedMenu.slice(1) : '' }}
       </h2>
     </template>
-    <div v-if="mensajeExito" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-      <span class="block sm:inline">{{ mensajeExito }}</span>
-    </div>
 
     <div class="flex flex-col lg:flex-row min-h-screen py-6 px-4 lg:px-12 bg-[#F8F9FA]">
       <!-- Menú lateral -->
@@ -117,47 +119,37 @@ obtenerConcursoEnPantalla();
           {{ selectedMenu ? selectedMenu.charAt(0).toUpperCase() + selectedMenu.slice(1) : '' }}
         </h2>
 
-        <!-- Contenedor flex para el botón -->
-        <div class="flex justify-end">
-          <button 
-            v-if="selectedMenu === 'concursos'" 
-            @click="handleDownloadPDF" 
-            class="mt-3 bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
-          >
-            Descargar FOREG
-          </button>
+        <!-- Mostrar contenido según el menú seleccionado -->
+        <div v-if="selectedMenu === 'concursos'">
+          <!-- Contenido de concursos -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <TarjetaCrearConcurso 
+              v-if="$page.props.auth.user.rol === 'admin' || $page.props.auth.user.rol === 'vinculador'"
+              @click="handleCreateClick" 
+              class="transition-transform transform hover:scale-105 hover:shadow-lg" 
+            />
+            <TarjetaConcurso                        
+              v-for="concurso in concursos"
+              :key="concurso.id"
+              :concurso="concurso"
+              :titulo="concurso.nombre"
+              :fechaInicio="concurso.fecha_inicio"
+              :fechaApertura="concurso.fecha_apertura"
+              :fechaFinalizacion="concurso.fecha_terminacion"
+              :fase="concurso.fase" 
+              :inscrito="inscrito"
+              :isAdmin="$page.props.auth.user.rol === 'admin'"
+              @click="handleConcursoClick(concurso)"
+              @editar="handleEditar"
+              @eliminar="handleEliminar"
+              class="transition-transform transform hover:scale-105 hover:shadow-lg"
+            />
+          </div>
         </div>
 
-        <!-- Formulario para Registro -->
-        <div v-if="showForm" class="relative">
-          <NuevoConcurso v-if="selectedMenu === 'nuevo concurso'" @close="handleCloseForm" />
-          <RegistroProyectos v-if="selectedMenu === 'registro'" :concurso-id="concursoSeleccionado" @close="handleCloseForm" />
-        </div>
-
-       
-        <!-- Tarjetas de concursos -->
-        <div v-if="selectedMenu === 'concursos'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <TarjetaCrearConcurso 
-            v-if="$page.props.auth.user.rol === 'admin' || $page.props.auth.user.rol === 'vinculador'"
-            @click="handleCreateClick" 
-            class="transition-transform transform hover:scale-105 hover:shadow-lg" 
-          />
-          <TarjetaConcurso                        
-            v-for="concurso in concursos"
-            :key="concurso.id"
-            :concurso="concurso"
-            :titulo="concurso.nombre"
-            :fechaInicio="concurso.fecha_inicio"
-            :fechaApertura="concurso.fecha_apertura"
-            :fechaFinalizacion="concurso.fecha_terminacion"
-            :fase="concurso.fase" 
-            :inscrito="inscrito"
-            :isAdmin="$page.props.auth.user.rol === 'admin'"
-            @click="handleConcursoClick(concurso)"
-            @editar="handleEditar"
-            @eliminar="handleEliminar"
-            class="transition-transform transform hover:scale-105 hover:shadow-lg"
-          />
+        <div v-else-if="selectedMenu === 'registro de criterios'">
+          <!-- Contenido de Registro de Criterios -->
+          <RegistroCriterios :concursos="concursos" :criteriosExistentes="criterios" />
         </div>
       </main>
     </div>

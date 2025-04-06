@@ -24,6 +24,7 @@ if (props.auth.user.rol === 'lider') {
     menuItems.value = [
         { name: 'Usuarios', icon: 'fas fa-users-cog' },
         { name: 'Concursos', icon: 'fas fa-trophy' },
+        { name: 'Registro de Criterios', icon: 'fas fa-list-check' }, // Nueva opción
         { name: 'Configuración', icon: 'fas fa-cog' },
         { name: 'Reportes', icon: 'fas fa-chart-pie' }
     ];
@@ -44,13 +45,8 @@ if (props.auth.user.rol === 'lider') {
 }
 
 const selectMenu = (item) => {
-    selectedMenu.value = item.name.toLowerCase();
-    emit('menu-selected', selectedMenu.value);
-    
-    // Solo manejar redirección para evaluador (opcional)
-    if (props.auth.user.rol === 'evaluador') {
-        handleEvaluadorMenu(item.name);
-    }
+    selectedMenu.value = item.name.toLowerCase(); // Actualiza el menú seleccionado
+    emit('menu-selected', selectedMenu.value); // Emite el evento al componente padre
 };
 
 const toggleMenu = () => {

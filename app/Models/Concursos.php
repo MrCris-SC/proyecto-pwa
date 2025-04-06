@@ -49,4 +49,10 @@ class Concursos extends Model
     {
         return $this->plantel->nombre_corto ?? null;
     }
-}
+
+    // Agrega esto al modelo Concursos
+    public function criteriosEvaluacion()
+    {
+        return $this->hasMany(Criterio::class, 'concurso_id');
+    }
+    }

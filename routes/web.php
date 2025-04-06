@@ -80,6 +80,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/reportes', [EvaluadorController::class, 'reportes'])->name('reportes.index');
     Route::get('/perfil', [EvaluadorController::class, 'perfil'])->name('perfil.index');
 
+    Route::get('/registro', [ConcursoController::class, 'registroCriterios'])->name('criterios.registro');
+            
+    Route::post('/guardar', [ConcursoController::class, 'guardarCriterios'])->name('criterios.store');
 });
 
 Route::get('/new-user', [RegisterController::class, 'showRegistrationForm'])->middleware(['auth'])->name('new.user');

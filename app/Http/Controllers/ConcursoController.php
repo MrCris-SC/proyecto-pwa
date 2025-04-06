@@ -8,9 +8,13 @@ use App\Models\Concursos;
 use App\Models\Estados;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use App\Models\Criterio;
+
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ConcursoController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Muestra la página de concursos
      *
@@ -189,5 +193,38 @@ class ConcursoController extends Controller
         }
 
         return response("Todos los concursos estatales tienen estados válidos.");
+    }
+
+    public function registroCriterios()
+    {
+        $concursos = Concursos::all(); // Obtén los concursos
+        $criterios = Criterio::all(); // Obtén los criterios existentes
+
+        return Inertia::render('ConcursosLayouts/Concursos', [
+            'concursos' => $concursos,
+            'criterios' => $criterios,
+        ]);
+    }
+
+    public function guardarCriterios(Request $request)
+    {
+        $validated = $request->validate([
+            'criterios' => 'required|array|min:1',
+            'criterios.*.nombre' => 'required|string|max:255',
+            'criterios.*.puntaje_maximo' => 'required|numeric|min:1',
+        ]);
+
+        // Elimina todos los criterios existentes (o usa update si prefieres conservar IDs)
+        Criterio::truncate();
+        
+        // Crea nuevos criterios
+        foreach ($validated['criterios'] as $criterioData) {
+            Criterio::create([
+                'nombre' => $criterioData['nombre'],
+                'puntaje_maximo' => $criterioData['puntaje_maximo']
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Criterios guardados exitosamente.');
     }
 }
