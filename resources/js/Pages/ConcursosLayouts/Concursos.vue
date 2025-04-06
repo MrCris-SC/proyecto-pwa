@@ -8,6 +8,8 @@ import TarjetaConcurso from '@/Components/TarjetaConcurso.vue';
 import NuevoConcurso from '@/ComponentsConcursos/NuevoConcurso.vue';
 import RegistroProyectos from '@/ComponentsConcursos/RegistroProyectos.vue';
 import GestionProyectos from '@/Pages/ConcursosLayouts/GestionProyectos.vue';
+import ModalConfirmacion from '@/Components/ModalConfirmacion.vue';
+import RegistroEvaluadores from '@/ComponentsConcursos/RegistroEvaluadores.vue';
 
 const selectedMenu = ref('Concursos');
 const showForm = ref(false);
@@ -62,6 +64,7 @@ const handleEditar = (concurso) => {
   }
 };  
 
+
 const handleEliminar = (concurso) => {
   if (confirm('¿Estás seguro de eliminar este concurso?')) {
     router.delete(route('concursos.destroy', concurso.id), {
@@ -78,7 +81,11 @@ const handleCloseForm = () => {
 
 const handleConcursoClick = (concurso) => {
   if (concurso && concurso.id) {
-    if (inscrito.value) {
+    if (userRole === 'evaluador') {
+      selectedMenu.value = 'Registro Evaluadores';
+      showForm.value = true;
+      concursoSeleccionado.value = concurso.id;
+    } else if (inscrito.value) {
       router.get(route('gestion.proyectos'));
     } else {
       selectedMenu.value = 'Registro';
@@ -89,6 +96,31 @@ const handleConcursoClick = (concurso) => {
     console.error('Invalid concurso object:', concurso);
   }
 };
+
+const mostrarModalCerrar = ref(false);
+const concursoParaCerrar = ref(null);
+
+const handleCerrar = (concurso) => {
+  concursoParaCerrar.value = concurso;
+  mostrarModalCerrar.value = true;
+};
+
+const confirmarCerrarConcurso = () => {
+  if (concursoParaCerrar.value && concursoParaCerrar.value.id) {
+    router.post(route('concursos.cambiar.estado', concursoParaCerrar.value.id), {
+      nuevo_estado: 'cerrado',
+    }, {
+      onSuccess: () => {
+        mostrarModalCerrar.value = false;
+        router.reload();
+      },
+      onError: (error) => {
+        console.error('Error al cerrar el concurso:', error);
+      },
+    });
+  }
+};
+
 obtenerConcursoEnPantalla();
 </script>
 
@@ -128,6 +160,11 @@ obtenerConcursoEnPantalla();
         <div v-if="showForm" class="relative">
           <NuevoConcurso v-if="selectedMenu === 'Nuevo concurso'" @close="handleCloseForm" />
           <RegistroProyectos v-if="selectedMenu === 'Registro'" :concurso-id="concursoSeleccionado" @close="handleCloseForm" />
+          <RegistroEvaluadores 
+            v-if="selectedMenu === 'Registro Evaluadores'" 
+            :concurso-id="concursoSeleccionado" 
+            @close="handleCloseForm" 
+          />
         </div>
 
         <!-- Tarjetas de concursos -->
@@ -151,10 +188,17 @@ obtenerConcursoEnPantalla();
             @click="handleConcursoClick(concurso)"
             @editar="handleEditar"
             @eliminar="handleEliminar"
+            @cerrar="handleCerrar"
             class="transition-transform transform hover:scale-105 hover:shadow-lg"
           />
         </div>
       </main>
     </div>
+    <ModalConfirmacion
+      v-if="mostrarModalCerrar"
+      @confirmar="confirmarCerrarConcurso"
+      @cancelar="mostrarModalCerrar = false"
+      mensaje="¿Estás seguro de que deseas cerrar este concurso?"
+    />
   </AuthenticatedLayout>
 </template>
