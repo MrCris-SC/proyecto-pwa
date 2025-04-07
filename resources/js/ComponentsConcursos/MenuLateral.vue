@@ -28,7 +28,9 @@ if (props.auth.user.rol === 'lider') {
     ];
 } else if (props.auth.user.rol === 'evaluador') {
     menuItems.value = [
-        { name: 'Concursos', icon: 'fas fa-file-alt' },
+
+        { name: 'Concursos', icon: 'fas fa-trophy' },
+
         { name: 'Evaluación', icon: 'fas fa-clipboard-check' },
         { name: 'Proyectos Asignados', icon: 'fas fa-list-ul' },
         { name: 'Criterios', icon: 'fas fa-check-square' },
@@ -44,13 +46,66 @@ if (props.auth.user.rol === 'lider') {
 }
 
 const selectMenu = (item) => {
-    selectedMenu.value = item.name;
-    emit('menu-selected', item.name);
+
+    selectedMenu.value = item.name.toLowerCase();
+    emit('menu-selected', selectedMenu.value);
+    
+    if (props.auth.user.rol === 'evaluador') {
+        handleEvaluadorMenu(item.name);
+    } else if (props.auth.user.rol === 'admin') {
+        handleAdminMenu(item.name);
+    } else if (props.auth.user.rol === 'lider') {
+        handleLiderMenu(item.name);
+    }
+
 };
 
 const toggleMenu = () => {
     isMenuMinimized.value = !isMenuMinimized.value;
 };
+
+const handleLiderMenu = (menuName) => {
+    const routesMap = {
+        'Concursos': 'concursos.index',
+        'Gestión de proyectos': 'gestion.proyectos',
+        'Proceso': 'proceso.index',
+        'Resultados': 'resultados.index',
+        'Equipos Registrados': 'equipos.registrados'
+    };
+
+    if (routesMap[menuName] && route().has(routesMap[menuName])) {
+        router.get(route(routesMap[menuName]));
+    }
+};
+const handleEvaluadorMenu = (menuName) => {
+    const routesMap = {
+        'Concursos': 'concursos.index',
+        'Evaluación': 'evaluacion.index',
+        'Proyectos Asignados': 'proyectos.asignados',
+        'Criterios': 'criterios.index',
+        'Reportes': 'reportes.index',
+        'Perfil': 'perfil.index'
+    };
+
+    if (routesMap[menuName] && route().has(routesMap[menuName])) {
+        router.get(route(routesMap[menuName]));
+    }
+};
+
+const handleAdminMenu = (menuName) => {
+    const routesMap = {
+        'Usuarios': 'new.user',
+        'Concursos': 'concursos.index',
+        'Registro de Criterios': 'criterios.registro',
+        'Configuración': 'configuracion.index',
+        'Reportes': 'reportes.index'
+    };
+
+    if (routesMap[menuName] && route().has(routesMap[menuName])) {
+        router.get(route(routesMap[menuName]));
+    }
+};
+
 </script>
 
 <template>
