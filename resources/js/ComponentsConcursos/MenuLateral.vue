@@ -52,13 +52,27 @@ const selectMenu = (item) => {
         handleEvaluadorMenu(item.name);
     } else if (props.auth.user.rol === 'admin') {
         handleAdminMenu(item.name);
+    } else if (props.auth.user.rol === 'lider') {
+        handleLiderMenu(item.name);
     }
 };
 
 const toggleMenu = () => {
     isMenuMinimized.value = !isMenuMinimized.value;
 };
+const handleLiderMenu = (menuName) => {
+    const routesMap = {
+        'Concursos': 'concursos.index',
+        'Gestión de proyectos': 'gestion.proyectos',
+        'Proceso': 'proceso.index',
+        'Resultados': 'resultados.index',
+        'Equipos Registrados': 'equipos.registrados'
+    };
 
+    if (routesMap[menuName] && route().has(routesMap[menuName])) {
+        router.get(route(routesMap[menuName]));
+    }
+};
 const handleEvaluadorMenu = (menuName) => {
     const routesMap = {
         'Concursos': 'concursos.index',
