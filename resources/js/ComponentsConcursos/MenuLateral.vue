@@ -1,7 +1,6 @@
 <script setup>
 import { ref, defineProps, defineEmits } from 'vue';
-import { usePage } from '@inertiajs/vue3';
-import { router } from '@inertiajs/vue3';
+import { usePage, router } from '@inertiajs/vue3';
 
 const { props } = usePage();
 const emit = defineEmits(['menu-selected']);
@@ -24,7 +23,7 @@ if (props.auth.user.rol === 'lider') {
     menuItems.value = [
         { name: 'Usuarios', icon: 'fas fa-users-cog' },
         { name: 'Concursos', icon: 'fas fa-trophy' },
-        { name: 'Registro de Criterios', icon: 'fas fa-list-check' }, // Nueva opción
+        { name: 'Registro de Criterios', icon: 'fas fa-list-check' },
         { name: 'Configuración', icon: 'fas fa-cog' },
         { name: 'Reportes', icon: 'fas fa-chart-pie' }
     ];
@@ -45,15 +44,20 @@ if (props.auth.user.rol === 'lider') {
 }
 
 const selectMenu = (item) => {
-    selectedMenu.value = item.name.toLowerCase(); // Actualiza el menú seleccionado
-    emit('menu-selected', selectedMenu.value); // Emite el evento al componente padre
+    selectedMenu.value = item.name.toLowerCase();
+    emit('menu-selected', selectedMenu.value);
+    
+    if (props.auth.user.rol === 'evaluador') {
+        handleEvaluadorMenu(item.name);
+    } else if (props.auth.user.rol === 'admin') {
+        handleAdminMenu(item.name);
+    }
 };
 
 const toggleMenu = () => {
     isMenuMinimized.value = !isMenuMinimized.value;
 };
 
-// Función específica para evaluador
 const handleEvaluadorMenu = (menuName) => {
     const routesMap = {
         'Evaluación': 'evaluacion.index',
@@ -67,13 +71,24 @@ const handleEvaluadorMenu = (menuName) => {
         router.get(route(routesMap[menuName]));
     }
 };
+
+const handleAdminMenu = (menuName) => {
+    const routesMap = {
+        'Usuarios': 'new.user',
+        'Concursos': 'concursos.index',
+        'Registro de Criterios': 'criterios.registro',
+        'Configuración': 'configuracion.index',
+        'Reportes': 'reportes.index'
+    };
+
+    if (routesMap[menuName] && route().has(routesMap[menuName])) {
+        router.get(route(routesMap[menuName]));
+    }
+};
 </script>
 
 <template>
-    <aside 
-        class="fixed lg:relative bottom-0 left-0 right-0 w-full lg:w-64 bg-[#611232] text-white shadow-lg rounded-t-lg lg:rounded-lg p-3 lg:p-5 transition-all duration-300 ease-in-out z-50">
-
-        <!-- Contenedor del menú -->
+    <aside class="fixed lg:relative bottom-0 left-0 right-0 w-full lg:w-64 bg-[#611232] text-white shadow-lg rounded-t-lg lg:rounded-lg p-3 lg:p-5 transition-all duration-300 ease-in-out z-50">
         <ul class="flex lg:flex-col justify-around lg:justify-start space-x-4 lg:space-x-0 lg:space-y-3">
             <li 
                 v-for="item in menuItems" 
@@ -82,15 +97,10 @@ const handleEvaluadorMenu = (menuName) => {
                 :class="selectedMenu === item.name.toLowerCase() ? 'bg-[#8A1C4A] text-white shadow-md' : 'hover:bg-[#9C2755] hover:text-white'"
                 @click="selectMenu(item)"
             >
-                <!-- Ícono -->
                 <i :class="item.icon" class="text-white text-xl lg:text-lg"></i>
-
-                <!-- Texto en tooltip para móviles -->
                 <span class="lg:hidden absolute bottom-full mb-2 px-3 py-1 bg-[#8A1C4A] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     {{ item.name }}
                 </span>
-
-                <!-- Texto visible en pantallas grandes -->
                 <span class="hidden lg:inline ml-2">{{ item.name }}</span>
             </li>
         </ul>

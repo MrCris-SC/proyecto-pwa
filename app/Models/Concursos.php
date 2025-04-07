@@ -56,7 +56,7 @@ class Concursos extends Model
     }
 
     // Agrega esto al modelo Concursos
-    public function criteriosEvaluacion()
+    public function criterios()
     {
         return $this->hasMany(Criterio::class, 'concurso_id');
     }
