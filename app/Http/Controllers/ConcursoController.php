@@ -7,7 +7,10 @@ use Inertia\Inertia;
 use App\Models\Concursos;
 use App\Models\Estados;
 use App\Models\User;
+use App\Models\Criterio;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
+
 
 class ConcursoController extends Controller
 {
@@ -255,5 +258,44 @@ class ConcursoController extends Controller
             $indiceAsesor = ($indiceAsesor + 1) % $totalAsesores;
         }
     }
+
+    
+    // app/Http/Controllers/ConcursoController.php
+
+    public function registroCriterios()
+    {
+        $concursos = Concursos::with('criterios')->get();
+        
+        return Inertia::render('ConcursosLayouts/RegistroCriterios', [
+            'concursos' => $concursos,
+        ]);
+    }
+
+    public function guardarCriterios(Request $request)
+    {
+        $validated = $request->validate([
+            'concurso_id' => 'required|exists:concursos,id',
+            'criterios' => 'required|array|min:1',
+            'criterios.*.nombre' => 'required|string|max:255|distinct',
+            'criterios.*.puntaje_maximo' => 'required|numeric|min:1|max:100',
+        ]);
+
+        DB::transaction(function () use ($validated) {
+            // Eliminar criterios existentes para este concurso
+            Criterio::where('concurso_id', $validated['concurso_id'])->delete();
+            
+            // Crear nuevos criterios
+            foreach ($validated['criterios'] as $criterioData) {
+                Criterio::create([
+                    'concurso_id' => $validated['concurso_id'],
+                    'nombre' => $criterioData['nombre'],
+                    'puntaje_maximo' => $criterioData['puntaje_maximo']
+                ]);
+            }
+        });
+
+        return redirect()->back()->with('success', 'Criterios guardados exitosamente.');
+    }
+
 
 }
