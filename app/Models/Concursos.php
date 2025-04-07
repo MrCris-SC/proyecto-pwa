@@ -44,11 +44,6 @@ class Concursos extends Model
         }
         return null;
     }
-    public function evaluadores()
-    {
-        return $this->belongsToMany(User::class, 'concurso_evaluador', 'concurso_id', 'evaluador_id')
-                    ->where('rol', 'evaluador');
-    }
 
     public function getPlantelNombreAttribute()
     {

@@ -10,10 +10,14 @@ use App\Models\User;
 use App\Models\Criterio;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
+use App\Models\Criterio;
+
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 
 class ConcursoController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Muestra la página de concursos
      *
@@ -194,108 +198,36 @@ class ConcursoController extends Controller
         return response("Todos los concursos estatales tienen estados válidos.");
     }
 
-    /**
-     * Cambia el estado de un concurso.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $concursoId
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function cambiarEstado(Request $request, $id)
-    {
-        $concurso = Concurso::findOrFail($id);
-        $nuevoEstado = $request->input('nuevo_estado');
-
-        if ($nuevoEstado === 'cerrado') {
-            $concurso->estado = 'cerrado';
-            $concurso->save();
-
-            // Asignar equipos a asesores
-            $this->asignarEvaluaciones($concurso);
-
-            return back()->with('success', 'Concurso cerrado y evaluaciones asignadas.');
-        }
-
-        return back()->with('error', 'Estado no reconocido.');
-    }
-
-    private function asignarEvaluaciones($concurso)
-    {
-        $equipos = Equipo::where('concurso_id', $concurso->id)->get();
-        $asesores = Asesor::all();
-        $criterios = CriterioEvaluacion::all();
-
-        if ($equipos->isEmpty() || $asesores->isEmpty() || $criterios->isEmpty()) {
-            // No se puede continuar
-            return;
-        }
-
-        // Repartir equipos entre asesores
-        $totalAsesores = $asesores->count();
-        $indiceAsesor = 0;
-
-        foreach ($equipos as $equipo) {
-            $asesor = $asesores[$indiceAsesor];
-
-            // 1. Crear evaluación
-            $evaluacion = Evaluacion::create([
-                'asesor_id' => $asesor->id,
-                'equipo_id' => $equipo->id,
-                'estado' => 'Asignado',
-            ]);
-
-            // 2. Precrear cada criterio para que el asesor solo ingrese puntajes luego
-            foreach ($criterios as $criterio) {
-                PuntajeEvaluacion::create([
-                    'evaluacion_id' => $evaluacion->id,
-                    'criterio_id' => $criterio->id,
-                    'puntaje_obtenido' => null,
-                    'comentario' => null,
-                ]);
-            }
-
-            // 3. Avanzar al siguiente asesor (distribución equitativa)
-            $indiceAsesor = ($indiceAsesor + 1) % $totalAsesores;
-        }
-    }
-
-    
-    // app/Http/Controllers/ConcursoController.php
-
     public function registroCriterios()
     {
-        $concursos = Concursos::with('criterios')->get();
-        
-        return Inertia::render('ConcursosLayouts/RegistroCriterios', [
+        $concursos = Concursos::all(); // Obtén los concursos
+        $criterios = Criterio::all(); // Obtén los criterios existentes
+
+        return Inertia::render('ConcursosLayouts/Concursos', [
             'concursos' => $concursos,
+            'criterios' => $criterios,
         ]);
     }
 
     public function guardarCriterios(Request $request)
     {
         $validated = $request->validate([
-            'concurso_id' => 'required|exists:concursos,id',
             'criterios' => 'required|array|min:1',
-            'criterios.*.nombre' => 'required|string|max:255|distinct',
-            'criterios.*.puntaje_maximo' => 'required|numeric|min:1|max:100',
+            'criterios.*.nombre' => 'required|string|max:255',
+            'criterios.*.puntaje_maximo' => 'required|numeric|min:1',
         ]);
 
-        DB::transaction(function () use ($validated) {
-            // Eliminar criterios existentes para este concurso
-            Criterio::where('concurso_id', $validated['concurso_id'])->delete();
-            
-            // Crear nuevos criterios
-            foreach ($validated['criterios'] as $criterioData) {
-                Criterio::create([
-                    'concurso_id' => $validated['concurso_id'],
-                    'nombre' => $criterioData['nombre'],
-                    'puntaje_maximo' => $criterioData['puntaje_maximo']
-                ]);
-            }
-        });
+        // Elimina todos los criterios existentes (o usa update si prefieres conservar IDs)
+        Criterio::truncate();
+        
+        // Crea nuevos criterios
+        foreach ($validated['criterios'] as $criterioData) {
+            Criterio::create([
+                'nombre' => $criterioData['nombre'],
+                'puntaje_maximo' => $criterioData['puntaje_maximo']
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Criterios guardados exitosamente.');
     }
-
-
 }
