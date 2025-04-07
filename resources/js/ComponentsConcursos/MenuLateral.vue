@@ -29,6 +29,7 @@ if (props.auth.user.rol === 'lider') {
     ];
 } else if (props.auth.user.rol === 'evaluador') {
     menuItems.value = [
+        { name: 'Concursos', icon: 'fas fa-trophy' },
         { name: 'Evaluación', icon: 'fas fa-clipboard-check' },
         { name: 'Proyectos Asignados', icon: 'fas fa-list-ul' },
         { name: 'Criterios', icon: 'fas fa-check-square' },
@@ -60,6 +61,7 @@ const toggleMenu = () => {
 
 const handleEvaluadorMenu = (menuName) => {
     const routesMap = {
+        'Concursos': 'concursos.index',
         'Evaluación': 'evaluacion.index',
         'Proyectos Asignados': 'proyectos.asignados',
         'Criterios': 'criterios.index',
