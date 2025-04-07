@@ -37,12 +37,12 @@ const obtenerConcursoEnPantalla = () => {
 };
 
 const handleMenuSelected = (menu) => {
-    selectedMenu.value = menu.toLowerCase(); // Actualiza el menú seleccionado
+    selectedMenu.value = menu; // Actualiza el menú seleccionado
     showForm.value = selectedMenu.value !== 'concursos'; // Controla si se muestra un formulario
-
-    if (selectedMenu.value === 'concursos') {
-        // Asegúrate de que se muestre la lista de concursos
-        showForm.value = false;
+    
+    if (selectedMenu.value === 'Concursos') {
+      concursoSeleccionado.value = null;
+      obtenerConcursoEnPantalla();
     } else if (selectedMenu.value === 'gestión de proyectos') {
         router.get(route('gestion.proyectos')); // Redirige a gestión de proyectos
     } else if (selectedMenu.value === 'registro de criterios') {

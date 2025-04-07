@@ -29,6 +29,7 @@ if (props.auth.user.rol === 'lider') {
     ];
 } else if (props.auth.user.rol === 'evaluador') {
     menuItems.value = [
+        { name: 'Concursos', icon: 'fas fa-file-alt' },
         { name: 'Evaluación', icon: 'fas fa-clipboard-check' },
         { name: 'Proyectos Asignados', icon: 'fas fa-list-ul' },
         { name: 'Criterios', icon: 'fas fa-check-square' },
