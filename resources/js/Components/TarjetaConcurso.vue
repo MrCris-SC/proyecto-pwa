@@ -101,8 +101,8 @@
             <!-- Botón para cambiar estado a cerrado -->
             <div class="relative group">
                 <button @click.stop="handleCerrar" class="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors duration-200 border border-gray-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600 group-hover:text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m0 0v6m0-6H9" />
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600 group-hover:text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m-7 4h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                 </button>
                 <span class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -152,6 +152,10 @@ const handleEliminar = (e) => {
   emit('eliminar', props.concurso);
 };
 
+const handleCerrar = (e) => {
+  e.stopPropagation();
+  emit('cerrar', props.concurso);
+};
 const formatDate = (dateString) => {
   if (!dateString) return 'No definida';
   const options = { year: 'numeric', month: 'short', day: 'numeric' };

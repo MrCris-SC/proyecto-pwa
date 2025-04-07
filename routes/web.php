@@ -54,6 +54,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/concursos', [ConcursoController::class, 'index'])->name('concursos.index');
     Route::post('/concursos', [ConcursoController::class, 'store'])->name('concursos.store');
 
+    Route::post('/concursos/{concurso}/cambiar-estado', [ConcursoController::class, 'cambiarEstado'])->name('concursos.cambiar.estado');
+
     Route::get('/api/modalidades', [ProyectosController::class, 'index']);
     Route::post('/api/proyectos', [ProyectosController::class, 'store'])->name('proyectos.store');
     Route::post('/api/proyectos/{proyecto}/documentos', [ProyectosController::class, 'subirDocumento'])->name('proyectos.documentos.subir');

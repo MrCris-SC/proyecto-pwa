@@ -38,7 +38,14 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $this->notify(new CustomVerifyEmail());
     }
-
+    public function evaluaciones()
+    {
+        return $this->hasMany(Evaluaciones::class, 'evaluador_id');
+    }
+    public function concursosAsignados()
+    {
+        return $this->belongsToMany(Concursos::class, 'concurso_evaluador', 'evaluador_id', 'concurso_id');
+    }
     public function equipo()
     {
         return $this->belongsTo(Equipo::class);
