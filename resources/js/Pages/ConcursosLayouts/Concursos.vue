@@ -37,15 +37,18 @@ const obtenerConcursoEnPantalla = () => {
 };
 
 const handleMenuSelected = (menu) => {
-  selectedMenu.value = menu; // Usamos el valor exacto recibido
-  showForm.value = menu !== 'Concursos'; // Comparación exacta
-  
-  if (menu === 'Gestión de proyectos') {
-    router.get(route('gestion.proyectos'));
-  } else if (menu === 'Concursos') {
-    concursoSeleccionado.value = null;
-    obtenerConcursoEnPantalla();
-  }
+  selectedMenu.value = menu.toLowerCase(); // Actualiza el menú seleccionado
+    showForm.value = selectedMenu.value !== 'concursos'; // Controla si se muestra un formulario
+
+    if (selectedMenu.value === 'concursos') {
+        // Asegúrate de que se muestre la lista de concursos
+        showForm.value = false;
+    } else if (selectedMenu.value === 'gestión de proyectos') {
+        router.get(route('gestion.proyectos')); // Redirige a gestión de proyectos
+    } else if (selectedMenu.value === 'registro de criterios') {
+        // Cambia el componente dinámico sin recargar la página
+        showForm.value = true;
+    } 
 };
 
 const handleDownloadPDF = () => {
