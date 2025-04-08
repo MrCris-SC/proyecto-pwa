@@ -9,7 +9,6 @@ import NuevoConcurso from '@/ComponentsConcursos/NuevoConcurso.vue';
 import RegistroProyectos from '@/ComponentsConcursos/RegistroProyectos.vue';
 import GestionProyectos from '@/Pages/ConcursosLayouts/GestionProyectos.vue';
 import ModalConfirmacion from '@/Components/ModalConfirmacion.vue';
-import RegistroEvaluadores from '@/ComponentsConcursos/RegistroEvaluadores.vue';
 import RegistroCriterios from '@/Pages/ConcursosLayouts/RegistroCriterios.vue';
 
 const selectedMenu = ref('Concursos');
@@ -83,24 +82,6 @@ const handleCloseForm = () => {
   showForm.value = false;
 };
 
-const handleConcursoClick = (concurso) => {
-  if (concurso && concurso.id) {
-    if (userRole === 'evaluador') {
-      selectedMenu.value = 'Registro Evaluadores';
-      showForm.value = true;
-      concursoSeleccionado.value = concurso.id;
-    } else if (inscrito.value) {
-      router.get(route('gestion.proyectos'));
-    } else {
-      selectedMenu.value = 'Registro';
-      showForm.value = true;
-      concursoSeleccionado.value = concurso.id;
-    }
-  } else {
-    console.error('Invalid concurso object:', concurso);
-  }
-};
-
 const mostrarModalCerrar = ref(false);
 const concursoParaCerrar = ref(null);
 
@@ -120,6 +101,44 @@ const confirmarCerrarConcurso = () => {
       },
       onError: (error) => {
         console.error('Error al cerrar el concurso:', error);
+      },
+    });
+  }
+};
+
+const mostrarModalInscripcion = ref(false);
+
+const handleConcursoClick = (concurso) => {
+  if (concurso && concurso.id) {
+    if (userRole === 'evaluador') {
+      // Use the 'inscrito' flag from the backend
+      if (concurso.inscrito) {
+        router.get(route('evaluacion.index')); // Redirect to Evaluacion.vue
+      } else {
+        concursoSeleccionado.value = concurso;
+        mostrarModalInscripcion.value = true; // Show the modal
+      }
+    } else if (inscrito.value) {
+      router.get(route('gestion.proyectos'));
+    } else {
+      selectedMenu.value = 'Registro';
+      showForm.value = true;
+      concursoSeleccionado.value = concurso.id;
+    }
+  } else {
+    console.error('Invalid concurso object:', concurso);
+  }
+};
+
+const inscribirEvaluador = () => {
+  if (concursoSeleccionado.value && concursoSeleccionado.value.id) {
+    router.post(route('evaluadores.inscribir', concursoSeleccionado.value.id), {}, {
+      onSuccess: () => {
+        mostrarModalInscripcion.value = false; // Close the modal
+        router.reload(); // Reload the page to reflect changes
+      },
+      onError: (error) => {
+        console.error('Error al inscribirse como evaluador:', error);
       },
     });
   }
@@ -164,11 +183,6 @@ obtenerConcursoEnPantalla();
         <div v-if="showForm" class="relative">
           <NuevoConcurso v-if="selectedMenu === 'Nuevo concurso'" @close="handleCloseForm" />
           <RegistroProyectos v-if="selectedMenu === 'Registro'" :concurso-id="concursoSeleccionado" @close="handleCloseForm" />
-          <RegistroEvaluadores 
-            v-if="selectedMenu === 'Registro Evaluadores'" 
-            :concurso-id="concursoSeleccionado" 
-            @close="handleCloseForm" 
-          />
         </div>
 
         <!-- Tarjetas de concursos -->
@@ -203,6 +217,13 @@ obtenerConcursoEnPantalla();
       @confirmar="confirmarCerrarConcurso"
       @cancelar="mostrarModalCerrar = false"
       mensaje="¿Estás seguro de que deseas cerrar este concurso?"
+    />
+    <!-- Modal for Evaluator Registration -->
+    <ModalConfirmacion
+      v-if="mostrarModalInscripcion"
+      :mensaje="'¿Deseas inscribirte como evaluador para el concurso ' + concursoSeleccionado?.nombre + '?'"
+      @confirmar="inscribirEvaluador"
+      @cancelar="mostrarModalInscripcion = false"
     />
   </AuthenticatedLayout>
 </template>

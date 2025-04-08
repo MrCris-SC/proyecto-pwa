@@ -10,8 +10,12 @@ use App\Models\User;
 use App\Models\Criterio;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
-
-
+use Illuminate\Support\Facades\Validator;
+use App\Models\Equipo;
+Use App\Models\Asesor;
+use App\Models\CriterioEvaluacion;
+use App\Models\Evaluaciones;
+use App\Models\PuntajeEvaluacion;
 class ConcursoController extends Controller
 {
     /**
@@ -31,8 +35,8 @@ class ConcursoController extends Controller
             }
         ])->get();
 
-        // Procesar los datos para incluir nombres de estado y plantel
-        $concursos->each(function ($concurso) {
+        // Procesar los datos para incluir nombres de estado, plantel y si el evaluador está inscrito
+        $concursos->each(function ($concurso) use ($user) {
             // Para concursos estatales
             if ($concurso->fase === 'estatal') {
                 $concurso->estado_nombre = $concurso->estadoRelation->nombre ?? 'No especificado';
@@ -41,6 +45,14 @@ class ConcursoController extends Controller
             // Para concursos locales (opcional)
             if ($concurso->fase === 'local' && $concurso->plantel) {
                 $concurso->plantel_nombre = $concurso->plantel->nombre_corto ?? null;
+            }
+
+            // Verificar si el evaluador está inscrito
+            if ($user->rol === 'evaluador') {
+                $concurso->inscrito = DB::table('concurso_evaluador')
+                    ->where('concurso_id', $concurso->id)
+                    ->where('evaluador_id', $user->id)
+                    ->exists();
             }
         });
 
@@ -203,11 +215,11 @@ class ConcursoController extends Controller
      */
     public function cambiarEstado(Request $request, $id)
     {
-        $concurso = Concurso::findOrFail($id);
+        $concurso = Concursos::findOrFail($id);
         $nuevoEstado = $request->input('nuevo_estado');
 
         if ($nuevoEstado === 'cerrado') {
-            $concurso->estado = 'cerrado';
+            $concurso->status = 'cerrado';
             $concurso->save();
 
             // Asignar equipos a asesores
@@ -221,41 +233,37 @@ class ConcursoController extends Controller
 
     private function asignarEvaluaciones($concurso)
     {
+        // Obtener los equipos del concurso
         $equipos = Equipo::where('concurso_id', $concurso->id)->get();
-        $asesores = Asesor::all();
-        $criterios = CriterioEvaluacion::all();
 
-        if ($equipos->isEmpty() || $asesores->isEmpty() || $criterios->isEmpty()) {
-            // No se puede continuar
-            return;
+        // Obtener los evaluadores inscritos en el concurso
+        $evaluadores = DB::table('concurso_evaluador')
+            ->where('concurso_id', $concurso->id)
+            ->pluck('evaluador_id');
+
+        if ($equipos->isEmpty() || $evaluadores->isEmpty()) {
+            return; // No hay equipos o evaluadores para asignar
         }
 
-        // Repartir equipos entre asesores
-        $totalAsesores = $asesores->count();
-        $indiceAsesor = 0;
+        // Convertir la colección de evaluadores a un array para evitar problemas
+        $evaluadores = $evaluadores->toArray();
+
+        // Distribuir los equipos entre los evaluadores de manera equitativa
+        $evaluadoresCount = count($evaluadores);
+        $index = 0;
 
         foreach ($equipos as $equipo) {
-            $asesor = $asesores[$indiceAsesor];
+            // Asegurarse de que el índice no exceda el número de evaluadores
+            $evaluadorId = $evaluadores[$index % $evaluadoresCount];
 
-            // 1. Crear evaluación
-            $evaluacion = Evaluacion::create([
-                'asesor_id' => $asesor->id,
+            // Crear la evaluación para el equipo y evaluador
+            Evaluaciones::create([
+                'evaluador_id' => $evaluadorId,
                 'equipo_id' => $equipo->id,
-                'estado' => 'Asignado',
+                'estado' => 'pendiente',
             ]);
 
-            // 2. Precrear cada criterio para que el asesor solo ingrese puntajes luego
-            foreach ($criterios as $criterio) {
-                PuntajeEvaluacion::create([
-                    'evaluacion_id' => $evaluacion->id,
-                    'criterio_id' => $criterio->id,
-                    'puntaje_obtenido' => null,
-                    'comentario' => null,
-                ]);
-            }
-
-            // 3. Avanzar al siguiente asesor (distribución equitativa)
-            $indiceAsesor = ($indiceAsesor + 1) % $totalAsesores;
+            $index++;
         }
     }
 
@@ -297,5 +305,40 @@ class ConcursoController extends Controller
         return redirect()->back()->with('success', 'Criterios guardados exitosamente.');
     }
 
+    public function registrarEvaluador(Request $request, $concursoId)
+    {
+        $user = auth()->user();
+
+        // Validate that the user is an evaluator
+        if ($user->rol !== 'evaluador') {
+            return redirect()->route('concursos.index')->with('error', 'Solo los evaluadores pueden inscribirse.');
+        }
+
+        // Validate that the contest exists
+        $concurso = Concursos::find($concursoId);
+        if (!$concurso) {
+            return redirect()->route('concursos.index')->with('error', 'El concurso no existe.');
+        }
+
+        // Check if the evaluator is already registered for this contest
+        $alreadyRegistered = DB::table('concurso_evaluador')
+            ->where('concurso_id', $concursoId)
+            ->where('evaluador_id', $user->id)
+            ->exists();
+
+        if ($alreadyRegistered) {
+            return redirect()->route('concursos.index')->with('error', 'Ya estás inscrito como evaluador en este concurso.');
+        }
+
+        // Register the evaluator for the contest
+        DB::table('concurso_evaluador')->insert([
+            'concurso_id' => $concursoId,
+            'evaluador_id' => $user->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->route('concursos.index')->with('success', 'Te has inscrito como evaluador exitosamente.');
+    }
 
 }

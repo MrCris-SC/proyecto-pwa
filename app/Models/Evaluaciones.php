@@ -11,7 +11,7 @@ class Evaluaciones extends Model
 
     // Define the fillable attributes
     protected $fillable = [
-        'asesor_id',
+        'evaluador_id',
         'equipo_id',
         'estado',
     ];
