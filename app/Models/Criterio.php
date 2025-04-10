@@ -12,11 +12,17 @@ class Criterio extends Model
     protected $fillable = [
         'concurso_id',
         'nombre',
-        'puntaje_maximo'
+        'puntaje_maximo',
+        'linea_investigacion_id' // Asegúrate de incluir este campo
     ];
 
     public function concurso(): BelongsTo
     {
         return $this->belongsTo(Concursos::class);
+    }
+
+    public function linea(): BelongsTo
+    {
+        return $this->belongsTo(Linea::class, 'linea_investigacion_id');
     }
 }

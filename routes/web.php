@@ -74,13 +74,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Ruta para descargar un formato individual
     //Route::get('/descargar-formatos/{archivo}', [ProyectosController::class, 'descargarFormato'])->name('descargar.formato');
     Route::get('/evaluacion', [EvaluadorController::class, 'index'])->name('evaluacion.index');
+    Route::post('/evaluacion/{evaluacion}/guardar', [EvaluadorController::class, 'guardarEvaluacion'])->name('evaluacion.guardar');
     Route::get('/proyectos-asignados', [EvaluadorController::class, 'proyectosAsignados'])->name('proyectos.asignados');
     Route::get('/criterios', [EvaluadorController::class, 'criterios'])->name('criterios.index');
     Route::get('/reportes', [EvaluadorController::class, 'reportes'])->name('reportes.index');
     Route::get('/perfil', [EvaluadorController::class, 'perfil'])->name('perfil.index');
 
     Route::get('/registro', [ConcursoController::class, 'registroCriterios'])->name('criterios.registro');
-            
+    Route::post('/guardar-linea-criterios', [ConcursoController::class, 'storeLinea'])->name('criterios.storeLinea');       
     Route::post('/guardar', [ConcursoController::class, 'guardarCriterios'])->name('criterios.store');
 
     Route::post('/concursos/{id}/cambiar-estado', [ConcursoController::class, 'cambiarEstado'])->name('concursos.cambiar.estado');
