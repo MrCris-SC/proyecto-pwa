@@ -16,6 +16,7 @@ Use App\Models\Asesor;
 use App\Models\CriterioEvaluacion;
 use App\Models\Evaluaciones;
 use App\Models\PuntajeEvaluacion;
+
 class ConcursoController extends Controller
 {
     /**
@@ -341,4 +342,20 @@ class ConcursoController extends Controller
         return redirect()->route('concursos.index')->with('success', 'Te has inscrito como evaluador exitosamente.');
     }
 
+    public function verEquipos()
+{
+    // Se cargan los equipos junto con sus relaciones:
+    // - 'proyecto.concurso': carga el proyecto de cada equipo y, a su vez, el concurso asociado al proyecto.
+    // - 'participantes': carga los participantes del equipo.
+    // - (Opcionalmente) 'concurso': si el equipo tiene directamente una relación con Concurso, se puede cargar también.
+    $equipos = Equipo::with([
+        'proyecto.concurso', 
+        'participantes',
+        'concurso' // Si tienes la relación directa en el modelo Equipo.
+    ])->get();
+
+    return Inertia::render('ConcursosLayouts/EquiposRegistrados', [
+        'equipos' => $equipos,
+    ]);
+}
 }

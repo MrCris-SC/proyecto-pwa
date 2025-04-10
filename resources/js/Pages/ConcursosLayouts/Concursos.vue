@@ -37,17 +37,19 @@ const obtenerConcursoEnPantalla = () => {
 
 const handleMenuSelected = (menu) => {
   selectedMenu.value = menu.toLowerCase(); // Actualiza el menú seleccionado
-    showForm.value = selectedMenu.value !== 'concursos'; // Controla si se muestra un formulario
+  showForm.value = selectedMenu.value !== 'concursos'; // Controla si se muestra un formulario
 
-    if (selectedMenu.value === 'concursos') {
-        // Asegúrate de que se muestre la lista de concursos
-        showForm.value = false;
-    } else if (selectedMenu.value === 'gestión de proyectos') {
-        router.get(route('gestion.proyectos')); // Redirige a gestión de proyectos
-    } else if (selectedMenu.value === 'registro de criterios') {
-        // Cambia el componente dinámico sin recargar la página
-        showForm.value = true;
-    } 
+  if (selectedMenu.value === 'concursos') {
+    // Asegúrate de que se muestre la lista de concursos
+    showForm.value = false;
+  } else if (selectedMenu.value === 'gestión de proyectos') {
+    router.get(route('gestion.proyectos')); // Redirige a gestión de proyectos
+  } else if (selectedMenu.value === 'registro de criterios') {
+    // Cambia el componente dinámico sin recargar la página
+    showForm.value = true;
+  } else if (selectedMenu.value === 'equipos registrados') {
+    router.get(route('equipos.registrados')); // Redirige a equipos registrados
+  }
 };
 
 const handleDownloadPDF = () => {
