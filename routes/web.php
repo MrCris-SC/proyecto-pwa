@@ -54,7 +54,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/concursos', [ConcursoController::class, 'index'])->name('concursos.index');
     Route::post('/concursos', [ConcursoController::class, 'store'])->name('concursos.store');
 
-
     Route::get('/api/modalidades', [ProyectosController::class, 'index']);
     Route::post('/api/proyectos', [ProyectosController::class, 'store'])->name('proyectos.store');
     Route::post('/api/proyectos/{proyecto}/documentos', [ProyectosController::class, 'subirDocumento'])->name('proyectos.documentos.subir');
@@ -67,7 +66,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/gestion-de-proyectos', [ProyectosController::class, 'gestionProyectos'])->name('gestion.proyectos');
     Route::post('/concursos/{concurso}/inscribirse', [ProyectosController::class, 'inscribirse'])->name('concursos.inscribirse');
     
-
     Route::post('/registrar-asesor', [ProyectosController::class, 'registrarAsesor'])->name('registrar.asesor');
 
     // filepath: d:\proyecto\proyecto-pwa\routes\web.php
@@ -88,6 +86,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('/concursos/{id}/cambiar-estado', [ConcursoController::class, 'cambiarEstado'])->name('concursos.cambiar.estado');
     Route::post('/concursos/{concurso}/evaluadores', [ConcursoController::class, 'registrarEvaluador'])->name('evaluadores.inscribir');
+
+    Route::get('/concursos/{concurso}/equipos', [ConcursoController::class, 'verEquipos'])->name('equipos.registrados');
 });
 
 Route::get('/new-user', [RegisterController::class, 'showRegistrationForm'])->middleware(['auth'])->name('new.user');
