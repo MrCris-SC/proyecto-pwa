@@ -25,4 +25,9 @@ class Evaluaciones extends Model
     {
         return $this->belongsTo(Equipo::class, 'equipo_id');
     }
+
+    public function puntajes()
+    {
+        return $this->hasMany(PuntajesEvaluacion::class, 'evaluacion_id');
+    }
 }

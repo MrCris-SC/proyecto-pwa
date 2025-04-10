@@ -16,6 +16,8 @@ Use App\Models\Asesor;
 use App\Models\CriterioEvaluacion;
 use App\Models\Evaluaciones;
 use App\Models\PuntajeEvaluacion;
+use App\Models\CriteriosEvaluacion;
+use App\Models\Linea;
 class ConcursoController extends Controller
 {
     /**
@@ -269,41 +271,101 @@ class ConcursoController extends Controller
 
     
     // app/Http/Controllers/ConcursoController.php
-
     public function registroCriterios()
     {
-        $concursos = Concursos::with('criterios')->get();
+        $concursos = Concursos::with(['criterios', 'criterios.linea'])->get();
+        $lineas = Linea::all();
         
         return Inertia::render('ConcursosLayouts/RegistroCriterios', [
             'concursos' => $concursos,
+            'lineas' => $lineas,
+            'criteriosExistentes' => CriteriosEvaluacion::all()->toArray()
         ]);
     }
-
+    
     public function guardarCriterios(Request $request)
     {
         $validated = $request->validate([
             'concurso_id' => 'required|exists:concursos,id',
             'criterios' => 'required|array|min:1',
-            'criterios.*.nombre' => 'required|string|max:255|distinct',
+            'criterios.*.nombre' => 'required|string|max:255',
             'criterios.*.puntaje_maximo' => 'required|numeric|min:1|max:100',
+            'criterios.*.linea_investigacion_id' => 'required|exists:lineas_investigacion,id',
         ]);
-
-        DB::transaction(function () use ($validated) {
-            // Eliminar criterios existentes para este concurso
-            Criterio::where('concurso_id', $validated['concurso_id'])->delete();
+    
+        // Agrupar criterios por línea de investigación
+        $criteriosPorLinea = collect($validated['criterios'])
+            ->groupBy('linea_investigacion_id');
+    
+        // Validar que cada grupo sume 100 puntos
+        foreach ($criteriosPorLinea as $lineaId => $criterios) {
+            $suma = array_sum(array_column($criterios->toArray(), 'puntaje_maximo'));
             
-            // Crear nuevos criterios
+            if ($suma != 100) {
+                return back()->withErrors([
+                    'criterios' => "La suma de puntajes para la línea de investigación debe ser 100 (actual: {$suma})"
+                ]);
+            }
+        }
+    
+        DB::transaction(function () use ($validated) {
+            // Eliminar solo los criterios de este concurso
+            CriteriosEvaluacion::where('concurso_id', $validated['concurso_id'])->delete();
+            
+            // Crear los nuevos criterios
             foreach ($validated['criterios'] as $criterioData) {
-                Criterio::create([
+                CriteriosEvaluacion::create([
                     'concurso_id' => $validated['concurso_id'],
                     'nombre' => $criterioData['nombre'],
-                    'puntaje_maximo' => $criterioData['puntaje_maximo']
+                    'puntaje_maximo' => $criterioData['puntaje_maximo'],
+                    'linea_investigacion_id' => $criterioData['linea_investigacion_id'],
+                ]);
+            }
+        });
+    
+        return redirect()->back()->with('success', 'Todos los criterios guardados exitosamente.');
+    }
+
+
+    public function storeLinea(Request $request)
+    {
+        $validated = $request->validate([
+            'concurso_id' => 'required|exists:concursos,id',
+            'linea_id' => 'required|exists:lineas_investigacion,id',
+            'criterios' => 'required|array|min:1',
+            'criterios.*.nombre' => 'required|string|max:255',
+            'criterios.*.puntaje_maximo' => 'required|numeric|min:1|max:100',
+            'criterios.*.linea_investigacion_id' => 'required|same:linea_id|exists:lineas_investigacion,id',
+        ]);
+
+        // Validar que la suma sea 100
+        $suma = array_sum(array_column($validated['criterios'], 'puntaje_maximo'));
+        if ($suma != 100) {
+            return back()->withErrors([
+                'criterios' => "La suma de puntajes debe ser 100 (actual: {$suma})"
+            ]);
+        }
+
+        DB::transaction(function () use ($validated) {
+            // Eliminar solo los criterios de esta línea y concurso
+            CriteriosEvaluacion::where('concurso_id', $validated['concurso_id'])
+                ->where('linea_investigacion_id', $validated['linea_id'])
+                ->delete();
+            
+            // Crear los nuevos criterios
+            foreach ($validated['criterios'] as $criterioData) {
+                CriteriosEvaluacion::create([
+                    'concurso_id' => $validated['concurso_id'],
+                    'nombre' => $criterioData['nombre'],
+                    'puntaje_maximo' => $criterioData['puntaje_maximo'],
+                    'linea_investigacion_id' => $criterioData['linea_investigacion_id'],
                 ]);
             }
         });
 
-        return redirect()->back()->with('success', 'Criterios guardados exitosamente.');
+        return redirect()->back()->with('success', 'Criterios para esta línea guardados exitosamente.');
     }
+
 
     public function registrarEvaluador(Request $request, $concursoId)
     {

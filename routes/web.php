@@ -83,7 +83,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/perfil', [EvaluadorController::class, 'perfil'])->name('perfil.index');
 
     Route::get('/registro', [ConcursoController::class, 'registroCriterios'])->name('criterios.registro');
-            
+    Route::post('/guardar-linea-criterios', [ConcursoController::class, 'storeLinea'])->name('criterios.storeLinea');       
     Route::post('/guardar', [ConcursoController::class, 'guardarCriterios'])->name('criterios.store');
 
     Route::post('/concursos/{id}/cambiar-estado', [ConcursoController::class, 'cambiarEstado'])->name('concursos.cambiar.estado');

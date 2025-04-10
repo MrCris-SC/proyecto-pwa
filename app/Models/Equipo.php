@@ -45,4 +45,9 @@ class Equipo extends Model
     {
         return $this->hasMany(Asesores::class, 'equipo_id');
     }
+
+    public function concurso()
+    {
+        return $this->belongsTo(Concursos::class, 'concurso_id');
+    }
 }
