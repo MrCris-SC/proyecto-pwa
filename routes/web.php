@@ -87,7 +87,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/concursos/{id}/cambiar-estado', [ConcursoController::class, 'cambiarEstado'])->name('concursos.cambiar.estado');
     Route::post('/concursos/{concurso}/evaluadores', [ConcursoController::class, 'registrarEvaluador'])->name('evaluadores.inscribir');
 
-    Route::get('/concursos/{concurso}/equipos', [ConcursoController::class, 'verEquipos'])->name('equipos.registrados');
+    Route::get('/equipos-registrados', [ConcursoController::class, 'verEquipos'])->name('equipos.registrados');
 });
 
 Route::get('/new-user', [RegisterController::class, 'showRegistrationForm'])->middleware(['auth'])->name('new.user');

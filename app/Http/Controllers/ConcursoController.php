@@ -407,19 +407,16 @@ class ConcursoController extends Controller
     }
 
     public function verEquipos()
-{
-    // Se cargan los equipos junto con sus relaciones:
-    // - 'proyecto.concurso': carga el proyecto de cada equipo y, a su vez, el concurso asociado al proyecto.
-    // - 'participantes': carga los participantes del equipo.
-    // - (Opcionalmente) 'concurso': si el equipo tiene directamente una relación con Concurso, se puede cargar también.
-    $equipos = Equipo::with([
-        'proyecto.concurso', 
-        'participantes',
-        'concurso' // Si tienes la relación directa en el modelo Equipo.
-    ])->get();
-
-    return Inertia::render('ConcursosLayouts/EquiposRegistrados', [
-        'equipos' => $equipos,
-    ]);
-}
+    {
+        // Retrieve all teams with their related projects, contests, and participants
+        $equipos = Equipo::with([
+            'proyecto.concurso', 
+            'participantes'
+        ])->get();
+    
+        return Inertia::render('ConcursosLayouts/EquiposRegistrados', [
+            'equipos' => $equipos,
+        ]);
+    }
+    
 }

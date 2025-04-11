@@ -70,7 +70,7 @@ const handleLiderMenu = (menuName) => {
     };
 
     if (routesMap[menuName] && route().has(routesMap[menuName])) {
-        router.get(route(routesMap[menuName]));
+        router.get(route(routesMap[menuName])); // Navigate to the route without requiring a contest
     }
 };
 const handleEvaluadorMenu = (menuName) => {

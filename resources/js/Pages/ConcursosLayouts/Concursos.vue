@@ -48,7 +48,7 @@ const handleMenuSelected = (menu) => {
     // Cambia el componente dinámico sin recargar la página
     showForm.value = true;
   } else if (selectedMenu.value === 'equipos registrados') {
-    router.get(route('equipos.registrados')); // Redirige a equipos registrados
+    router.get(route('equipos.registrados')); // Redirige a la ruta actualizada para todos los equipos
   }
 };
 

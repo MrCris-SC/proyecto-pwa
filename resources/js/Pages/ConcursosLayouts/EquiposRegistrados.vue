@@ -13,44 +13,22 @@
           {{ selectedMenu }}
         </h2>
         <div class="relative"> 
-          <h1>Equipos Registrados</h1>
-          <table class="min-w-full border-collapse">
-        <thead>
-          <tr class="bg-gray-200">
-            <th class="border p-2">Equipo</th>
-            <th class="border p-2">Proyecto</th>
-            <th class="border p-2">Concurso</th>
-            <th class="border p-2">Integrantes</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="equipo in equipos" :key="equipo.id" class="border-b hover:bg-gray-50">
-            <td class="border p-2">{{ equipo.id }}</td>
-            <td class="border p-2">{{ equipo.proyecto ? equipo.proyecto.nombre : 'N/A' }}</td>
-            <td class="border p-2">{{ equipo.proyecto && equipo.proyecto.concurso ? equipo.proyecto.concurso.nombre : (equipo.concurso ? equipo.concurso.nombre : 'N/A') }}</td>
-            <td class="border p-2">
-          <ul v-if="equipo.participantes && equipo.participantes.length > 0">
-            <li v-for="integrante in equipo.participantes" :key="integrante.id">{{ integrante.nombre }}</li>
-          </ul>
-            </td>
-          </tr>
-        </tbody>
-          </table>
+          <h1 class="text-xl font-semibold mb-4">Equipos Registrados</h1>
+          <SearchablePaginatedTable :data="equipos" />
         </div>
       </main>
     </div>
-   
- 
   </AuthenticatedLayout>
-
-  
 </template>
+
 <script setup>
 import { ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import MenuLateral from '@/ComponentsConcursos/MenuLateral.vue';
+import SearchablePaginatedTable from '@/Components/SearchablePaginatedTable.vue';
+
 const { props } = usePage();
 const equipos = ref(props.equipos);
 </script>
