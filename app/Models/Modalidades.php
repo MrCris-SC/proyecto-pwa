@@ -16,4 +16,13 @@ class Modalidades extends Model
         'nombre',
         'tipo',
     ];
+
+
+    // Relación con CriteriosEvaluacion
+    public function criterios()
+    {
+        return $this->hasMany(CriteriosEvaluacion::class, 'modalidad_id');
+    }
+
+
 }

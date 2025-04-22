@@ -13,27 +13,34 @@ class CriteriosEvaluacion extends Model
 
     protected $fillable = [
         'nombre',
-        'descripcion',
         'puntaje_maximo',
         'concurso_id',
-        'linea_investigacion_id', // Nuevo campo
+        'modalidad_id',
+        'tipo_criterio'
     ];
 
-    // Relación con Concursos
     public function concurso()
     {
         return $this->belongsTo(Concursos::class, 'concurso_id');
     }
 
+    public function modalidad()
+    {
+        return $this->belongsTo(Modalidades::class, 'modalidad_id');
+    }
 
-    // Relación con Puntajes
     public function puntajes()
     {
         return $this->hasMany(PuntajesEvaluacion::class, 'criterio_id');
     }
 
-    public function linea()
+    public function scopeTipo($query, $tipo)
     {
-        return $this->belongsTo(Linea::class, 'linea_investigacion_id');
+        return $query->where('tipo_criterio', $tipo);
+    }
+
+    public function scopePorModalidad($query, $modalidadId)
+    {
+        return $query->where('modalidad_id', $modalidadId);
     }
 }

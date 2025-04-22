@@ -1,28 +1,35 @@
 <?php
-
+// En App\Models\Criterio.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Criterio extends Model
 {
-    protected $table = 'criterios_evaluacion'; // Mantenemos el nombre de tabla original
+    protected $table = 'criterios_evaluacion';
     
     protected $fillable = [
-        'concurso_id',
         'nombre',
         'puntaje_maximo',
-        'linea_investigacion_id' // Asegúrate de incluir este campo
+        'concurso_id',
+        'modalidad_id',
+        'tipo_criterio'
     ];
 
     public function concurso(): BelongsTo
     {
-        return $this->belongsTo(Concursos::class);
+        return $this->belongsTo(Concursos::class, 'concurso_id');
     }
 
-    public function linea(): BelongsTo
+    public function modalidad(): BelongsTo
     {
-        return $this->belongsTo(Linea::class, 'linea_investigacion_id');
+        return $this->belongsTo(Modalidades::class, 'modalidad_id');
+    }
+
+    public function puntajes(): HasMany
+    {
+        return $this->hasMany(PuntajesEvaluacion::class, 'criterio_id');
     }
 }
