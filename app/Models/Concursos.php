@@ -20,7 +20,7 @@ class Concursos extends Model
         'fecha_terminacion',
         'status',
         'fase',
-        'estado', // Asegúrate que este campo esté en fillable
+        'estado',
         'plantel_id',
     ];
 
@@ -31,10 +31,20 @@ class Concursos extends Model
         return $this->belongsTo(Planteles::class, 'plantel_id');
     }
 
-    // Cambiar el nombre de la relación para evitar conflictos
     public function estadoRelation()
     {
         return $this->belongsTo(Estados::class, 'estado', 'idestado');
+    }
+
+    public function evaluadores()
+    {
+        return $this->belongsToMany(User::class, 'concurso_evaluador', 'concurso_id', 'evaluador_id')
+                    ->where('rol', 'evaluador');
+    }
+
+    public function criterios()
+    {
+        return $this->hasMany(CriteriosEvaluacion::class, 'concurso_id');
     }
 
     public function getEstadoNombreAttribute()
@@ -44,20 +54,9 @@ class Concursos extends Model
         }
         return null;
     }
-    public function evaluadores()
-    {
-        return $this->belongsToMany(User::class, 'concurso_evaluador', 'concurso_id', 'evaluador_id')
-                    ->where('rol', 'evaluador');
-    }
 
     public function getPlantelNombreAttribute()
     {
         return $this->plantel->nombre_corto ?? null;
     }
-
-    // Agrega esto al modelo Concursos
-    public function criterios()
-    {
-        return $this->hasMany(Criterio::class, 'concurso_id');
-    }
-    }
+}

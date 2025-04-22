@@ -80,8 +80,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/reportes', [EvaluadorController::class, 'reportes'])->name('reportes.index');
     Route::get('/perfil', [EvaluadorController::class, 'perfil'])->name('perfil.index');
 
+    // Mostrar formulario de registro
     Route::get('/registro', [ConcursoController::class, 'registroCriterios'])->name('criterios.registro');
-    Route::post('/guardar-linea-criterios', [ConcursoController::class, 'storeLinea'])->name('criterios.storeLinea');       
+    // Guardar criterios por tipo (I. Informe, II. Modalidad, III. Exposición)
+    Route::post('/guardar-tipo-criterios', [ConcursoController::class, 'storeTipo'])->name('criterios.storeTipo');
+    // Guardar todos los criterios de una modalidad
+    Route::post('/guardar-modalidad-criterios', [ConcursoController::class, 'storeModalidad'])->name('criterios.storeModalidad');
+    // Rutas antiguas (mantener temporalmente para compatibilidad)
+    Route::post('/guardar-linea-criterios', [ConcursoController::class, 'storeLinea'])->name('criterios.storeLinea');
     Route::post('/guardar', [ConcursoController::class, 'guardarCriterios'])->name('criterios.store');
 
     Route::post('/concursos/{id}/cambiar-estado', [ConcursoController::class, 'cambiarEstado'])->name('concursos.cambiar.estado');

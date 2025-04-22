@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Evaluaciones extends Model
 {
-    // Define the table name (optional if it matches the pluralized model name)
     protected $table = 'evaluaciones';
 
     // Define the fillable attributes
@@ -30,4 +29,15 @@ class Evaluaciones extends Model
     {
         return $this->hasMany(PuntajesEvaluacion::class, 'evaluacion_id');
     }
+
+    public function proyecto()
+    {
+        return $this->hasOne(Proyectos::class);
+    }
+    
+    public function concurso()
+    {
+        return $this->belongsTo(Concursos::class);
+    }
+
 }
