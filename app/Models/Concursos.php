@@ -42,7 +42,9 @@ class Concursos extends Model
                     ->where('rol', 'evaluador');
     }
 
-    public function criterios()
+    
+
+    public function criteriosEvaluacion()
     {
         return $this->hasMany(CriteriosEvaluacion::class, 'concurso_id');
     }
