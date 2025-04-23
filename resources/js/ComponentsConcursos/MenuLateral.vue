@@ -1,105 +1,64 @@
 <script setup>
 import { ref, defineProps, defineEmits } from 'vue';
-import { usePage, router } from '@inertiajs/vue3';
+import { usePage, router } from '@inertiajs/vue3'; // Eliminar la importación de "route"
 
 const { props } = usePage();
 const emit = defineEmits(['menu-selected']);
-const selectedMenu = ref('Concursos');
 const isMenuMinimized = ref(false);
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const menuItems = ref([]);
+const selectedMenu = ref(''); // Inicializar vacío
 
 // Configuración del menú según rol
 if (props.auth.user.rol === 'lider') {
     menuItems.value = [
-        { name: 'Concursos', icon: 'fas fa-file-alt' },
-        { name: 'Gestión de proyectos', icon: 'fas fa-tasks' },
-        { name: 'Proceso', icon: 'fas fa-cogs' },
-        { name: 'Resultados', icon: 'fas fa-chart-line' },
-        { name: 'Equipos Registrados', icon: 'fas fa-users' }
+        { name: 'Concursos', icon: 'fas fa-file-alt', route: 'concursos.index' },
+        { name: 'Gestión de proyectos', icon: 'fas fa-tasks', route: 'gestion.proyectos' },
+        { name: 'Proceso', icon: 'fas fa-cogs', route: 'proceso.index' },
+        { name: 'Resultados', icon: 'fas fa-chart-line', route: 'resultados.index' },
+        { name: 'Equipos Registrados', icon: 'fas fa-users', route: 'equipos.registrados' }
     ];
 } else if (props.auth.user.rol === 'admin') {
     menuItems.value = [
-        { name: 'Usuarios', icon: 'fas fa-users-cog' },
-        { name: 'Concursos', icon: 'fas fa-trophy' },
-        { name: 'Registro de Criterios', icon: 'fas fa-list-check' },
-        { name: 'Configuración', icon: 'fas fa-cog' },
-        { name: 'Reportes', icon: 'fas fa-chart-pie' }
+        { name: 'Usuarios', icon: 'fas fa-users-cog', route: 'new.user' },
+        { name: 'Concursos', icon: 'fas fa-trophy', route: 'concursos.index' },
+        { name: 'Registro de Criterios', icon: 'fas fa-list-check', route: 'criterios.registro' },
+        { name: 'Configuración', icon: 'fas fa-cog', route: 'configuracion.index' },
+        { name: 'Reportes', icon: 'fas fa-chart-pie', route: 'reportes.index' }
     ];
 } else if (props.auth.user.rol === 'evaluador') {
     menuItems.value = [
-        { name: 'Concursos', icon: 'fas fa-trophy' },
-        { name: 'Evaluación', icon: 'fas fa-clipboard-check' },
-        { name: 'Proyectos Asignados', icon: 'fas fa-list-ul' },
-        { name: 'Criterios', icon: 'fas fa-check-square' },
-        { name: 'Reportes', icon: 'fas fa-chart-bar' },
-        { name: 'Perfil', icon: 'fas fa-user' }
+        { name: 'Concursos', icon: 'fas fa-trophy', route: 'concursos.index' },
+        { name: 'Evaluación', icon: 'fas fa-clipboard-check', route: 'evaluacion.index' },
+        { name: 'Proyectos Asignados', icon: 'fas fa-list-ul', route: 'proyectos.asignados' },
+        { name: 'Criterios', icon: 'fas fa-check-square', route: 'criterios.index' },
+        { name: 'Reportes', icon: 'fas fa-chart-bar', route: 'reportes.index' },
+        { name: 'Perfil', icon: 'fas fa-user', route: 'perfil.index' }
     ];
 } else {
     menuItems.value = [
-        { name: 'Inicio', icon: 'fas fa-home' },
-        { name: 'Perfil', icon: 'fas fa-user' },
-        { name: 'Ayuda', icon: 'fas fa-question-circle' }
+        { name: 'Inicio', icon: 'fas fa-home', route: 'inicio.index' },
+        { name: 'Perfil', icon: 'fas fa-user', route: 'perfil.index' },
+        { name: 'Ayuda', icon: 'fas fa-question-circle', route: 'ayuda.index' }
     ];
 }
 
+// Establecer el menú seleccionado basado en la ruta actual
+selectedMenu.value = menuItems.value.find(item => window.route().current(item.route))?.name.toLowerCase() || ''; // Usar "window.route"
+
+// Función para manejar la selección del menú
 const selectMenu = (item) => {
     selectedMenu.value = item.name.toLowerCase();
     emit('menu-selected', selectedMenu.value);
-    
-    if (props.auth.user.rol === 'evaluador') {
-        handleEvaluadorMenu(item.name);
-    } else if (props.auth.user.rol === 'admin') {
-        handleAdminMenu(item.name);
-    } else if (props.auth.user.rol === 'lider') {
-        handleLiderMenu(item.name);
+
+    if (item.route && window.route().has(item.route)) { // Usar "window.route"
+        router.get(window.route(item.route)); // Navegar a la ruta
     }
 };
 
 const toggleMenu = () => {
     isMenuMinimized.value = !isMenuMinimized.value;
-};
-const handleLiderMenu = (menuName) => {
-    const routesMap = {
-        'Concursos': 'concursos.index',
-        'Gestión de proyectos': 'gestion.proyectos',
-        'Proceso': 'proceso.index',
-        'Resultados': 'resultados.index',
-        'Equipos Registrados': 'equipos.registrados'
-    };
-
-    if (routesMap[menuName] && route().has(routesMap[menuName])) {
-        router.get(route(routesMap[menuName])); // Navigate to the route without requiring a contest
-    }
-};
-const handleEvaluadorMenu = (menuName) => {
-    const routesMap = {
-        'Concursos': 'concursos.index',
-        'Evaluación': 'evaluacion.index',
-        'Proyectos Asignados': 'proyectos.asignados',
-        'Criterios': 'criterios.index',
-        'Reportes': 'reportes.index',
-        'Perfil': 'perfil.index'
-    };
-
-    if (routesMap[menuName] && route().has(routesMap[menuName])) {
-        router.get(route(routesMap[menuName]));
-    }
-};
-
-const handleAdminMenu = (menuName) => {
-    const routesMap = {
-        'Usuarios': 'new.user',
-        'Concursos': 'concursos.index',
-        'Registro de Criterios': 'criterios.registro',
-        'Configuración': 'configuracion.index',
-        'Reportes': 'reportes.index'
-    };
-
-    if (routesMap[menuName] && route().has(routesMap[menuName])) {
-        router.get(route(routesMap[menuName]));
-    }
 };
 </script>
 
