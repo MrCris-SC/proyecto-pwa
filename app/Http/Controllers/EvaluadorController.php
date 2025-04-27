@@ -220,4 +220,110 @@ class EvaluadorController extends Controller
         
         return $lineas[$id] ?? 'Desconocida';
     }
+
+    //proyectosAsignados
+
+    public function proyectosAsignados()
+    {
+        $user = Auth::user();
+        
+        $evaluaciones = Evaluaciones::with([
+            'equipo.proyecto.modalidad',
+            'equipo.concurso'
+        ])
+        ->where('evaluador_id', $user->id)
+        ->get()
+        ->map(function ($evaluacion) {
+            return [
+                'id' => $evaluacion->id,
+                'nombre_proyecto' => $evaluacion->equipo->proyecto->nombre ?? 'Proyecto sin nombre',
+                'modalidad' => $evaluacion->equipo->proyecto->modalidad->nombre ?? 'Sin modalidad',
+                'concurso' => $evaluacion->equipo->concurso->nombre,
+                'estado' => $evaluacion->estado,
+                'fecha_asignacion' => $evaluacion->created_at->format('d/m/Y')
+            ];
+        });
+    
+        return Inertia::render('ConcursosLayouts/ProyectosAsignados', [
+            'proyectos' => $evaluaciones
+        ]);
+    }
+
+    //Criterios
+
+    public function criterios()
+    {
+        $user = Auth::user();
+        
+        // Obtener concursos donde el usuario es evaluador
+        $concursosIds = Evaluaciones::where('evaluador_id', $user->id)
+            ->with('equipo.concurso')
+            ->get()
+            ->pluck('equipo.concurso_id')
+            ->unique()
+            ->filter()
+            ->values();
+        
+        // Obtener criterios de evaluación
+        $criterios = CriteriosEvaluacion::with(['modalidad'])
+            ->whereIn('concurso_id', $concursosIds)
+            ->orderBy('modalidad_id')
+            ->orderBy('tipo_criterio')
+            ->orderBy('id')
+            ->get()
+            ->map(function ($criterio) {
+                return [
+                    'id' => $criterio->id,
+                    'nombre' => $criterio->nombre,
+                    'puntaje_maximo' => (float) $criterio->puntaje_maximo,
+                    'tipo_criterio' => $criterio->tipo_criterio,
+                    'modalidad' => $criterio->modalidad->nombre ?? 'General'
+                ];
+            });
+    
+        return Inertia::render('ConcursosLayouts/Criterios', [
+            'criterios' => $criterios
+        ]);
+    }
+
+    //Reportes
+    public function reportes()
+    {
+        $user = Auth::user();
+        
+        $evaluaciones = Evaluaciones::with([
+            'equipo.proyecto.modalidad',
+            'equipo.concurso',
+            'puntajes'
+        ])
+        ->where('evaluador_id', $user->id)
+        ->get()
+        ->map(function ($evaluacion) {
+            // Calcular puntaje total normalizado (0-100)
+            $puntajeTotal = $evaluacion->puntajes->sum('puntaje_obtenido');
+            $maximoPosible = $evaluacion->equipo->concurso->criteriosEvaluacion
+                ->where('modalidad_id', $evaluacion->equipo->proyecto->modalidad_id)
+                ->sum('puntaje_maximo');
+            
+            $puntajeNormalizado = $maximoPosible > 0 ? ($puntajeTotal / $maximoPosible) * 100 : 0;
+
+            return [
+                'id' => $evaluacion->id,
+                'nombre_proyecto' => $evaluacion->equipo->proyecto->nombre,
+                'modalidad_nombre' => $evaluacion->equipo->proyecto->modalidad->nombre,
+                'modalidad_id' => $evaluacion->equipo->proyecto->modalidad_id,
+                'concurso_nombre' => $evaluacion->equipo->concurso->nombre,
+                'concurso_id' => $evaluacion->equipo->concurso_id,
+                'estado' => $evaluacion->estado,
+                'puntaje_total' => round($puntajeNormalizado, 2),
+                'fecha_evaluacion' => $evaluacion->updated_at->format('d/m/Y'),
+                'created_at' => $evaluacion->created_at->format('d/m/Y')
+            ];
+        });
+
+        return Inertia::render('ConcursosLayouts/Reportes', [
+            'evaluaciones' => $evaluaciones
+        ]);
+    }
+
 }
