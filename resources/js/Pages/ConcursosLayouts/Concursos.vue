@@ -10,6 +10,8 @@ import RegistroProyectos from '@/ComponentsConcursos/RegistroProyectos.vue';
 import GestionProyectos from '@/Pages/ConcursosLayouts/GestionProyectos.vue';
 import ModalConfirmacion from '@/Components/ModalConfirmacion.vue';
 import RegistroCriterios from '@/Pages/ConcursosLayouts/RegistroCriterios.vue';
+import ModalEvaluaciones from '@/Components/ModalEvaluaciones.vue';
+import axios from 'axios';
 
 const selectedMenu = ref('Concursos');
 const showForm = ref(false);
@@ -146,6 +148,67 @@ const inscribirEvaluador = () => {
   }
 };
 
+const mostrarModalEvaluaciones = ref(false);
+const evaluaciones = ref([]);
+const resumenEvaluaciones = ref({ pendientes: 0, completadas: 0 });
+const concursoSeleccionadoParaEvaluaciones = ref(null);
+
+const handleConfiguracion = async (concurso) => {
+  console.log('Concurso seleccionado para configuración:', concurso); // Log para verificar el concurso seleccionado
+  concursoSeleccionadoParaEvaluaciones.value = concurso;
+
+  try {
+    const response = await axios.get(route('concursos.evaluaciones', concurso.id));
+    if (response.data.success) {
+      evaluaciones.value = response.data.evaluaciones;
+
+      // Obtener el resumen de evaluaciones
+      const resumenResponse = await axios.get(route('concursos.resumen.evaluaciones', concurso.id));
+      if (resumenResponse.data.success) {
+        resumenEvaluaciones.value = resumenResponse.data.resumen;
+      } else {
+        resumenEvaluaciones.value = { pendientes: 0, completadas: 0 };
+        console.error('Error al obtener el resumen de evaluaciones:', resumenResponse.data.message);
+      }
+    } else {
+      evaluaciones.value = [];
+      resumenEvaluaciones.value = { pendientes: 0, completadas: 0 };
+      console.error('Error al obtener las evaluaciones:', response.data.message);
+    }
+  } catch (error) {
+    evaluaciones.value = [];
+    resumenEvaluaciones.value = { pendientes: 0, completadas: 0 };
+    console.error('Error al obtener las evaluaciones o el resumen:', error);
+  }
+
+  mostrarModalEvaluaciones.value = true;
+};
+
+const handleFinalizarConcurso = async (concurso) => {
+  if (!concurso || !concurso.id) {
+    alert('El concurso no es válido.');
+    return;
+  }
+
+  const confirmacion = confirm(`¿Estás seguro de que deseas finalizar el concurso "${concurso.nombre}"?`);
+  if (!confirmacion) return;
+
+  try {
+    const response = await axios.post(route('concursos.finalizar', concurso.id));
+
+    if (response.data.success) {
+      alert('El concurso ha sido finalizado exitosamente.');
+      mostrarModalEvaluaciones.value = false; // Cerrar el modal
+      router.reload(); // Recargar la página para reflejar los cambios
+    } else {
+      alert(response.data.message || 'No se pudo finalizar el concurso. Intenta nuevamente.');
+    }
+  } catch (error) {
+    console.error('Error al finalizar el concurso:', error);
+    alert('Ocurrió un error inesperado. Intenta nuevamente.');
+  }
+};
+
 obtenerConcursoEnPantalla();
 </script>
 
@@ -165,53 +228,66 @@ obtenerConcursoEnPantalla();
       <MenuLateral :rol="userRole" @menu-selected="handleMenuSelected" />
 
       <!-- Contenido principal -->
-      <main class="w-full max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-lg">
-        <h2 class="text-2xl font-bold mb-6 text-[#611232]">
-          {{ selectedMenu }}
-        </h2>
+      <main 
+        class="w-full max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-lg relative"
+        :class="{ 'opacity-50 pointer-events-none': mostrarModalEvaluaciones || mostrarModalInscripcion || mostrarModalCerrar || showForm }"
+      >
+        <!-- Overlay for modal -->
+        <div 
+          v-if="mostrarModalEvaluaciones || mostrarModalInscripcion || mostrarModalCerrar || showForm" 
+          class="absolute inset-0 bg-gray-800 bg-opacity-50 z-10"
+        ></div>
 
-        <!-- Contenedor flex para el botón -->
-        <div class="flex justify-end">
-          <button 
-            v-if="selectedMenu === 'Concursos'" 
-            @click="handleDownloadPDF" 
-            class="mt-3 bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
-          >
-            Descargar FOREG
-          </button>
-        </div>
+        <div v-if="!mostrarModalEvaluaciones && !mostrarModalInscripcion && !mostrarModalCerrar && !showForm">
+          <h2 class="text-2xl font-bold mb-6 text-[#611232]">
+            {{ selectedMenu }}
+          </h2>
 
-        <!-- Formulario para Registro -->
-        <div v-if="showForm" class="relative">
-          <NuevoConcurso v-if="selectedMenu === 'Nuevo concurso'" @close="handleCloseForm" />
-          <RegistroProyectos v-if="selectedMenu === 'Registro'" :concurso-id="concursoSeleccionado" @close="handleCloseForm" />
-        </div>
+          <!-- Contenedor flex para el botón -->
+          <div class="flex justify-end">
+            <button 
+              v-if="selectedMenu === 'Concursos'" 
+              @click="handleDownloadPDF" 
+              class="mt-3 bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
+            >
+              Descargar FOREG
+            </button>
+          </div>
 
-        <!-- Tarjetas de concursos -->
-        <div v-if="selectedMenu === 'Concursos'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <TarjetaCrearConcurso 
-            v-if="$page.props.auth.user.rol === 'admin' || $page.props.auth.user.rol === 'vinculador'"
-            @click="handleCreateClick" 
-            class="transition-transform transform hover:scale-105 hover:shadow-lg" 
-          />
-          <TarjetaConcurso                        
-            v-for="concurso in concursos"
-            :key="concurso.id"
-            :concurso="concurso"
-            :titulo="concurso.nombre"
-            :fechaInicio="concurso.fecha_inicio"
-            :fechaApertura="concurso.fecha_apertura"
-            :fechaFinalizacion="concurso.fecha_terminacion"
-            :fase="concurso.fase" 
-            :estado="concurso.estado"
-            :inscrito="inscrito"
-            :isAdmin="$page.props.auth.user.rol === 'admin'"
-            @click="handleConcursoClick(concurso)"
-            @editar="handleEditar"
-            @eliminar="handleEliminar"
-            @cerrar="handleCerrar"
-            class="transition-transform transform hover:scale-105 hover:shadow-lg"
-          />
+          <!-- Formulario para Registro -->
+          <div v-if="showForm" class="relative">
+            <NuevoConcurso v-if="selectedMenu === 'Nuevo concurso'" @close="handleCloseForm" />
+            <RegistroProyectos v-if="selectedMenu === 'Registro'" :concurso-id="concursoSeleccionado" @close="handleCloseForm" />
+          </div>
+
+          <!-- Tarjetas de concursos -->
+          <div v-if="selectedMenu === 'Concursos'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <TarjetaCrearConcurso 
+              v-if="$page.props.auth.user.rol === 'admin' || $page.props.auth.user.rol === 'vinculador'"
+              @click="handleCreateClick" 
+              class="transition-transform transform hover:scale-105 hover:shadow-lg" 
+            />
+            <TarjetaConcurso                        
+              v-for="concurso in concursos"
+              :key="concurso.id"
+              :concurso="concurso"
+              :titulo="concurso.nombre"
+              :fechaInicio="concurso.fecha_inicio"
+              :fechaApertura="concurso.fecha_apertura"
+              :fechaFinalizacion="concurso.fecha_terminacion"
+              :fase="concurso.fase" 
+              :estado="concurso.estado"
+              :inscrito="inscrito"
+              :isAdmin="$page.props.auth.user.rol === 'admin'"
+              @click="handleConcursoClick(concurso)"
+              @editar="handleEditar"
+              @eliminar="handleEliminar"
+              @cerrar="handleCerrar"
+              @configuracion="handleConfiguracion"
+              @podio="router.get(route('concursos.podio', { id: concurso.id }))"
+              class="transition-transform transform hover:scale-105 hover:shadow-lg"
+            />
+          </div>
         </div>
       </main>
     </div>
@@ -227,6 +303,14 @@ obtenerConcursoEnPantalla();
       :mensaje="'¿Deseas inscribirte como evaluador para el concurso ' + concursoSeleccionado?.nombre + '?'"
       @confirmar="inscribirEvaluador"
       @cancelar="mostrarModalInscripcion = false"
+    />
+    <ModalEvaluaciones
+      v-if="mostrarModalEvaluaciones"
+      :evaluaciones="evaluaciones"
+      :concurso="concursoSeleccionadoParaEvaluaciones" 
+      :resumenEvaluaciones="resumenEvaluaciones"
+      @finalizar="handleFinalizarConcurso"
+      @close="mostrarModalEvaluaciones = false"
     />
   </AuthenticatedLayout>
 </template>

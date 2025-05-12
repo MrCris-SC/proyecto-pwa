@@ -42,11 +42,21 @@ class Concursos extends Model
                     ->where('rol', 'evaluador');
     }
 
-    
-
     public function criteriosEvaluacion()
     {
         return $this->hasMany(CriteriosEvaluacion::class, 'concurso_id');
+    }
+
+    public function evaluaciones()
+    {
+        return $this->hasManyThrough(
+            Evaluaciones::class,
+            Equipo::class,
+            'concurso_id', // Foreign key on the equipos table
+            'equipo_id',   // Foreign key on the evaluaciones table
+            'id',          // Local key on the concursos table
+            'id'           // Local key on the equipos table
+        );
     }
 
     public function getEstadoNombreAttribute()

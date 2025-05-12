@@ -86,7 +86,16 @@
         </div>
 
         <!-- Acciones para admin -->
-        <div v-if="isAdmin" class="absolute bottom-4 right-4 flex space-x-3">
+        <div class="absolute bottom-4 right-4 flex space-x-3">
+            <!-- Botón para acceder al Podio -->
+            <div class="relative group">
+                <button @click.stop="handlePodio" class="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors duration-200 border border-gray-300">
+                    <i class="fas fa-award text-gray-600 group-hover:text-yellow-600"></i>
+                </button>
+                <span class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    Ver Podio
+                </span>
+            </div>
             <div class="relative group">
                 <button @click.stop="handleEditar" class="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors duration-200 border border-gray-300">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600 group-hover:text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -98,6 +107,17 @@
                 </span>
             </div>
 
+            <!-- Botón para configuracion -->
+            <div class="relative group">
+                <button @click.stop="handleConfiguracion" class="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors duration-200 border border-gray-300">
+                    <i class="fas fa-cog text-gray-600 group-hover:text-blue-600"></i>
+                </button>
+                <span class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    Configuración
+                </span>
+            </div>
+
+            
             <!-- Botón para cambiar estado a cerrado -->
             <div v-if="isAdmin && estado === 'abierto'" class="relative group">
             <button @click.stop="handleCerrar" class="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors duration-200 border border-gray-300">
@@ -140,7 +160,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['click', 'editar', 'eliminar']);
+const emit = defineEmits(['click', 'editar', 'eliminar', 'podio']);
 
 const handleClick = () => {
   emit('click', props.concurso);
@@ -160,6 +180,17 @@ const handleCerrar = (e) => {
   e.stopPropagation();
   emit('cerrar', props.concurso);
 };
+
+const handleConfiguracion = (e) => {
+  e.stopPropagation();
+  emit('configuracion', props.concurso);
+};
+
+const handlePodio = (e) => {
+  e.stopPropagation();
+  emit('podio', props.concurso);
+};
+
 const formatDate = (dateString) => {
   if (!dateString) return 'No definida';
   const options = { year: 'numeric', month: 'short', day: 'numeric' };

@@ -18,6 +18,10 @@ onMounted(() => {
     if (page.props.completar_perfil) {
         router.get(route('perfil.completar'));
     }
+
+    if (page.props.user.rol === 'evaluador' && !page.props.user.has_completed_profiles) {
+        router.get(route('perfil.select'));
+    }
 });
 </script>
 

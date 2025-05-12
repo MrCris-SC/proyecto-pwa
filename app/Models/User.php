@@ -32,6 +32,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'plantel_id',
         'concurso_registrado_id',
         'equipo_id',
+        'has_completed_profiles',
     ];
 
     public function sendEmailVerificationNotification()
@@ -49,6 +50,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function equipo()
     {
         return $this->belongsTo(Equipo::class);
+    }
+
+    public function hasRole(string $role): bool
+    {
+        return $this->rol === $role;
     }
 
     /**
@@ -72,6 +78,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'concurso_registrado_id' => 'integer',
+            'has_completed_profiles' => 'boolean',
         ];
     }
 }

@@ -37,6 +37,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return redirect()->route('perfil.completar');
         }
 
+        if ($user->hasRole('evaluador') && !$user->has_completed_profiles) {
+            return redirect()->route('perfil.select');
+        }
+
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
@@ -94,12 +98,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/concursos/{concurso}/evaluadores', [ConcursoController::class, 'registrarEvaluador'])->name('evaluadores.inscribir');
 
     Route::get('/equipos-registrados', [ConcursoController::class, 'verEquipos'])->name('equipos.registrados');
+    Route::post('/concursos/{concursoId}/finalizar', [ConcursoController::class, 'finalizarConcurso'])->name('concursos.finalizar');
+
+    Route::get('/select-profiles', [PerfilController::class, 'selectProfiles'])->name('perfil.select');
+    Route::post('/save-profiles', [PerfilController::class, 'guardarPerfiles'])->name('perfil.save');
 });
+
 
 Route::get('/new-user', [RegisterController::class, 'showRegistrationForm'])->middleware(['auth'])->name('new.user');
 Route::post('/register-store', [RegisterController::class, 'register'])->name('register.store');
 
 Route::get('/api/estados', [PerfilController::class, 'getEstados']);
 Route::get('/api/estados/{estado}/municipios', [PerfilController::class, 'getMunicipios']);
+
+Route::get('/concursos/{id}/evaluaciones', [ConcursoController::class, 'getEvaluaciones'])->name('concursos.evaluaciones');
+Route::get('/concursos/{id}/resumen-evaluaciones', [ConcursoController::class, 'obtenerResumenEvaluaciones'])->name('concursos.resumen.evaluaciones');
+
+// Ruta para obtener los datos de un concurso
+Route::get('/api/concursos/{id}', [ConcursoController::class, 'getConcurso'])->name('api.concursos.get');
+
+// Ruta para obtener el podio
+Route::get('/concursos/{id}/podio', [ConcursoController::class, 'obtenerPodio'])->name('concursos.podio');
 
 require __DIR__.'/auth.php';

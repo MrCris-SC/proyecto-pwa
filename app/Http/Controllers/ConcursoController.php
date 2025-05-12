@@ -18,8 +18,9 @@ use App\Models\Evaluaciones;
 use App\Models\PuntajeEvaluacion;
 use App\Models\CriteriosEvaluacion;
 use App\Models\Linea;
-
-
+use App\Models\Evaluacion;
+use App\Models\ResultadosFinales;
+use App\Models\PuntajesEvaluacion;
 
 class ConcursoController extends Controller
 {
@@ -239,36 +240,54 @@ class ConcursoController extends Controller
     private function asignarEvaluaciones($concurso)
     {
         // Obtener los equipos del concurso
-        $equipos = Equipo::where('concurso_id', $concurso->id)->get();
+        $equipos = Equipo::with('proyecto')->where('concurso_id', $concurso->id)->get();
 
-        // Obtener los evaluadores inscritos en el concurso
+        // Obtener los evaluadores inscritos en el concurso con sus perfiles
         $evaluadores = DB::table('concurso_evaluador')
-            ->where('concurso_id', $concurso->id)
-            ->pluck('evaluador_id');
+            ->join('evaluadores', 'concurso_evaluador.evaluador_id', '=', 'evaluadores.userID')
+            ->where('concurso_evaluador.concurso_id', $concurso->id)
+            ->select('evaluadores.userID', 'evaluadores.perfil')
+            ->get();
 
         if ($equipos->isEmpty() || $evaluadores->isEmpty()) {
             return; // No hay equipos o evaluadores para asignar
         }
 
-        // Convertir la colección de evaluadores a un array para evitar problemas
-        $evaluadores = $evaluadores->toArray();
+        // Convertir los perfiles de evaluadores a arrays
+        $evaluadores = $evaluadores->map(function ($evaluador) {
+            $evaluador->perfil = json_decode($evaluador->perfil, true);
+            return $evaluador;
+        });
 
-        // Distribuir los equipos entre los evaluadores de manera equitativa
-        $evaluadoresCount = count($evaluadores);
-        $index = 0;
-
+        // Distribuir los equipos entre los evaluadores considerando los perfiles
         foreach ($equipos as $equipo) {
-            // Asegurarse de que el índice no exceda el número de evaluadores
-            $evaluadorId = $evaluadores[$index % $evaluadoresCount];
+            $perfilesSolicitados = $equipo->proyecto->perfil_jurado; // Perfiles solicitados por el equipo
 
-            // Crear la evaluación para el equipo y evaluador
-            Evaluaciones::create([
-                'evaluador_id' => $evaluadorId,
-                'equipo_id' => $equipo->id,
-                'estado' => 'pendiente',
-            ]);
+            // Filtrar evaluadores compatibles
+            $evaluadoresCompatibles = $evaluadores->filter(function ($evaluador) use ($perfilesSolicitados) {
+                foreach ($perfilesSolicitados as $perfilSolicitado) {
+                    foreach ($evaluador->perfil as $perfilEvaluador) {
+                        if (stripos($perfilEvaluador, $perfilSolicitado) !== false) {
+                            return true; // Evaluador compatible
+                        }
+                    }
+                }
+                return false; // No compatible
+            });
 
-            $index++;
+            // Asignar el primer evaluador compatible
+            if ($evaluadoresCompatibles->isNotEmpty()) {
+                $evaluador = $evaluadoresCompatibles->first();
+
+                Evaluaciones::create([
+                    'evaluador_id' => $evaluador->userID,
+                    'equipo_id' => $equipo->id,
+                    'estado' => 'pendiente',
+                ]);
+
+                // Remover el evaluador asignado para evitar duplicados
+                $evaluadores = $evaluadores->reject(fn($e) => $e->userID === $evaluador->userID);
+            }
         }
     }
 
@@ -446,5 +465,131 @@ class ConcursoController extends Controller
             'equipos' => $equipos,
         ]);
     }
-    
+
+    public function getEvaluaciones($concursoId)
+    {
+        // Fetch evaluations through the Equipo model and include related data
+        $evaluaciones = Evaluaciones::whereHas('equipo', function ($query) use ($concursoId) {
+            $query->where('concurso_id', $concursoId);
+        })->with(['evaluador', 'equipo.proyecto'])->get();
+
+        return response()->json([
+            'success' => true,
+            'evaluaciones' => $evaluaciones,
+        ]);
+    }
+
+    /**
+     * Finaliza un concurso si todas las evaluaciones están completadas.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $concursoId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function finalizarConcurso(Request $request, $concursoId)
+    {
+        $concurso = Concursos::find($concursoId);
+
+        if (!$concurso) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El concurso no existe.',
+            ], 404);
+        }
+
+        $evaluacionesPendientes = Evaluaciones::whereHas('equipo', function ($query) use ($concursoId) {
+            $query->where('concurso_id', $concursoId);
+        })->where('estado', 'pendiente')->count();
+
+        if ($evaluacionesPendientes > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede finalizar el concurso. Aún hay evaluaciones pendientes.',
+            ], 400);
+        }
+
+        // Calcular promedios finales
+        $equipos = Equipo::where('concurso_id', $concursoId)->get();
+        foreach ($equipos as $equipo) {
+            $puntajes = PuntajesEvaluacion::whereHas('evaluacion', function ($query) use ($equipo) {
+                $query->where('equipo_id', $equipo->id);
+            })->pluck('puntaje_obtenido');
+
+            if ($puntajes->isNotEmpty()) {
+                $promedioFinal = $puntajes->avg();
+
+                // Guardar el resultado final
+                ResultadosFinales::updateOrCreate(
+                    ['equipo_id' => $equipo->id, 'concurso_id' => $concursoId],
+                    ['promedio_final' => $promedioFinal]
+                );
+            }
+        }
+
+        $concurso->status = 'finalizado';
+        $concurso->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'El concurso ha sido finalizado exitosamente y los resultados han sido calculados.',
+        ]);
+    }
+
+    /**
+     * Obtiene el podio de un concurso.
+     *
+     * @param  int  $concursoId
+     * @return \Inertia\Response
+     */
+    public function obtenerPodio($concursoId)
+    {
+        $resultados = ResultadosFinales::where('concurso_id', $concursoId)
+            ->with(['equipo.proyecto']) // Eager-load the proyecto relationship
+            ->orderByDesc('promedio_final')
+            ->take(3) // Obtener los tres primeros lugares
+            ->get();
+
+        return Inertia::render('ConcursosLayouts/Podio', [
+            'resultados' => $resultados,
+        ]);
+    }
+
+    public function obtenerResumenEvaluaciones($id)
+    {
+        $concurso = Concursos::findOrFail($id);
+
+        // Usar la relación evaluaciones para contar los estados
+        $resumen = [
+            'pendientes' => $concurso->evaluaciones()->where('estado', 'pendiente')->count(),
+            'completadas' => $concurso->evaluaciones()->where('estado', 'completada')->count(),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'resumen' => $resumen,
+        ]);
+    }
+
+    /**
+     * Obtiene los datos de un concurso por ID.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getConcurso($id)
+    {
+        $concurso = Concursos::find($id);
+
+        if (!$concurso) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El concurso no existe.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'concurso' => $concurso,
+        ]);
+    }
 }
