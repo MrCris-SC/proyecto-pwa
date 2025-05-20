@@ -138,10 +138,15 @@ class EvaluadorController extends Controller
                 'criterio_id' => $criterioId
             ],
             [
-                'puntaje_obtenido' => $puntaje,
-                'comentario' => $comentario
+                'puntaje_obtenido' => $puntaje
             ]
         );
+
+        // Guardar comentario en la tabla de evaluaciones (si se proporciona)
+        if (!is_null($comentario)) {
+            $evaluacion->comentarios = $comentario;
+            $evaluacion->save();
+        }
     }
 
     private function verificarCompletitudEvaluacion($evaluacion, $esGuardadoParcial = false)

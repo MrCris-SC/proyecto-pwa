@@ -13,6 +13,7 @@ class Evaluaciones extends Model
         'evaluador_id',
         'equipo_id',
         'estado',
+        'comentarios',
     ];
 
     public function evaluador()

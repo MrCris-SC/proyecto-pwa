@@ -102,6 +102,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/select-profiles', [PerfilController::class, 'selectProfiles'])->name('perfil.select');
     Route::post('/save-profiles', [PerfilController::class, 'guardarPerfiles'])->name('perfil.save');
+
+    // Ruta para mostrar los resultados de un concurso
+    Route::get('/resultados', [ConcursoController::class, 'resultados'])->name('resultados.index');
+    // Ruta para generar el reporte de resultados
+    Route::get('/resultados/generar-reporte/{concursoId}/{equipoId}', [ConcursoController::class, 'generarReporte'])->name('resultados.generarReporte');
 });
 
 

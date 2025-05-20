@@ -16,7 +16,7 @@ if (props.auth.user.rol === 'lider') {
         { name: 'Concursos', icon: 'fas fa-file-alt', route: 'concursos.index' },
         { name: 'Gestión de proyectos', icon: 'fas fa-tasks', route: 'gestion.proyectos' },
         { name: 'Proceso', icon: 'fas fa-cogs', route: 'proceso.index' },
-        { name: 'Resultados', icon: 'fas fa-chart-line', route: 'resultados.index' },
+        { name: 'Resultados', icon: 'fas fa-chart-line', route: 'resultados.index' }, // <-- Asegúrate de tener esta línea
         { name: 'Equipos Registrados', icon: 'fas fa-users', route: 'equipos.registrados' }
     ];
 } else if (props.auth.user.rol === 'admin') {
@@ -25,7 +25,8 @@ if (props.auth.user.rol === 'lider') {
         { name: 'Concursos', icon: 'fas fa-trophy', route: 'concursos.index' },
         { name: 'Registro de Criterios', icon: 'fas fa-list-check', route: 'criterios.registro' },
         { name: 'Configuración', icon: 'fas fa-cog', route: 'configuracion.index' },
-        { name: 'Reportes', icon: 'fas fa-chart-pie', route: 'reportes.index' }
+        { name: 'Reportes', icon: 'fas fa-chart-pie', route: 'reportes.index' },
+        
     ];
 } else if (props.auth.user.rol === 'evaluador') {
     menuItems.value = [

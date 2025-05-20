@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Modalidades;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Concursos;
@@ -592,4 +593,53 @@ class ConcursoController extends Controller
             'concurso' => $concurso,
         ]);
     }
+
+    /**
+     * Renderiza la vista de resultados de concursos.
+     *
+     * @return \Inertia\Response
+     */
+    public function resultados()
+    {
+        $user = auth()->user();
+        $concursoId = $user->concurso_registrado_id;
+        $equipoId = $user->equipo_id;
+
+        return Inertia::render('ConcursosLayouts/Resultados', [
+            'user' => $user,
+            'concursoId' => $concursoId,
+            'equipoId' => $equipoId,
+        ]);
+    }
+
+    /**
+     * Genera el reporte de resultados para un equipo en un concurso.
+     *
+     * @param  int  $concursoId
+     * @param  int  $equipoId
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function generarReporte($concursoId, $equipoId)
+    {
+        $concurso = Concursos::findOrFail($concursoId);
+        $equipo = Equipo::with(['proyecto', 'participantes'])->findOrFail($equipoId);
+
+        // Trae evaluaciones con evaluador y puntajes (y criterio de cada puntaje)
+        $evaluaciones = Evaluaciones::with([
+            'evaluador',
+            'puntajes.criterio'
+        ])
+        ->where('equipo_id', $equipoId)
+        ->get();
+
+        // Renderizar la vista PDF
+        $pdf = Pdf::loadView('pdf.resultados', [
+            'concurso' => $concurso,
+            'equipo' => $equipo,
+            'evaluaciones' => $evaluaciones, // Cada evaluación tendrá sus puntajes y criterios
+        ]);
+
+        return $pdf->stream('reporte_concurso.pdf');
+    }
+
 }
