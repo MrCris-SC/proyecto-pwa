@@ -7,12 +7,16 @@ import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
 import { Ziggy } from '@/ziggy';
+import Tutorial from '@/Components/Tutorial.vue'; // Nuevo componente añadido
 const showingNavigationDropdown = ref(false);
 </script>
 
 <template>
     <div>
         <div class="min-h-screen bg-gray-100">
+            <!-- Botón de tutorial flotante -->
+            <Tutorial />
+            
             <nav class="border-b border-gray-100 bg-customColor">
                 <!-- Primary Navigation Menu -->
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 bg-customColor">
@@ -25,28 +29,39 @@ const showingNavigationDropdown = ref(false);
                                 </Link>
                             </div>
 
-                            <!-- Navigation Links -->
+                            <!-- Navigation Links (con IDs añadidos) -->
                             <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex bg-customColor">
-                                <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
+                                <NavLink 
+                                    id="enlace-inicio" 
+                                    :href="route('dashboard')" 
+                                    :active="route().current('dashboard')"
+                                >
                                     Inicio
                                 </NavLink>
 
-                                <!-- Registro Links -->
-                                <NavLink v-if="$page.props.auth.user.rol === 'admin'" :href="route('new.user')">
+                                <NavLink 
+                                    id="enlace-usuarios" 
+                                    v-if="$page.props.auth.user.rol === 'admin'" 
+                                    :href="route('new.user')"
+                                >
                                     Registrar Usuarios
                                 </NavLink>
 
-                                <!-- Registro Links -->
-                                <NavLink :href="route('concursos.index')" :active="route().current('concursos.index')">
+                                <NavLink 
+                                    id="enlace-concursos" 
+                                    :href="route('concursos.index')" 
+                                    :active="route().current('concursos.index')"
+                                >
                                     Concursos
                                 </NavLink>
                                 
-                                <!-- Registro Links -->
-                                <NavLink v-if="$page.props.auth.user.rol === 'vinculador'" :href="route('new.user')">
+                                <NavLink 
+                                    id="enlace-lideres" 
+                                    v-if="$page.props.auth.user.rol === 'vinculador'" 
+                                    :href="route('new.user')"
+                                >
                                     Registrar Lideres
                                 </NavLink>
-
-                                
                             </div>
                         </div>
 
@@ -97,7 +112,6 @@ const showingNavigationDropdown = ref(false);
                         </ResponsiveNavLink>
                     </div>
 
-                    <!-- Responsive Settings Options -->
                     <div class="border-t border-gray-200 pb-1 pt-4">
                         <div class="px-4">
                             <div class="text-base font-medium text-gray-800">
