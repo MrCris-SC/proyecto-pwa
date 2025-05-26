@@ -11,6 +11,7 @@ import GestionProyectos from '@/Pages/ConcursosLayouts/GestionProyectos.vue';
 import ModalConfirmacion from '@/Components/ModalConfirmacion.vue';
 import RegistroCriterios from '@/Pages/ConcursosLayouts/RegistroCriterios.vue';
 import ModalEvaluaciones from '@/Components/ModalEvaluaciones.vue';
+import CrearEvaluacionManual from '@/ComponentsConcursos/CrearEvaluacionManual.vue';
 import axios from 'axios';
 
 const selectedMenu = ref('Concursos');
@@ -84,6 +85,7 @@ const handleEliminar = (concurso) => {
 
 const handleCloseForm = () => {
   showForm.value = false;
+  window.location.reload(); // Recargar la página para reflejar los cambios
 };
 
 const mostrarModalCerrar = ref(false);
@@ -152,6 +154,9 @@ const mostrarModalEvaluaciones = ref(false);
 const evaluaciones = ref([]);
 const resumenEvaluaciones = ref({ pendientes: 0, completadas: 0 });
 const concursoSeleccionadoParaEvaluaciones = ref(null);
+const mostrarCrearEvaluacionManual = ref(false);
+const equiposEvaluacion = ref([]);
+const evaluadoresEvaluacion = ref([]);
 
 const handleConfiguracion = async (concurso) => {
   console.log('Concurso seleccionado para configuración:', concurso); // Log para verificar el concurso seleccionado
@@ -209,6 +214,61 @@ const handleFinalizarConcurso = async (concurso) => {
   }
 };
 
+// Agrega el método para redirigir al podio
+const handlePodio = (concurso) => {
+  if (concurso && concurso.id) {
+    router.get(route('concursos.podio', { id: concurso.id }));
+  } else {
+    console.error('Concurso inválido para podio:', concurso);
+  }
+};
+
+const handleAbrirCrearEvaluacionManual = async () => {
+  if (concursoSeleccionadoParaEvaluaciones.value) {
+    try {
+      // Obtener equipos con su proyecto relacionado
+      const equiposRes = await axios.get(route('concursos.equipos', concursoSeleccionadoParaEvaluaciones.value.id));
+      // Asegúrate que cada equipo tenga la relación proyecto cargada
+      equiposEvaluacion.value = (equiposRes.data.equipos || []).map(e => ({
+        ...e,
+        proyecto: e.proyecto || null
+      }));
+
+      // Obtener usuarios con rol evaluador (asegúrate que el backend filtra correctamente)
+      const evaluadoresRes = await axios.get(route('concursos.evaluadores', concursoSeleccionadoParaEvaluaciones.value.id));
+      evaluadoresEvaluacion.value = evaluadoresRes.data.evaluadores || [];
+      
+      mostrarCrearEvaluacionManual.value = true;
+    } catch (e) {
+      equiposEvaluacion.value = [];
+      evaluadoresEvaluacion.value = [];
+      mostrarCrearEvaluacionManual.value = false;
+      alert('Error al cargar equipos o evaluadores. Verifica la relación en el backend.');
+    }
+  }
+};
+
+const handleCerrarCrearEvaluacionManual = () => {
+  mostrarCrearEvaluacionManual.value = false;
+};
+
+const recargarEvaluaciones = async () => {
+  if (concursoSeleccionadoParaEvaluaciones.value) {
+    await handleConfiguracion(concursoSeleccionadoParaEvaluaciones.value);
+  }
+};
+
+const eliminarEvaluacion = async (evaluacion) => {
+  if (!evaluacion || !evaluacion.id) return;
+  if (!confirm('¿Estás seguro de eliminar esta evaluación?')) return;
+  try {
+    await axios.delete(route('evaluaciones.destroy', evaluacion.id));
+    await recargarEvaluaciones();
+  } catch (e) {
+    alert('No se pudo eliminar la evaluación.');
+  }
+};
+
 obtenerConcursoEnPantalla();
 </script>
 
@@ -230,15 +290,16 @@ obtenerConcursoEnPantalla();
       <!-- Contenido principal -->
       <main 
         class="w-full max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-lg relative"
-        :class="{ 'opacity-50 pointer-events-none': mostrarModalEvaluaciones || mostrarModalInscripcion || mostrarModalCerrar || showForm }"
+        :class="{ 'opacity-50 pointer-events-none': mostrarModalEvaluaciones || mostrarModalInscripcion || mostrarModalCerrar }"
       >
-        <!-- Overlay for modal -->
+        <!-- Overlay for modal (solo para los modales de confirmación y evaluaciones) -->
         <div 
-          v-if="mostrarModalEvaluaciones || mostrarModalInscripcion || mostrarModalCerrar || showForm" 
+          v-if="mostrarModalEvaluaciones || mostrarModalInscripcion || mostrarModalCerrar" 
           class="absolute inset-0 bg-gray-800 bg-opacity-50 z-10"
         ></div>
 
-        <div v-if="!mostrarModalEvaluaciones && !mostrarModalInscripcion && !mostrarModalCerrar && !showForm">
+        <!-- Contenido principal y formularios dentro del main -->
+        <div v-if="!mostrarModalEvaluaciones && !mostrarModalInscripcion && !mostrarModalCerrar">
           <h2 class="text-2xl font-bold mb-6 text-[#611232]">
             {{ selectedMenu }}
           </h2>
@@ -246,7 +307,7 @@ obtenerConcursoEnPantalla();
           <!-- Contenedor flex para el botón -->
           <div class="flex justify-end">
             <button 
-              v-if="selectedMenu === 'Concursos'" 
+              v-if="selectedMenu === 'Concursos' && userRole === 'lider'" 
               @click="handleDownloadPDF" 
               class="mt-3 bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
             >
@@ -284,20 +345,21 @@ obtenerConcursoEnPantalla();
               @eliminar="handleEliminar"
               @cerrar="handleCerrar"
               @configuracion="handleConfiguracion"
-              @podio="router.get(route('concursos.podio', { id: concurso.id }))"
+              @podio="handlePodio(concurso)"
               class="transition-transform transform hover:scale-105 hover:shadow-lg"
             />
           </div>
         </div>
       </main>
     </div>
+    <!-- Formularios fuera del main y del overlay, igual que los modales -->
+    <!-- ...existing code for modals... -->
     <ModalConfirmacion
       v-if="mostrarModalCerrar"
       @confirmar="confirmarCerrarConcurso"
       @cancelar="mostrarModalCerrar = false"
       mensaje="¿Estás seguro de que deseas cerrar este concurso?"
     />
-    <!-- Modal for Evaluator Registration -->
     <ModalConfirmacion
       v-if="mostrarModalInscripcion"
       :mensaje="'¿Deseas inscribirte como evaluador para el concurso ' + concursoSeleccionado?.nombre + '?'"
@@ -311,6 +373,16 @@ obtenerConcursoEnPantalla();
       :resumenEvaluaciones="resumenEvaluaciones"
       @finalizar="handleFinalizarConcurso"
       @close="mostrarModalEvaluaciones = false"
+      @crear-evaluacion-manual="handleAbrirCrearEvaluacionManual"
+      @eliminar-evaluacion="eliminarEvaluacion"
+    />
+    <CrearEvaluacionManual
+      v-if="mostrarCrearEvaluacionManual"
+      :concurso-id="concursoSeleccionadoParaEvaluaciones?.id"
+      :equipos="equiposEvaluacion"
+      :evaluadores="evaluadoresEvaluacion"
+      @close="handleCerrarCrearEvaluacionManual"
+      @created="recargarEvaluaciones"
     />
   </AuthenticatedLayout>
 </template>
