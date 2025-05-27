@@ -2,6 +2,11 @@ import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
 import { VitePWA } from 'vite-plugin-pwa';
+import path from 'path'; // Importamos path directamente
+import { fileURLToPath } from 'url';
+
+// Necesario para __dirname en ES modules
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
     plugins: [
@@ -9,7 +14,6 @@ export default defineConfig({
             input: 'resources/js/app.js',
             refresh: true,
         }),
-
         vue({
             template: {
                 transformAssetUrls: {
@@ -40,7 +44,14 @@ export default defineConfig({
                     }
                 ]
             }
-        }),
-        
+        })
     ],
+    resolve: {
+        alias: {
+            'ziggy-js': path.resolve(__dirname, 'vendor/tightenco/ziggy/dist'),
+        },
+    },
+    optimizeDeps: {
+        include: ['ziggy-js'],
+    }
 });

@@ -11,6 +11,8 @@ use App\Http\Controllers\ConcursoController;
 use App\Http\Controllers\ProyectosController;
 use App\Http\Controllers\EquipoController;
 use App\Http\Controllers\EvaluadorController; // Nuevo controlador
+use App\Http\Controllers\EvaluacionesManualesController;
+use App\Http\Controllers\EvaluacionesController;
 use App\Models\Concursos;
 
 Route::get('/', function () {
@@ -107,6 +109,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/resultados', [ConcursoController::class, 'resultados'])->name('resultados.index');
     // Ruta para generar el reporte de resultados
     Route::get('/resultados/generar-reporte/{concursoId}/{equipoId}', [ConcursoController::class, 'generarReporte'])->name('resultados.generarReporte');
+
+    Route::get('/concursos/{concurso}/evaluaciones-manuales-datos', [EvaluacionesManualesController::class, 'datos'])->name('concursos.evaluaciones.manuales.datos');
 });
 
 
@@ -124,5 +128,22 @@ Route::get('/api/concursos/{id}', [ConcursoController::class, 'getConcurso'])->n
 
 // Ruta para obtener el podio
 Route::get('/concursos/{id}/podio', [ConcursoController::class, 'obtenerPodio'])->name('concursos.podio');
+
+Route::delete('/evaluaciones/{id}', [App\Http\Controllers\EvaluacionesController::class, 'destroy'])->name('evaluaciones.destroy');
+
+// Ruta para obtener equipos de un concurso con su proyecto relacionado
+Route::get('/concursos/{concurso}/equipos', function ($concursoId) {
+    $equipos = \App\Models\Equipo::with('proyecto')->where('concurso_id', $concursoId)->get();
+    return response()->json(['equipos' => $equipos]);
+})->name('concursos.equipos');
+
+// Ruta para obtener evaluadores (usuarios con rol evaluador)
+Route::get('/concursos/{concurso}/evaluadores', function ($concursoId) {
+    $evaluadores = \App\Models\User::where('rol', 'evaluador')->get();
+    return response()->json(['evaluadores' => $evaluadores]);
+})->name('concursos.evaluadores');
+
+// Ruta para almacenar una nueva evaluación manualmente
+Route::post('/evaluaciones', [EvaluacionesController::class, 'store'])->name('evaluaciones.store');
 
 require __DIR__.'/auth.php';

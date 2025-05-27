@@ -17,6 +17,17 @@
         </p>
       </div>
 
+      <!-- Botón para crear evaluación manualmente (solo admin) -->
+      <div class="mb-4 flex justify-end">
+        <button
+          v-if="$page.props.auth.user.rol === 'admin'"
+          @click="$emit('crear-evaluacion-manual')"
+          class="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
+        >
+          Crear Evaluación Manual
+        </button>
+      </div>
+
       <div v-if="evaluaciones.length" class="overflow-x-auto">
         <table class="table-auto w-full border-collapse border border-gray-300">
           <thead>
@@ -26,6 +37,7 @@
               <th class="border border-gray-300 px-4 py-2 text-left">Evaluador</th>
               <th class="border border-gray-300 px-4 py-2 text-left">Estado</th>
               <th class="border border-gray-300 px-4 py-2 text-left">Puntaje</th>
+              <th v-if="$page.props.auth.user.rol === 'admin'" class="border border-gray-300 px-4 py-2 text-left">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -44,6 +56,14 @@
               </td>
               <td class="border border-gray-300 px-4 py-2">
                 {{ evaluacion.puntaje || 'Sin puntaje' }}
+              </td>
+              <td v-if="$page.props.auth.user.rol === 'admin'" class="border border-gray-300 px-4 py-2">
+                <button
+                  @click="$emit('eliminar-evaluacion', evaluacion)"
+                  class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700"
+                >
+                  Eliminar
+                </button>
               </td>
             </tr>
           </tbody>

@@ -37,7 +37,6 @@
                                         <input type="date" id="fecha_terminacion" v-model="form.fecha_terminacion" class="mt-1 block w-full p-2 border border-gray-300 rounded" required />
                                     </div>
                                 </div>
-                                
                                 <div class="flex justify-end">
                                     <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300">
                                         Actualizar Concurso
@@ -56,7 +55,7 @@
 </template>
 
 <script setup>
-import { reactive, watch } from 'vue';
+import { reactive, watch, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 

@@ -59,6 +59,11 @@ class Concursos extends Model
         );
     }
 
+    public function equipos()
+    {
+        return $this->hasMany(Equipo::class, 'concurso_id');
+    }
+
     public function getEstadoNombreAttribute()
     {
         if ($this->fase === 'estatal') {
