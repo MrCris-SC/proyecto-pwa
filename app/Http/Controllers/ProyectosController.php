@@ -54,22 +54,45 @@ class ProyectosController extends Controller
         }
 
         try {
+            // Obtener inicial de la categoría
+            $categoriaInicial = strtoupper(substr($request->categoria, 0, 1));
+
+            // Obtener inicial de la modalidad (última palabra principal)
+            $modalidad = Modalidades::find($request->modalidad_id);
+            $modalidadInicial = '';
+            if ($modalidad) {
+                $palabras = preg_split('/\s+/', trim($modalidad->nombre));
+                // Buscar la última palabra principal (ignorando preposiciones comunes)
+                $preposiciones = ['de', 'del', 'la', 'el', 'los', 'las', 'y', 'en', 'a', 'con', 'por', 'para', 'un', 'una'];
+                for ($i = count($palabras) - 1; $i >= 0; $i--) {
+                    if (!in_array(strtolower($palabras[$i]), $preposiciones)) {
+                        $modalidadInicial = strtoupper(substr($palabras[$i], 0, 1));
+                        break;
+                    }
+                }
+            }
+
+            // Concatenar las iniciales para usarlas en el ID del equipo
+            $prefijoEquipo = $categoriaInicial . $modalidadInicial;
+
+            // Ahora puedes usar $prefijoEquipo para agregarlo al ID del equipo según tu lógica
+
             $proyecto = Proyectos::create($request->only([
-            'nombre', 'categoria', 'modalidad_id', 'linea_investigacion_id', 'concurso_id','perfil_jurado'
+                'nombre', 'categoria', 'modalidad_id', 'linea_investigacion_id', 'concurso_id','perfil_jurado'
             ]));
 
             $equipoId = Equipo::generarCodigoEquipo();
             $equipo = Equipo::create([
-            'id' => $equipoId,
-            'proyecto_id' => $proyecto->id,
-            'concurso_id' => $request->concurso_id,
+                'id' => $equipoId,
+                'proyecto_id' => $proyecto->id,
+                'concurso_id' => $request->concurso_id,
+                // Puedes guardar el prefijo si lo deseas, por ejemplo:
+                // 'prefijo' => $prefijoEquipo,
             ]);
 
             // Actualizar el proyecto con la ID del equipo
             $proyecto->equipo_id = $equipo->id;
             $proyecto->save();
-
-            
 
             // Crear los participantes del equipo
             foreach ($request->equipo as $integranteData) {
