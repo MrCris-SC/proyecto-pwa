@@ -80,6 +80,13 @@
         >
           Finalizar Concurso
         </button>
+        <!-- Nuevo botón Cerrar Concurso -->
+        <button
+          @click="$emit('cerrar-concurso', concurso)"
+          class="bg-yellow-500 text-white px-4 py-2 rounded shadow hover:bg-yellow-700 mr-2"
+        >
+          Cerrar Concurso
+        </button>
         <p v-if="resumenEvaluaciones.pendientes > 0" class="text-red-500 text-sm">
           No se puede finalizar el concurso mientras haya evaluaciones pendientes.
         </p>
