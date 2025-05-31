@@ -19,7 +19,6 @@ const page = usePage();
 const user = computed(() => page.props.auth?.user || {});
 const userRole = computed(() => user.value?.rol || 'default');
 
-// Contenido del tutorial
 const tutorialContent = {
     lider: {
         title: 'Guía Rápida para Líderes de Equipo',
@@ -28,173 +27,371 @@ const tutorialContent = {
                 section: 'Registro en Concursos',
                 content: 'Proceso para inscribirte y registrar tu equipo:',
                 items: [
-                    'Visualiza todas las convocatorias activas en la sección "Concursos"',
-                    'Haz clic en la tarjeta del concurso para registrarte',
-                    'Completa los datos de tu proyecto y equipo'
-                ]
-            },
+                    {
+                        text: 'Visualiza todas las convocatorias activas en la sección "Concursos"',
+                        image: '/images/Tutorial/lider1.png'
+                    },
+                    {
+                        text: 'Haz clic en la tarjeta del concurso para registrarte',
+                        image: '/images/Tutorial/lider3.png'
+                    },
+                    {
+                        text: 'Completa los datos de tu proyecto y equipo',
+                        image: '/images/Tutorial/lider2.png'
+                    }
+                ],
+                },
             {
                 section: 'Gestión de Proyectos',
                 content: 'Pasos para completar tu inscripción:',
                 items: [
-                    '1 Registra a tus asesores (técnico y metodológico)',
-                    '2 Descarga los formatos requeridos',
-                    '   FOREG, FOAPA, FOCOMO, FOAS (obligatorios)',
-                    '   Documentos opcionales que enriquecen tu proyecto',
-                    '3 Llena y sube los documentos en "Documentación Requerida"',
-                    '4 Opcionalmente sube documentos adicionales en la sección correspondiente'
-                ]
-            },
-            {
-                section: 'Seguimiento',
-                content: 'Monitorea el progreso de tu proyecto:',
-                items: [
-                    'Revisa "Proceso" para ver el estado actual',
-                    'Verifica el porcentaje de completado',
-                    'Recibe notificaciones de avances'
-                ]
+                    {
+                        text: '1 Registra a tus asesores (técnico y metodológico)',
+                        image: '/images/Tutorial/lider4.png'
+                    },
+                    {
+                        text: '2 Descarga los formatos requeridos para completar el registro de tu proyecto:',
+                        image: '/images/Tutorial/lider5.png'
+                    },
+                    {
+                        text: '3 Llena y sube los documentos en "Documentación Requerida"',
+                        image: '/images/Tutorial/lider6.png'
+                    },
+                    {
+                        text: '4 Los Documentos opcionales son a consideracion pero de gran ayuda para los evaluadores',
+                        image: '/images/Tutorial/lider7.png'
+                    }
+                ],
             },
             {
                 section: 'Resultados',
-                content: 'Consulta evaluaciones y reportes:',
+                content: 'Inspecionaras tu evaluacion con los resultados de tu proyecto:',
                 items: [
-                    'Visualiza historial de participaciones pasadas',
-                    'Accede a reportes detallados de tu concurso actual',
-                    'Revisa retroalimentación de evaluadores'
-                ]
+                    {
+                        text: 'Seleciona generar reporte y se deacargara un pdf con tus resultados',
+                        image: '/images/Tutorial/lider8.png'
+                    },
+
+                ],
             },
             {
-                section: 'Equipos',
-                content: 'Administración de miembros:',
+                section: 'Registro de equipos',
+                content: 'Informacion de equipos registrados en el concurso',
                 items: [
-                    'Gestiona participantes de tu equipo',
-                    'Visualiza otros equipos del mismo concurso',
-                    'Coordina con asesores y miembros'
+                    {
+                        text: 'Visualiza los equipos registrados en el concurso',
+                        image: '/images/Tutorial/lider9.png'
+                    }
                 ]
             }
         ]
     },
     admin: {
-        title: 'Guía Rápida para Administradores',
+        title: 'Guía para Administradores del Sistema',
         steps: [
             {
-                section: 'Registro de Usuarios',
-                content: 'Desde el formulario podrás crear cuentas para:',
+                section: 'Gestión de Usuarios',
+                content: 'Funcionalidades disponibles en el panel de administración de usuarios:',
                 items: [
-                    'Asignar roles: admin, vinculador, evaluador, asesor o participante',
-                    'Ingresar datos básicos: nombre, correo y contraseña',
-                    'Gestionar permisos y accesos'
+                    {
+                        text: 'Creación de usuarios y asignación de roles (administrador, evaluador, vinculador, etc.)',
+                        image: '/images/Tutorial/Admin.png',
+                        note: 'Verifica que el correo electrónico sea válido para el envío de credenciales'
+                    },
+                    {
+                        text: 'Edición de perfiles: actualización de datos básicos y ajuste de permisos',
+                        image: '/images/Tutorial/Admin3.png'
+                    },
+                    {
+                        text: 'Visualización y filtrado del listado completo de usuarios registrados',
+                        image: '/images/Tutorial/Admin5.png',
+                    }
                 ]
             },
             {
-                section: 'Menú Principal',
-                content: 'Opciones disponibles en el panel lateral:',
+                section: 'Configuración de Concursos',
+                content: 'Proceso completo para la creación y gestión de concursos:',
                 items: [
-                    '1 Concursos',
-                    '2 Registro de Criterios', 
-                    '3 Configuración',
-                    '4 Reportes'
-                ]
-            },
-            {
-                section: 'Gestión de Concursos',
-                content: 'Acciones disponibles:',
-                items: [
-                    'Crear/editar concursos con fechas (inicio, apertura, finalización)',
-                    'Definir fase: local, estatal o nacional',
-                    'Descargar formato FOREC',
-                    'Visualizar podios y resultados'
+                    {
+                        text: '1. Definición de fechas clave (inicio, evaluación y cierre) y etapas del concurso:',
+                        subitems: [
+                            'Accede al formulario mediante el botón (+) en la sección de Concursos',
+                            'Completa todos los campos obligatorios marcados con *'
+                        ],
+                        image: '/images/Tutorial/Admin6.png'
+                    },
+                    {
+                        text: '2. Procedimiento de registro completo:',
+                        subitems: [
+                            'Llena cuidadosamente todos los campos del formulario',
+                            'Verifica la información antes de guardar',
+                            'Confirma la creación con el botón "Crear Concurso"',
+                            'Espera la notificación de confirmación'
+                        ],
+                        image: '/images/Tutorial/Admin7.png',
+                        note: 'Asegúrate de que las fechas sean correctas para evitar problemas posteriores'
+                    },
+                    {
+                        text: '3. Opciones post-registro:',
+                        subitems: [
+                            'Visualización del podio de participantes',
+                            'Edición de datos básicos del concurso',
+                            'Asignación de evaluadores a proyectos',
+                            'Eliminación completa del concurso (acción irreversible)'
+                        ],
+                        image: '/images/Tutorial/Admin8.png',
+                        warning: 'La eliminación del concurso borrará todos los datos asociados permanentemente'
+                    }
                 ]
             },
             {
                 section: 'Criterios de Evaluación',
-                content: 'Configuración por concurso:',
+                content: 'Configuración detallada de los parámetros de calificación:',
                 items: [
-                    'Agregar/editar criterios según modalidad',
-                    'Asignar puntuaciones y pesos',
-                    'Definir visibilidad para evaluadores',
-                    'Distribuir criterios a equipos'
-                ]
-            },
-            {
-                section: 'Reportes',
-                content: 'Seguimiento de evaluaciones:',
-                items: [
-                    'Monitorear progreso de evaluaciones',
-                    'Identificar evaluaciones pendientes/completadas',
-                    'Exportar reportes finales',
-                    'Generar estadísticas por proyecto'
+                    {
+                        text: '1. Selección inicial:',
+                        subitems: [
+                            'Elige el concurso al que agregarás criterios',
+                            'Selecciona la modalidad donde iniciara el registro de criterios'
+                        ],
+                        image: '/images/Tutorial/Admin9.png'
+                    },
+                    {
+                        text: '2. Distribución de puntajes:',
+                        subitems: [
+                            'Asigna valores porcentuales a cada categoría',
+                            'El total debe sumar exactamente 100%'
+                        ],
+                        image: '/images/Tutorial/Admin10.png',
+                    },
+                    {
+                        text: '3. Registro detallado de criterios:',
+                        subitems: [
+                            'Ingresa nombre y descripción para cada criterio',
+                            'Agrega con el botón "Agregar Criterio"',
+                            'Repite el proceso para todas las modalidades'
+                        ],
+                        image: '/images/Tutorial/Admin11.png',
+                        note: 'Los criterios deben ser claros y medibles para los evaluadores'
+                    },
+                    {
+                        text: '4. Finalización del proceso:',
+                        subitems: [
+                            'Revisa minuciosamente todos los criterios',
+                            'Confirma con "Guardar Todos los Criterios"',
+                            'El sistema bloqueará ediciones posteriores'
+                        ],
+                        warning: 'Esta acción es irreversible - no podrás modificar los criterios después de guardar',
+                    }
                 ]
             }
         ]
     },
     evaluador: {
-        title: 'Guía para Evaluadores',
+        title: 'Guía Completa para Evaluadores',
         steps: [
             {
-                section: 'Concursos Asignados',
-                content: 'Acceso a concursos disponibles:',
-                items: [
-                    'Revisa la lista de concursos que te han sido asignados',
-                    'Inscríbete en los concursos que evaluarás',
-                    'Verifica fechas límite y requisitos específicos'
-                ]
-            },
-            {
                 section: 'Proceso de Evaluación',
-                content: 'Cómo calificar proyectos:',
+                content: 'Siga estos pasos meticulosamente para evaluar proyectos:',
                 items: [
-                    '1 Accede a la sección "Evaluación"',
-                    '2 Revisa cada proyecto asignado',
-                    '3 Califica según los criterios establecidos',
-                    '4 Proporciona retroalimentación constructiva',
-                    '5 Guarda y envía tu evaluación'
+                    {
+                        text: '1. Inscripción y preparación:',
+                        subitems: [
+                            {
+                                text: 'Acceda a la sección "Concursos" y seleccione el concurso a evaluar',
+                                image: '/images/Tutorial/eva1.png'
+                            },
+                            {
+                                text: 'Confirme su participación como evaluador cuando el sistema lo solicite',
+                                image: '/images/Tutorial/eva2.png'
+                            },
+                            {
+                                text: 'Revise la documentación de los equipos en la carpeta de archivos antes del día del concurso',
+                                text: 'Evalúe el informe técnico (i.informe) con anticipación y guarde su progreso',
+                                image: '/images/Tutorial/eval.png',//agregar despues de que se agrege esta parte del proyecto
+                                note: 'Recomendamos revisar el tutorial de evaluación formal antes de calificar los informes de los equipos',
+                                note: 'Guarde cada avance usando el botón específico para cada sección',
+                            },
+                        ],
+                    },
+                    {
+                        text: '2. Evaluación formal:',
+                        subitems: [
+                            {
+                                text: 'En la sección "Evaluación", consulte los proyectos asignados',
+                                text: 'Seleccione un proyecto para evaluar y revise sus detalles completos',
+                                image: '/images/Tutorial/eva3.png'
+                            },
+                            {
+                                text: 'Complete los tres tipos de criterios en orden:',
+                                subitems: [
+                                    {
+                                        image: '/images/Tutorial/eva4.png',
+                                        text: 'a) Informe '
+                                    },
+                                    {
+                                        text: 'b) Modalidad',
+                                    },
+                                    {
+                                        text: 'c) Exposición',
+                                    }
+                                ]
+
+                            },
+                            {
+                                text: 'Guarde cada sección individualmente antes de continuar',
+                                image: '/images/Tutorial/eva6.png',
+                                warning: 'No avance sin guardar cada sección'
+                            },
+                            {
+                                text: 'Agregue comentarios constructivos de retroalimentación',
+                                image: '/images/Tutorial/eva7.png'
+                            },
+                            {
+                                text: 'Finalice con "Enviar Evaluación Final Cuando los tres tipos de criterio esten completos"',
+                                image: '/images/Tutorial/eva8.png',
+                                image: '/images/Tutorial/eva9.png',
+                                warning: 'Esta acción no puede deshacerse - verifique todo antes de enviar'
+                            },
+                            {
+                                text: 'Comprueve que aparesca Evaluacion completa',
+                                image: '/images/Tutorial/eva10.png'
+                            },
+                        ]
+                    }
                 ]
             },
             {
-                section: 'Proyectos Asignados',
-                content: 'Información disponible:',
+                section: 'Gestión de Proyectos Asignados',
+                content: 'Acciones disponibles para los proyectos bajo su evaluación:',
                 items: [
-                    'Listado completo de proyectos a evaluar',
-                    'Detalles del proyecto: nombre, categoría, modalidad',
-                    'Documentación adjunta por los participantes',
-                    'Estado actual de evaluación'
+                    {
+                        text: 'Visualización y descarga de documentación:',
+                        subitems: [
+                            {
+                                text: 'Consulte el listado completo de proyectos asignados',
+                                image: '/images/Tutorial/evaluador-paso3-item1.png'
+                            },
+                            {
+                                text: 'Descargue la carpeta completa de documentos de cada equipo',
+                                image: '/images/Tutorial/evaluador-paso3-item2.png'
+                            }
+                        ]
+                    }
                 ]
             },
             {
                 section: 'Criterios de Evaluación',
-                content: 'Estructura de calificación:',
+                content: 'Estructura detallada de los parámetros de calificación:',
                 items: [
-                    'Visualiza todos los criterios por modalidad',
-                    'Consulta puntuaciones y pesos asignados',
-                    'Revisa categorías y subcriterios',
-                    'Verifica rúbricas de evaluación'
+                    {
+                        text: 'Consulta de rúbricas:',
+                        subitems: [
+                            {
+                                text: 'Revise los criterios específicos para cada modalidad',
+                                image: '/images/Tutorial/eva11.png'
+                            }
+                        ],
+                        note: 'Los criterios varían según la modalidad del proyecto'
+                    }
                 ]
             },
             {
                 section: 'Reportes y Resultados',
-                content: 'Generación de informes:',
+                content: 'Seguimiento de sus evaluaciones:',
                 items: [
-                    'Accede a tus evaluaciones completadas',
-                    'Genera reportes individuales por proyecto',
-                    'Visualiza resultados finales enviados',
-                    'Exporta datos para tu registro'
+                    {
+                        text: 'Consulta de evaluaciones completadas:',
+                        subitems: [
+                            {
+                                text: 'Revise el estado de todos los proyectos asignados',
+                                text: 'Consulte puntuaciones finales y comentarios',
+                                text: 'Identifique proyectos pendientes de evaluación',
+                                text: 'Identifique proyectos pendientes de evaluación',
+                                image: '/images/Tutorial/eva12.png',
+                                image: '/images/Tutorial/eva13.png'
+
+                            }
+                        ]
+                    }
                 ]
             }
         ]
     },
-    default: {
-        title: 'Guía de Usuario',
+    vinculador: {
+        title: 'Guía para Vinculadores',
         steps: [
-            '1 Completa tu perfil para acceso completo',
-            '2 Explora las secciones disponibles',
-            '3 Consulta la ayuda cuando lo necesites'
+            {
+                section: 'Gestión de Líderes',
+                content: 'Funciones principales del vinculador:',
+                items: [
+                    {
+                        text: 'Registro y seguimiento de líderes',
+                        image: '/images/Tutorial/vinculador-paso1-item1.jpg'
+                    },
+                    {
+                        text: 'Asignación de proyectos a concursos',
+                        image: '/images/Tutorial/vinculador-paso1-item2.jpg'
+                    }
+                ],
+                image: '/images/Tutorial/vinculador-paso1-main.jpg'
+            },
+            {
+                section: 'Soporte a Equipos',
+                content: 'Cómo apoyar a los participantes:',
+                items: [
+                    {
+                        text: 'Resolución de dudas y problemas',
+                        image: '/images/Tutorial/vinculador-paso2-item1.jpg'
+                    },
+                    {
+                        text: 'Verificación de documentación',
+                        image: '/images/Tutorial/vinculador-paso2-item2.jpg'
+                    }
+                ],
+                image: '/images/Tutorial/vinculador-paso2-main.jpg'
+            }
+        ]
+    },
+    default: {
+        title: 'Guía General de Usuario',
+        steps: [
+            {
+                content: '1 Completa tu perfil para acceso completo',
+                image: '/images/Tutorial/default-paso1.jpg'
+            },
+            {
+                content: '2 Explora las secciones disponibles según tu rol',
+                image: '/images/Tutorial/default-paso2.jpg'
+            },
+            {
+                content: '3 Consulta esta guía cuando necesites ayuda',
+                image: '/images/Tutorial/default-paso3.jpg'
+            }
         ]
     }
 };
 
 const currentTutorial = computed(() => tutorialContent[userRole.value] || tutorialContent.default);
 const totalSteps = computed(() => currentTutorial.value.steps.length);
+
+// Funciones auxiliares para manejar items con imágenes
+const cleanItemText = (item) => {
+    if (typeof item === 'object') return item.text;
+    return item.replace(/^(\d+\s|-\s|\s{2,})/, '').trim();
+};
+
+const hasItemImage = (item) => {
+    return typeof item === 'object' && item.image;
+};
+
+const getListStyle = (item) => {
+    const text = typeof item === 'object' ? item.text : item;
+    if (/^\d+\s/.test(text)) return 'decimal';
+    if (/^-\s/.test(text)) return 'disc';
+    if (/^\s{2,}/.test(text)) return 'none';
+    return 'disc';
+};
 
 onMounted(() => {
     if (!localStorage.getItem('tutorialShown')) {
@@ -231,17 +428,6 @@ const nextStep = (e) => {
 const prevStep = (e) => {
     if (e) e.stopPropagation();
     if (currentStep.value > 1) currentStep.value--;
-};
-
-const getListStyle = (item) => {
-    if (/^\d+\s/.test(item)) return 'decimal';
-    if (/^-\s/.test(item)) return 'disc';
-    if (/^\s{2,}/.test(item)) return 'none';
-    return 'disc';
-};
-
-const cleanItemText = (item) => {
-    return item.replace(/^(\d+\s|-\s|\s{2,})/, '').trim();
 };
 </script>
 
@@ -362,46 +548,46 @@ const cleanItemText = (item) => {
                 <slot />
             </main>
 
-            <!-- Botón flotante de ayuda (global) -->
+            <!-- Botón flotante de ayuda -->
             <button 
                 @click="toggleTutorial"
-                class="fixed bottom-5 right-5 bg-[#611232] text-white p-3 sm:p-4 rounded-full shadow-xl hover:bg-[#8A1C4A] transition-all transform hover:scale-110 z-50 flex items-center"
+                class="fixed top-28 right-5 z-50 bg-[#611232] text-white p-3 rounded-full shadow-lg hover:bg-[#8A1C4A] transition-all transform hover:scale-110 flex items-center"
                 :class="{ '!bg-[#8A1C4A]': showTutorial && !isMinimized }"
                 title="Mostrar/Ocultar tutorial"
             >
-                <FontAwesomeIcon :icon="faQuestionCircle" class="text-lg sm:text-xl" />
+                <FontAwesomeIcon :icon="faQuestionCircle" class="text-lg" />
             </button>
+        </div>
 
-            <!-- Ventana flotante del tutorial (global) -->
+        <!-- Ventana flotante del tutorial (centrada) -->
+        <div 
+            v-if="showTutorial && userRole"
+            class="tutorial-modal fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
+            @click.self="closeTutorial"
+        >
             <div 
-                v-if="showTutorial && userRole"
-                class="fixed bottom-20 right-0 sm:right-5 w-full max-w-xs sm:max-w-md md:max-w-lg bg-white rounded-t-lg shadow-2xl border-2 border-[#611232] z-50 flex flex-col transition-all duration-300"
-                :class="{
-                    'h-16': isMinimized, 
-                    'h-96 md:h-[32rem]': !isMinimized,
-                    'w-auto min-w-[18rem]': isMinimized
-                }"
-                style="max-height: 90vh;"
+                class="tutorial-window bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col"
+                :class="{ 'minimized': isMinimized }"
             >
                 <!-- Barra de título -->
                 <div 
-                    class="bg-[#611232] text-white p-3 rounded-t-[calc(0.25rem-2px)] flex justify-between items-center cursor-pointer"
+                    class="title-bar bg-[#611232] text-white p-4 rounded-t-lg flex justify-between items-center cursor-pointer"
                     @click="isMinimized = !isMinimized"
                 >
-                    <h3 class="font-bold text-sm sm:text-base truncate">
+                    <h3 class="title font-bold text-lg">
                         {{ currentTutorial.title }}
                     </h3>
-                    <div class="flex space-x-2">
+                    <div class="controls flex gap-2">
                         <button 
                             @click.stop="minimizeTutorial"
-                            class="text-white hover:text-gray-200"
+                            class="control-button text-white hover:text-gray-200"
                             title="Minimizar"
                         >
                             <FontAwesomeIcon :icon="faWindowMinimize" />
                         </button>
                         <button 
                             @click.stop="closeTutorial"
-                            class="text-white hover:text-gray-200"
+                            class="control-button text-white hover:text-gray-200"
                             title="Cerrar"
                         >
                             <FontAwesomeIcon :icon="faTimes" />
@@ -410,144 +596,218 @@ const cleanItemText = (item) => {
                 </div>
 
                 <!-- Contenido (visible cuando no está minimizado) -->
-                <div v-if="!isMinimized" class="flex-1 overflow-y-auto p-4">
+                <div v-if="!isMinimized" class="content flex-1 overflow-auto p-6">
                     <!-- Barra de progreso -->
-                    <div class="mb-4">
-                        <div class="flex justify-between mb-1 text-xs sm:text-sm">
-                            <span class="font-medium text-[#611232]">Paso {{ currentStep }} de {{ totalSteps }}</span>
-                            <span class="font-medium text-[#611232]">{{ Math.round((currentStep/totalSteps)*100) }}%</span>
+                    <div class="progress-bar mb-6">
+                        <div class="progress-info flex justify-between mb-1">
+                            <span class="progress-text text-[#611232] font-medium">Paso {{ currentStep }} de {{ totalSteps }}</span>
+                            <span class="progress-percent text-[#611232] font-medium">{{ Math.round((currentStep/totalSteps)*100) }}%</span>
                         </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="progress-track w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div 
-                                class="bg-[#611232] h-2 rounded-full" 
+                                class="progress-fill h-full bg-[#611232] rounded-full transition-all duration-300"
                                 :style="`width: ${(currentStep/totalSteps)*100}%`"
                             ></div>
                         </div>
                     </div>
 
                     <!-- Paso actual -->
-                    <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200 text-sm sm:text-base">
+                    <div class="step-content bg-gray-50 p-6 rounded-lg border border-gray-200 mb-6">
                         <template v-if="typeof currentTutorial.steps[currentStep - 1] === 'object'">
-                            <h4 class="font-bold mb-2">{{ currentTutorial.steps[currentStep - 1].section }}</h4>
-                            <p class="mb-2">{{ currentTutorial.steps[currentStep - 1].content }}</p>
-                            <ul class="space-y-1">
+                            <h4 class="step-title text-xl font-bold text-gray-800 mb-3">{{ currentTutorial.steps[currentStep - 1].section }}</h4>
+                            
+                            <!-- Imagen principal del paso -->
+                            <img 
+                                v-if="currentTutorial.steps[currentStep - 1].image" 
+                                :src="currentTutorial.steps[currentStep - 1].image" 
+                                class="w-full max-h-64 object-contain mb-4 rounded-lg border border-gray-200 mx-auto"
+                                :alt="`Imagen ilustrativa: ${currentTutorial.steps[currentStep - 1].section}`"
+                            >
+                            
+                            <p class="step-description text-gray-700 mb-4">{{ currentTutorial.steps[currentStep - 1].content }}</p>
+                            <ul class="step-items space-y-4 pl-5">
                                 <li 
                                     v-for="(item, index) in currentTutorial.steps[currentStep - 1].items" 
                                     :key="index" 
-                                    class="text-sm"
-                                    :style="{ listStyleType: getListStyle(item), marginLeft: /^\s{2,}/.test(item) ? '1.5rem' : '1rem' }"
+                                    class="step-item text-gray-700"
+                                    :style="{ listStyleType: getListStyle(item), marginLeft: /^\s{2,}/.test(cleanItemText(item)) ? '1.5rem' : '0' }"
                                 >
                                     {{ cleanItemText(item) }}
+                                    <!-- Imagen específica para este ítem -->
+                                    <img 
+                                        v-if="hasItemImage(item)" 
+                                        :src="item.image" 
+                                        class="item-image w-full max-h-48 object-contain mt-2 mb-3 rounded-lg border border-gray-200 mx-auto"
+                                        :alt="`Imagen ilustrativa para: ${cleanItemText(item)}`"
+                                    >
                                 </li>
                             </ul>
                         </template>
                         <template v-else>
-                            <p>{{ currentTutorial.steps[currentStep - 1] }}</p>
+                            <!-- Para pasos simples sin sección -->
+                            <img 
+                                v-if="currentTutorial.steps[currentStep - 1].image" 
+                                :src="currentTutorial.steps[currentStep - 1].image" 
+                                class="w-full max-h-64 object-contain mb-4 rounded-lg border border-gray-200 mx-auto"
+                                alt="Imagen ilustrativa del paso"
+                            >
+                            <p class="text-gray-700">{{ currentTutorial.steps[currentStep - 1].content || currentTutorial.steps[currentStep - 1] }}</p>
                         </template>
                     </div>
 
                     <!-- Controles de navegación -->
-                    <div class="flex justify-between mt-auto pt-3 border-t border-gray-200">
+                    <div class="navigation-controls flex justify-between items-center pt-4 border-t border-gray-200">
                         <button 
                             @click.stop="prevStep"
                             :disabled="currentStep === 1"
-                            :class="currentStep === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'"
-                            class="px-3 py-1 text-[#611232] font-medium rounded border border-[#611232] text-xs sm:text-sm"
+                            class="nav-button px-4 py-2 rounded-md font-medium transition-colors"
+                            :class="currentStep === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-[#611232] hover:bg-[#611232] hover:text-white border border-[#611232]'"
                         >
-                            <FontAwesomeIcon :icon="faArrowLeft" class="mr-1" /> Anterior
+                            <FontAwesomeIcon :icon="faArrowLeft" class="mr-2" /> Anterior
                         </button>
                         
-                        <div class="flex space-x-2">
+                        <div class="main-controls flex gap-4">
                             <button 
                                 @click.stop="closeTutorial"
-                                class="px-3 py-1 text-gray-600 hover:text-[#8A1C4A] font-medium text-xs sm:text-sm"
+                                class="skip-button px-4 py-2 text-gray-600 hover:text-[#611232] font-medium"
                             >
                                 Saltar
                             </button>
                             <button 
                                 @click.stop="nextStep"
-                                class="px-3 py-1 bg-[#611232] text-white rounded hover:bg-[#8A1C4A] transition text-xs sm:text-sm"
+                                class="next-button px-4 py-2 bg-[#611232] text-white rounded-md font-medium hover:bg-[#8A1C4A] transition-colors"
                             >
                                 {{ currentStep === totalSteps ? 'Finalizar' : 'Siguiente' }}
-                                <FontAwesomeIcon :icon="faArrowRight" class="ml-1" />
+                                <FontAwesomeIcon :icon="faArrowRight" class="ml-2" />
                             </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Estado minimizado -->
-                <div v-else class="flex items-center justify-center h-full px-4">
-                    <span class="text-[#611232] font-medium text-sm truncate">Click para expandir tutorial</span>
+                <div v-else class="minimized-content flex items-center justify-center h-full p-4">
+                    <span class="minimized-text text-[#611232] font-medium">Click para expandir tutorial</span>
                 </div>
             </div>
         </div>
     </div>
 </template>
 
-<style>
-@keyframes fade {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade {
-    animation: fade 0.5s ease-in-out;
+<style scoped>
+/* Estilos para el modal del tutorial */
+.tutorial-modal {
+    animation: fadeIn 0.3s ease-out;
 }
 
-button {
-    transition: all 0.2s ease;
+.tutorial-window {
+    animation: slideUp 0.3s ease-out;
+    border: 2px solid #611232;
 }
 
+/* Animaciones */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Estilos para las imágenes */
+.step-items {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.step-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.item-image {
+    max-height: 200px;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.25rem;
+    border: 1px solid #e2e8f0;
+    align-self: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Estilos para scrollbar */
 ::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
 }
+
 ::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 10px;
 }
+
 ::-webkit-scrollbar-thumb {
     background: #c1c1c1;
     border-radius: 10px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
     background: #a1a1a1;
 }
 
-@media (max-width: 640px) {
-    .fixed {
-        max-width: 95vw;
+/* Estilos responsivos */
+@media (max-width: 768px) {
+    .tutorial-window {
+        max-width: 95%;
+        max-height: 95vh;
+    }
+    
+    .step-title {
+        font-size: 1.1rem;
+    }
+    
+    .step-description, .step-item {
+        font-size: 0.95rem;
+    }
+    
+    .navigation-controls {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .main-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .item-image {
+        max-height: 150px;
     }
 }
 
-/* Estilos para listas */
-ul {
-    padding-left: 1rem;
-}
-li {
-    padding-left: 0.5rem;
-    text-indent: -0.5rem;
-}
-
-/* Estilos para el botón flotante */
-.floating-help-btn {
-    position: fixed;
-    bottom: 1.25rem;
-    right: 1.25rem;
-    z-index: 9999;
-    width: 3rem;
-    height: 3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-}
-
-.floating-help-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-/* Asegura que el modal esté sobre todo */
-.modal-z-index {
-    z-index: 99999;
+@media (max-width: 480px) {
+    .content {
+        padding: 1rem;
+    }
+    
+    .step-content {
+        padding: 1rem;
+    }
+    
+    .nav-button, .skip-button, .next-button {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .item-image {
+        max-height: 120px;
+    }
 }
 </style>
