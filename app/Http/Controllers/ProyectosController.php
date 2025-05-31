@@ -82,12 +82,12 @@ class ProyectosController extends Controller
             ]));
 
             $equipoId = Equipo::generarCodigoEquipo();
+            $nuevaID = $prefijoEquipo . $equipoId;
             $equipo = Equipo::create([
-                'id' => $equipoId,
+                'id' => $nuevaID,
                 'proyecto_id' => $proyecto->id,
                 'concurso_id' => $request->concurso_id,
-                // Puedes guardar el prefijo si lo deseas, por ejemplo:
-                // 'prefijo' => $prefijoEquipo,
+                
             ]);
 
             // Actualizar el proyecto con la ID del equipo
