@@ -90,10 +90,19 @@ const handleCloseForm = () => {
 
 const mostrarModalCerrar = ref(false);
 const concursoParaCerrar = ref(null);
+const modalCerrarMensaje = ref('¿Estás seguro de que deseas cerrar este concurso?');
 
 const handleCerrar = (concurso) => {
   concursoParaCerrar.value = concurso;
   mostrarModalCerrar.value = true;
+  modalCerrarMensaje.value = '¿Estás seguro de que deseas cerrar este concurso?';
+};
+
+// Maneja el evento desde ModalEvaluaciones para mostrar el modal con el mensaje correcto
+const handleCerrarConcursoDesdeEvaluaciones = (concurso) => {
+  concursoParaCerrar.value = concurso;
+  mostrarModalCerrar.value = true;
+  modalCerrarMensaje.value = '¿Está seguro que desea cambiar el estado del concurso a cerrado?';
 };
 
 const confirmarCerrarConcurso = () => {
@@ -358,7 +367,7 @@ obtenerConcursoEnPantalla();
       v-if="mostrarModalCerrar"
       @confirmar="confirmarCerrarConcurso"
       @cancelar="mostrarModalCerrar = false"
-      mensaje="¿Estás seguro de que deseas cerrar este concurso?"
+      :mensaje="modalCerrarMensaje"
     />
     <ModalConfirmacion
       v-if="mostrarModalInscripcion"
@@ -375,6 +384,7 @@ obtenerConcursoEnPantalla();
       @close="mostrarModalEvaluaciones = false"
       @crear-evaluacion-manual="handleAbrirCrearEvaluacionManual"
       @eliminar-evaluacion="eliminarEvaluacion"
+      @cerrar-concurso="handleCerrarConcursoDesdeEvaluaciones"
     />
     <CrearEvaluacionManual
       v-if="mostrarCrearEvaluacionManual"
