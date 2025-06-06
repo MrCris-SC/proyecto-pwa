@@ -111,6 +111,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/resultados/generar-reporte/{concursoId}/{equipoId}', [ConcursoController::class, 'generarReporte'])->name('resultados.generarReporte');
 
     Route::get('/concursos/{concurso}/evaluaciones-manuales-datos', [EvaluacionesManualesController::class, 'datos'])->name('concursos.evaluaciones.manuales.datos');
+
+    // Nueva ruta para la vista de evaluadores asignados (para líderes)
+    Route::get('/evaluadores-asignados', [EvaluacionesManualesController::class, 'vistaEvaluadoresAsignados'])->name('evaluadores.asignados');
 });
 
 

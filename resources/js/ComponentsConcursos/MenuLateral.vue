@@ -15,7 +15,7 @@ if (props.auth.user.rol === 'lider') {
     menuItems.value = [
         { name: 'Concursos', icon: 'fas fa-file-alt', route: 'concursos.index' },
         { name: 'Gestión de proyectos', icon: 'fas fa-tasks', route: 'gestion.proyectos' },
-        { name: 'Proceso', icon: 'fas fa-cogs', route: 'proceso.index' },
+        { name: 'Evaluadores asignados', icon: 'fas fa-cogs', route: 'evaluadores.asignados' },
         { name: 'Resultados', icon: 'fas fa-chart-line', route: 'resultados.index' }, // <-- Asegúrate de tener esta línea
         { name: 'Equipos Registrados', icon: 'fas fa-users', route: 'equipos.registrados' }
     ];

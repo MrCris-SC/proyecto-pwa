@@ -30,32 +30,35 @@
 
     <div class="section">
         <h3>Evaluadores y Puntajes</h3>
-        @forelse($evaluaciones as $evaluacion)
+        @forelse($evaluaciones as $idx => $evaluacion)
             <div class="evaluador-block">
                 <div class="evaluador-title">
-                    Evaluador: {{ $evaluacion->evaluador->name ?? 'N/A' }}
+                    Evaluador {{ $idx + 1 }}
+                    @if(!empty($evaluacion->perfil))
+                        &mdash; Perfiles:
+                        @foreach((array)$evaluacion->perfil as $p)
+                            {{ $p }}{{ !$loop->last ? ',' : '' }}
+                        @endforeach
+                    @endif
                 </div>
                 <table class="puntajes-table">
                     <thead>
                         <tr>
                             <th>Criterio</th>
                             <th>Puntaje Asignado</th>
-                            
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($evaluacion->puntajes as $puntaje)
                             <tr>
                                 <td>{{ $puntaje->criterio->nombre ?? '-' }}</td>
-                                <td>{{ $puntaje->puntaje_obtenido }}</td>                                
-
+                                <td>{{ $puntaje->puntaje_obtenido }}</td>
                             </tr>
-                            
                         @endforeach
                         <tr>
-                                <td colspan="3">
-                                    <strong>Comentario:</strong> {{ $evaluacion->comentarios ?? '-' }}
-                                </td>
+                            <td colspan="3">
+                                <strong>Comentario:</strong> {{ $evaluacion->comentarios ?? '-' }}
+                            </td>
                         </tr>
                     </tbody>
                 </table>

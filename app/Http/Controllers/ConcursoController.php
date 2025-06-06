@@ -240,18 +240,32 @@ class ConcursoController extends Controller
 
     private function asignarEvaluaciones($concurso)
     {
+        \Log::info("Iniciando asignación de evaluaciones para concurso ID: {$concurso->id}");
+
         // Obtener los equipos del concurso
         $equipos = Equipo::with('proyecto')->where('concurso_id', $concurso->id)->get();
+        \Log::info("Equipos encontrados: " . $equipos->count());
 
-        // Obtener los evaluadores inscritos en el concurso con sus perfiles
-        $evaluadores = DB::table('concurso_evaluador')
-            ->join('evaluadores', 'concurso_evaluador.evaluador_id', '=', 'evaluadores.userID')
+        // Obtener los evaluadores inscritos en el concurso, junto con su perfil profesional
+        $evaluadores = \DB::table('concurso_evaluador')
+            ->join('users', 'concurso_evaluador.evaluador_id', '=', 'users.id')
+            ->join('evaluadores', 'users.id', '=', 'evaluadores.userID')
             ->where('concurso_evaluador.concurso_id', $concurso->id)
-            ->select('evaluadores.userID', 'evaluadores.perfil')
+            ->select('users.id as user_id', 'users.name', 'evaluadores.perfil')
             ->get();
 
+        \Log::info("Evaluadores encontrados: " . $evaluadores->count(), ['evaluadores' => $evaluadores->pluck('user_id')->toArray()]);
+
+        if ($evaluadores->isEmpty()) {
+            $ids = \DB::table('concurso_evaluador')
+                ->where('concurso_id', $concurso->id)
+                ->pluck('evaluador_id');
+            \Log::warning("No se encontraron evaluadores con join. Ids en concurso_evaluador: " . json_encode($ids));
+        }
+
         if ($equipos->isEmpty() || $evaluadores->isEmpty()) {
-            return; // No hay equipos o evaluadores para asignar
+            \Log::warning("No hay equipos o evaluadores para asignar en el concurso ID: {$concurso->id}");
+            return;
         }
 
         // Convertir los perfiles de evaluadores a arrays
@@ -260,36 +274,55 @@ class ConcursoController extends Controller
             return $evaluador;
         });
 
-        // Distribuir los equipos entre los evaluadores considerando los perfiles
         foreach ($equipos as $equipo) {
-            $perfilesSolicitados = $equipo->proyecto->perfil_jurado; // Perfiles solicitados por el equipo
+            \Log::info("Procesando equipo ID: {$equipo->id}");
+            $perfilesSolicitados = $equipo->proyecto->perfil_jurado ?? [];
+            if (!is_array($perfilesSolicitados)) {
+                $perfilesSolicitados = json_decode($perfilesSolicitados, true) ?: [];
+            }
+            \Log::info("Perfiles solicitados para equipo {$equipo->id}: " . json_encode($perfilesSolicitados));
 
             // Filtrar evaluadores compatibles
             $evaluadoresCompatibles = $evaluadores->filter(function ($evaluador) use ($perfilesSolicitados) {
+                if (!is_array($evaluador->perfil)) return false;
                 foreach ($perfilesSolicitados as $perfilSolicitado) {
                     foreach ($evaluador->perfil as $perfilEvaluador) {
                         if (stripos($perfilEvaluador, $perfilSolicitado) !== false) {
-                            return true; // Evaluador compatible
+                            return true;
                         }
                     }
                 }
-                return false; // No compatible
+                return false;
             });
 
-            // Asignar el primer evaluador compatible
             if ($evaluadoresCompatibles->isNotEmpty()) {
                 $evaluador = $evaluadoresCompatibles->first();
+                \Log::info("Asignando evaluador compatible ID: {$evaluador->user_id} al equipo ID: {$equipo->id}");
+            } else {
+                if ($evaluadores->isEmpty()) {
+                    \Log::warning("No hay evaluadores disponibles para asignar al equipo ID: {$equipo->id}");
+                    continue;
+                }
+                $evaluador = $evaluadores->random();
+                \Log::info("No hay evaluadores compatibles, asignando evaluador aleatorio ID: {$evaluador->user_id} al equipo ID: {$equipo->id}");
+            }
 
+            try {
                 Evaluaciones::create([
-                    'evaluador_id' => $evaluador->userID,
+                    'evaluador_id' => $evaluador->user_id,
                     'equipo_id' => $equipo->id,
                     'estado' => 'pendiente',
                 ]);
-
-                // Remover el evaluador asignado para evitar duplicados
-                $evaluadores = $evaluadores->reject(fn($e) => $e->userID === $evaluador->userID);
+                \Log::info("Evaluación creada para equipo ID: {$equipo->id} y evaluador ID: {$evaluador->user_id}");
+            } catch (\Exception $e) {
+                \Log::error("Error al crear evaluación para equipo ID: {$equipo->id} y evaluador ID: {$evaluador->user_id}: " . $e->getMessage());
             }
+
+            // Remover el evaluador asignado para evitar duplicados
+            $evaluadores = $evaluadores->reject(fn($e) => $e->user_id === $evaluador->user_id);
         }
+
+        \Log::info("Finalizó la asignación de evaluaciones para concurso ID: {$concurso->id}");
     }
 
     
@@ -632,11 +665,22 @@ class ConcursoController extends Controller
         ->where('equipo_id', $equipoId)
         ->get();
 
+        // Obtener perfiles de evaluadores y agregarlos a cada evaluación
+        foreach ($evaluaciones as $evaluacion) {
+            if ($evaluacion->evaluador) {
+                $perfil = \App\Models\Evaluadores::where('userID', $evaluacion->evaluador->id)->value('perfil');
+                // Decodificar perfil si es JSON
+                $evaluacion->perfil = is_string($perfil) ? json_decode($perfil, true) : $perfil;
+            } else {
+                $evaluacion->perfil = [];
+            }
+        }
+
         // Renderizar la vista PDF
         $pdf = Pdf::loadView('pdf.resultados', [
             'concurso' => $concurso,
             'equipo' => $equipo,
-            'evaluaciones' => $evaluaciones, // Cada evaluación tendrá sus puntajes y criterios
+            'evaluaciones' => $evaluaciones, // Cada evaluación tendrá sus puntajes, criterios y perfil
         ]);
 
         return $pdf->stream('reporte_concurso.pdf');

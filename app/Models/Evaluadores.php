@@ -21,4 +21,9 @@ class Evaluadores extends Model
     {
         return $this->belongsTo(User::class, 'userID');
     }
+
+    public static function ensureForUser($userId)
+    {
+        return self::firstOrCreate(['userID' => $userId], ['perfil' => json_encode([])]);
+    }
 }
