@@ -233,9 +233,33 @@ class ConcursoController extends Controller
             $this->asignarEvaluaciones($concurso);
 
             return back()->with('success', 'Concurso cerrado y evaluaciones asignadas.');
+        } elseif ($nuevoEstado === 'abierto') {
+            // Redirigir a la nueva función para abrir el concurso
+            return $this->abrirConcurso($request, $id);
         }
 
         return back()->with('error', 'Estado no reconocido.');
+    }
+
+    /**
+     * Cambia el estado de un concurso a abierto.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function abrirConcurso(Request $request, $id)
+    {
+        $concurso = Concursos::findOrFail($id);
+
+        if ($concurso->status === 'abierto') {
+            return back()->with('info', 'El concurso ya está abierto.');
+        }
+
+        $concurso->status = 'abierto';
+        $concurso->save();
+
+        return back()->with('success', 'El concurso ha sido reabierto correctamente.');
     }
 
     private function asignarEvaluaciones($concurso)

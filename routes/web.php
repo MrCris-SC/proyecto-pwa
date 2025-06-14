@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ConcursoController;
 use App\Http\Controllers\ProyectosController;
 use App\Http\Controllers\EquipoController;
-use App\Http\Controllers\EvaluadorController; // Nuevo controlador
+use App\Http\Controllers\EvaluadorController;
 use App\Http\Controllers\EvaluacionesManualesController;
 use App\Http\Controllers\EvaluacionesController;
 use App\Models\Concursos;
@@ -97,6 +97,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/guardar', [ConcursoController::class, 'guardarCriterios'])->name('criterios.store');
 
     Route::post('/concursos/{id}/cambiar-estado', [ConcursoController::class, 'cambiarEstado'])->name('concursos.cambiar.estado');
+    // Nueva ruta para abrir el concurso
+    Route::post('/concursos/{id}/abrir', [ConcursoController::class, 'abrirConcurso'])->name('concursos.abrir');
     Route::post('/concursos/{concurso}/evaluadores', [ConcursoController::class, 'registrarEvaluador'])->name('evaluadores.inscribir');
 
     Route::get('/equipos-registrados', [ConcursoController::class, 'verEquipos'])->name('equipos.registrados');
@@ -148,5 +150,8 @@ Route::get('/concursos/{concurso}/evaluadores', function ($concursoId) {
 
 // Ruta para almacenar una nueva evaluación manualmente
 Route::post('/evaluaciones', [EvaluacionesController::class, 'store'])->name('evaluaciones.store');
+
+Route::get('/evaluador/equipo/{equipoId}/descargar-documentos', [EvaluadorController::class, 'descargarDocumentosEquipo'])
+    ->name('evaluador.descargarDocumentosEquipo');
 
 require __DIR__.'/auth.php';

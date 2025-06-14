@@ -15,20 +15,37 @@
         </h2>
         
         <div v-if="proyectos.length > 0" class="space-y-4">
-          <div v-for="proyecto in proyectos" :key="proyecto.id" class="p-4 border rounded-lg hover:bg-gray-50">
-            <h3 class="font-semibold text-lg">{{ proyecto.nombre_proyecto }}</h3>
-            <div class="grid grid-cols-2 gap-2 mt-2 text-sm">
-              <div><span class="font-medium">Modalidad:</span> {{ proyecto.modalidad }}</div>
-              <div><span class="font-medium">Concurso:</span> {{ proyecto.concurso }}</div>
-              <div><span class="font-medium">Estado:</span> 
-                <span :class="{
-                  'text-green-600': proyecto.estado === 'completada',
-                  'text-yellow-600': proyecto.estado !== 'completada'
-                }">
-                  {{ proyecto.estado === 'completada' ? 'Evaluado' : 'Pendiente' }}
-                </span>
+          <div v-for="proyecto in proyectos" :key="proyecto.id" class="p-4 border rounded-lg hover:bg-gray-50 flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+              <h3 class="font-semibold text-lg">{{ proyecto.nombre_proyecto }}</h3>
+              <div class="grid grid-cols-2 gap-2 mt-2 text-sm">
+                <div><span class="font-medium">Modalidad:</span> {{ proyecto.modalidad }}</div>
+                <div><span class="font-medium">Concurso:</span> {{ proyecto.concurso }}</div>
+                <div><span class="font-medium">Estado:</span> 
+                  <span :class="{
+                    'text-green-600': proyecto.estado === 'completada',
+                    'text-yellow-600': proyecto.estado !== 'completada'
+                  }">
+                    {{ proyecto.estado === 'completada' ? 'Evaluado' : 'Pendiente' }}
+                  </span>
+                </div>
+                <div><span class="font-medium">Asignado el:</span> {{ proyecto.fecha_asignacion }}</div>
               </div>
-              <div><span class="font-medium">Asignado el:</span> {{ proyecto.fecha_asignacion }}</div>
+            </div>
+            <div class="mt-4 md:mt-0 md:ml-6 flex-shrink-0 flex flex-col items-end">
+              <template v-if="proyecto.documentos_disponibles">
+                <a
+                  :href="route('evaluador.descargarDocumentosEquipo', { equipoId: proyecto.equipo_id })"
+                  class="inline-flex items-center px-4 py-2 bg-[#611232] text-white rounded hover:bg-[#7a1a41] transition"
+                  target="_blank"
+                  download
+                >
+                  Descargar documentos (.rar)
+                </a>
+              </template>
+              <template v-else>
+                <span class="text-gray-500 italic">El equipo aún no sube sus documentos</span>
+              </template>
             </div>
           </div>
         </div>

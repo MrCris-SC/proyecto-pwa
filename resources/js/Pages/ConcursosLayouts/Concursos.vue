@@ -126,12 +126,26 @@ const mostrarModalInscripcion = ref(false);
 const handleConcursoClick = (concurso) => {
   if (concurso && concurso.id) {
     if (userRole === 'evaluador') {
-      // Use the 'inscrito' flag from the backend
+      // Usar la respuesta del backend para verificar si el evaluador está inscrito
       if (concurso.inscrito) {
         router.get(route('evaluacion.index')); // Redirect to Evaluacion.vue
       } else {
         concursoSeleccionado.value = concurso;
         mostrarModalInscripcion.value = true; // Show the modal
+      }
+    } else if (userRole === 'lider') {
+      // Excepción: Si el concurso está cerrado y el líder no está inscrito, no permitir inscripción
+      const user = props.auth.user;
+      if (concurso.estado === 'cerrado' && !user.concurso_registrado_id) {
+        alert('No puedes inscribirte en un concurso cerrado.');
+        return;
+      }
+      if (inscrito.value) {
+        router.get(route('gestion.proyectos'));
+      } else {
+        selectedMenu.value = 'Registro';
+        showForm.value = true;
+        concursoSeleccionado.value = concurso.id;
       }
     } else if (inscrito.value) {
       router.get(route('gestion.proyectos'));
@@ -278,6 +292,28 @@ const eliminarEvaluacion = async (evaluacion) => {
   }
 };
 
+const handleCambioEstadoConcurso = ({ concurso, nuevoEstado }) => {
+  if (!concurso || !concurso.id) return;
+  if (nuevoEstado === 'cerrado') {
+    // Mantener la lógica actual
+    concursoParaCerrar.value = concurso;
+    mostrarModalCerrar.value = true;
+    modalCerrarMensaje.value = '¿Está seguro que desea cambiar el estado del concurso a cerrado?';
+  } else if (nuevoEstado === 'abierto') {
+    // Llamar a la nueva ruta para abrir el concurso
+    router.post(route('concursos.abrir', concurso.id), {}, {
+      onSuccess: () => {
+        mostrarModalEvaluaciones.value = false;
+        router.reload();
+      },
+      onError: (error) => {
+        alert('No se pudo abrir el concurso.');
+        console.error(error);
+      }
+    });
+  }
+};
+
 obtenerConcursoEnPantalla();
 </script>
 
@@ -385,6 +421,7 @@ obtenerConcursoEnPantalla();
       @crear-evaluacion-manual="handleAbrirCrearEvaluacionManual"
       @eliminar-evaluacion="eliminarEvaluacion"
       @cerrar-concurso="handleCerrarConcursoDesdeEvaluaciones"
+      @cambiar-estado-concurso="handleCambioEstadoConcurso"
     />
     <CrearEvaluacionManual
       v-if="mostrarCrearEvaluacionManual"

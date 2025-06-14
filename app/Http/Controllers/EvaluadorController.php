@@ -10,6 +10,9 @@ use App\Models\PuntajesEvaluacion;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EvaluadorController extends Controller
 {
@@ -231,7 +234,7 @@ class EvaluadorController extends Controller
     public function proyectosAsignados()
     {
         $user = Auth::user();
-        
+
         $evaluaciones = Evaluaciones::with([
             'equipo.proyecto.modalidad',
             'equipo.concurso'
@@ -239,19 +242,70 @@ class EvaluadorController extends Controller
         ->where('evaluador_id', $user->id)
         ->get()
         ->map(function ($evaluacion) {
+            $equipoId = $evaluacion->equipo->id;
+            // Usar el disco 'public' y buscar archivos en la carpeta del equipo
+            $archivos = Storage::disk('public')->files("equipos/{$equipoId}");
+            $existeCarpeta = count($archivos) > 0;
             return [
                 'id' => $evaluacion->id,
                 'nombre_proyecto' => $evaluacion->equipo->proyecto->nombre ?? 'Proyecto sin nombre',
                 'modalidad' => $evaluacion->equipo->proyecto->modalidad->nombre ?? 'Sin modalidad',
                 'concurso' => $evaluacion->equipo->concurso->nombre,
                 'estado' => $evaluacion->estado,
-                'fecha_asignacion' => $evaluacion->created_at->format('d/m/Y')
+                'fecha_asignacion' => $evaluacion->created_at->format('d/m/Y'),
+                'equipo_id' => $equipoId,
+                'documentos_disponibles' => $existeCarpeta
             ];
         });
-    
+
         return Inertia::render('ConcursosLayouts/ProyectosAsignados', [
             'proyectos' => $evaluaciones
         ]);
+    }
+
+    // Descargar documentos del equipo como .rar
+    public function descargarDocumentosEquipo($equipoId)
+    {
+        $carpetaRelativa = "equipos/{$equipoId}";
+        // Obtener todos los archivos, incluyendo subcarpetas
+        $archivos = Storage::disk('public')->allFiles($carpetaRelativa);
+
+        if (count($archivos) === 0) {
+            abort(404, 'No hay documentos para este equipo.');
+        }
+
+        $zipFileName = "equipo_{$equipoId}_documentos.zip";
+        $zipTempPath = storage_path("app/temp/{$zipFileName}");
+
+        // Crear carpeta temporal si no existe
+        if (!file_exists(storage_path('app/temp'))) {
+            mkdir(storage_path('app/temp'), 0777, true);
+        }
+
+        // Eliminar archivo temporal anterior si existe
+        if (file_exists($zipTempPath)) {
+            unlink($zipTempPath);
+        }
+
+        // Crear el zip
+        $zip = new \ZipArchive();
+        if ($zip->open($zipTempPath, \ZipArchive::CREATE) !== true) {
+            abort(500, 'No se pudo crear el archivo ZIP.');
+        }
+
+        foreach ($archivos as $archivo) {
+            $absolutePath = storage_path('app/public/' . $archivo);
+            // Guardar la ruta relativa dentro del zip (quitando el prefijo 'equipos/{id}/')
+            $relativePathInZip = substr($archivo, strlen($carpetaRelativa) + 1);
+            $zip->addFile($absolutePath, $relativePathInZip);
+        }
+        $zip->close();
+
+        if (!file_exists($zipTempPath)) {
+            abort(500, 'No se pudo crear el archivo ZIP.');
+        }
+
+        return response()->download($zipTempPath, $zipFileName)->deleteFileAfterSend(true);
     }
 
     //Criterios

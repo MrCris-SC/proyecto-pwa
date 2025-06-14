@@ -72,27 +72,35 @@
       <p v-else class="text-gray-500">No hay evaluaciones disponibles.</p>
 
       <!-- Botones -->
-      <div class="flex justify-end items-center mt-4">
+      <div class="flex flex-col sm:flex-row justify-end items-center mt-4 gap-2">
         <button
           @click="$emit('finalizar', concurso)"
-          class="bg-green-500 text-white px-4 py-2 rounded shadow hover:bg-green-700 mr-2"
+          class="bg-green-500 text-white px-4 py-2 rounded shadow hover:bg-green-700 sm:mr-2 w-full sm:w-auto"
           :disabled="resumenEvaluaciones.pendientes > 0"
         >
           Finalizar Concurso
         </button>
-        <!-- Nuevo botón Cerrar Concurso -->
+        <!-- Nuevo menú para cambiar estado -->
+        <div class="w-full sm:w-auto sm:mr-2">
+          <select v-model="estadoSeleccionado" class="border rounded px-2 py-1 w-full sm:w-auto">
+            <option value="" disabled>Seleccionar estado</option>
+            <option value="abierto">Abrir Concurso</option>
+            <option value="cerrado">Cerrar Concurso</option>
+          </select>
+        </div>
         <button
-          @click="$emit('cerrar-concurso', concurso)"
-          class="bg-yellow-500 text-white px-4 py-2 rounded shadow hover:bg-yellow-700 mr-2"
+          @click="emitirCambioEstado"
+          class="bg-yellow-500 text-white px-4 py-2 rounded shadow hover:bg-yellow-700 w-full sm:w-auto"
+          :disabled="!estadoSeleccionado"
         >
-          Cerrar Concurso
+          Cambiar Estado
         </button>
-        <p v-if="resumenEvaluaciones.pendientes > 0" class="text-red-500 text-sm">
+        <p v-if="resumenEvaluaciones.pendientes > 0" class="text-red-500 text-sm w-full sm:w-auto">
           No se puede finalizar el concurso mientras haya evaluaciones pendientes.
         </p>
         <button
           @click="$emit('close')"
-          class="bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-700 ml-4"
+          class="bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-700 w-full sm:w-auto sm:ml-4"
         >
           Cerrar
         </button>
@@ -104,18 +112,32 @@
 <script setup>
 import { ref } from 'vue';
 
-defineProps({
+const estadoSeleccionado = ref('');
+
+// Obtener props y desestructurar concurso
+const props = defineProps({
   evaluaciones: {
     type: Array,
     default: () => [],
   },
   concurso: {
     type: Object,
-    required: true, // Asegúrate de que el concurso es obligatorio
+    required: true,
   },
   resumenEvaluaciones: {
     type: Object,
     default: () => ({ pendientes: 0, completadas: 0 }),
   },
 });
+const { concurso } = props;
+
+// Definir emits y obtener la función emit
+const emit = defineEmits(['cambiar-estado-concurso']);
+
+const emitirCambioEstado = () => {
+  if (estadoSeleccionado.value) {
+    emit('cambiar-estado-concurso', { concurso, nuevoEstado: estadoSeleccionado.value });
+    estadoSeleccionado.value = '';
+  }
+};
 </script>
