@@ -4,7 +4,7 @@
         <form @submit.prevent="submit">
             <!-- Sección de Perfil de Jurado -->
             <div class="mt-8">
-                <h3 class="text-xl font-bold mb-4">Selecciona tus Perfiles (Máximo 3)</h3>
+                <h3 class="text-xl font-bold mb-4">Selecciona tu Perfil</h3>
 
                 <!-- Mostrar lista de perfiles solo si mostrarListaPerfiles es true -->
                 <div v-if="mostrarListaPerfiles">
@@ -20,11 +20,10 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <div v-for="perfil in categoria.perfiles" :key="perfil" class="flex items-center">
                                     <input
-                                        type="checkbox"
+                                        type="radio"
                                         :id="perfil"
                                         :value="perfil"
                                         v-model="perfilSeleccionado"
-                                        :disabled="perfilSeleccionado.length >= 3 && !perfilSeleccionado.includes(perfil)"
                                         class="mr-2"
                                     />
                                     <label :for="perfil">{{ perfil }}</label>
@@ -32,14 +31,13 @@
                             </div>
                         </div>
                     </div>
-                    <p v-if="perfilSeleccionado.length > 3" class="text-red-500 text-sm mt-2">Solo puedes seleccionar hasta 3 perfiles.</p>
                 </div>
 
-                <!-- Mostrar perfiles seleccionados y botón para editar -->
-                <div v-if="perfilSeleccionado.length > 0" class="mt-4 mb-6">
-                    <h4 class="font-semibold text-[#611232] mb-2">Perfiles seleccionados:</h4>
+                <!-- Mostrar perfil seleccionado y botón para editar -->
+                <div v-if="perfilSeleccionado" class="mt-4 mb-6">
+                    <h4 class="font-semibold text-[#611232] mb-2">Perfil seleccionado:</h4>
                     <ul>
-                        <li v-for="(perfil, index) in perfilSeleccionado" :key="index" class="text-sm mb-2">{{ perfil }}</li>
+                        <li class="text-sm mb-2">{{ perfilSeleccionado }}</li>
                     </ul>
                     <button
                         v-if="!mostrarListaPerfiles"
@@ -159,7 +157,7 @@ export default {
                 "Veterinaria/o",
                 "Otro",
             ],
-            perfilSeleccionado: [],
+            perfilSeleccionado: '', // Cambiado a string
             busquedaPerfil: '',
             mostrarListaPerfiles: true,
         };

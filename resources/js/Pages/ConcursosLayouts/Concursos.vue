@@ -1,4 +1,5 @@
 <script setup>
+// Importaciones de Vue y librerías necesarias
 import { ref, computed } from 'vue';
 import { usePage, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
@@ -14,17 +15,20 @@ import ModalEvaluaciones from '@/Components/ModalEvaluaciones.vue';
 import CrearEvaluacionManual from '@/ComponentsConcursos/CrearEvaluacionManual.vue';
 import axios from 'axios';
 
-const selectedMenu = ref('Concursos');
-const showForm = ref(false);
-const concursoSeleccionado = ref(null);
-const mensajeExito = computed(() => props.flash.success || '');
+// Variables reactivas para controlar el estado de la vista y los formularios
+const selectedMenu = ref('Concursos'); // Menú seleccionado actualmente
+const showForm = ref(false); // Controla si se muestra un formulario
+const concursoSeleccionado = ref(null); // Concurso seleccionado para acciones
+const mensajeExito = computed(() => props.flash.success || ''); // Mensaje de éxito desde el backend
 
+// Obtener propiedades globales de la página (usuario, concursos, etc.)
 const { props } = usePage();
-const userRole = props.auth.user.rol;
-const concursos = ref(props.concursos || []);
-const inscrito = ref(props.inscrito || false);
-const concursoEnPantalla = ref(null);
+const userRole = props.auth.user.rol; // Rol del usuario autenticado
+const concursos = ref(props.concursos || []); // Lista de concursos
+const inscrito = ref(props.inscrito || false); // Si el usuario está inscrito en algún concurso
+const concursoEnPantalla = ref(null); // Concurso principal mostrado en pantalla
 
+// Busca el concurso en pantalla según el usuario líder o el primero disponible
 const obtenerConcursoEnPantalla = () => {
   const usuarioLider = props.auth.user;
   let concurso = concursos.value.find(c => c.lider_id === usuarioLider.id);
@@ -38,32 +42,34 @@ const obtenerConcursoEnPantalla = () => {
   }
 };
 
+// Maneja la selección de opciones en el menú lateral
 const handleMenuSelected = (menu) => {
-  selectedMenu.value = menu.toLowerCase(); // Actualiza el menú seleccionado
-  showForm.value = selectedMenu.value !== 'concursos'; // Controla si se muestra un formulario
+  selectedMenu.value = menu.toLowerCase();
+  showForm.value = selectedMenu.value !== 'concursos';
 
   if (selectedMenu.value === 'concursos') {
-    // Asegúrate de que se muestre la lista de concursos
     showForm.value = false;
   } else if (selectedMenu.value === 'gestión de proyectos') {
-    router.get(route('gestion.proyectos')); // Redirige a gestión de proyectos
+    router.get(route('gestion.proyectos'));
   } else if (selectedMenu.value === 'registro de criterios') {
-    // Cambia el componente dinámico sin recargar la página
     showForm.value = true;
   } else if (selectedMenu.value === 'equipos registrados') {
-    router.get(route('equipos.registrados')); // Redirige a la ruta actualizada para todos los equipos
+    router.get(route('equipos.registrados'));
   }
 };
 
+// Descarga el PDF de proyectos (FOREG)
 const handleDownloadPDF = () => {
   window.open(route('proyectos.pdf'), '_blank');
 };
 
+// Muestra el formulario para crear un nuevo concurso
 const handleCreateClick = () => {
   selectedMenu.value = 'Nuevo concurso';
   showForm.value = true;
 };
 
+// Redirige a la edición de un concurso
 const handleEditar = (concurso) => {
   if (concurso && concurso.id) {
     router.get(route('concursos.edit', concurso.id));
@@ -72,7 +78,7 @@ const handleEditar = (concurso) => {
   }
 };  
 
-
+// Elimina un concurso después de confirmación
 const handleEliminar = (concurso) => {
   if (confirm('¿Estás seguro de eliminar este concurso?')) {
     router.delete(route('concursos.destroy', concurso.id), {
@@ -83,28 +89,32 @@ const handleEliminar = (concurso) => {
   }
 };
 
+// Cierra el formulario y recarga la página
 const handleCloseForm = () => {
   showForm.value = false;
-  window.location.reload(); // Recargar la página para reflejar los cambios
+  window.location.reload();
 };
 
+// Variables y funciones para el modal de confirmación de cierre de concurso
 const mostrarModalCerrar = ref(false);
 const concursoParaCerrar = ref(null);
 const modalCerrarMensaje = ref('¿Estás seguro de que deseas cerrar este concurso?');
 
+// Muestra el modal para cerrar un concurso
 const handleCerrar = (concurso) => {
   concursoParaCerrar.value = concurso;
   mostrarModalCerrar.value = true;
   modalCerrarMensaje.value = '¿Estás seguro de que deseas cerrar este concurso?';
 };
 
-// Maneja el evento desde ModalEvaluaciones para mostrar el modal con el mensaje correcto
+// Muestra el modal de cierre desde el componente de evaluaciones
 const handleCerrarConcursoDesdeEvaluaciones = (concurso) => {
   concursoParaCerrar.value = concurso;
   mostrarModalCerrar.value = true;
   modalCerrarMensaje.value = '¿Está seguro que desea cambiar el estado del concurso a cerrado?';
 };
 
+// Confirma el cierre del concurso y actualiza el estado en el backend
 const confirmarCerrarConcurso = () => {
   if (concursoParaCerrar.value && concursoParaCerrar.value.id) {
     router.post(route('concursos.cambiar.estado', concursoParaCerrar.value.id), {
@@ -121,20 +131,23 @@ const confirmarCerrarConcurso = () => {
   }
 };
 
+// Variables y funciones para el modal de inscripción de evaluador
 const mostrarModalInscripcion = ref(false);
 
+// Maneja el clic en una tarjeta de concurso según el rol del usuario
 const handleConcursoClick = (concurso) => {
   if (concurso && concurso.id) {
     if (userRole === 'evaluador') {
-      // Usar la respuesta del backend para verificar si el evaluador está inscrito
+      // Si el evaluador ya está inscrito, redirige a la evaluación
       if (concurso.inscrito) {
-        router.get(route('evaluacion.index')); // Redirect to Evaluacion.vue
+        router.get(route('evaluacion.index'));
       } else {
+        // Si no está inscrito, muestra el modal de inscripción
         concursoSeleccionado.value = concurso;
-        mostrarModalInscripcion.value = true; // Show the modal
+        mostrarModalInscripcion.value = true;
       }
     } else if (userRole === 'lider') {
-      // Excepción: Si el concurso está cerrado y el líder no está inscrito, no permitir inscripción
+      // Si el concurso está cerrado y el líder no está inscrito, no permite inscripción
       const user = props.auth.user;
       if (concurso.estado === 'cerrado' && !user.concurso_registrado_id) {
         alert('No puedes inscribirte en un concurso cerrado.');
@@ -159,12 +172,13 @@ const handleConcursoClick = (concurso) => {
   }
 };
 
+// Inscribe al evaluador en el concurso seleccionado
 const inscribirEvaluador = () => {
   if (concursoSeleccionado.value && concursoSeleccionado.value.id) {
     router.post(route('evaluadores.inscribir', concursoSeleccionado.value.id), {}, {
       onSuccess: () => {
-        mostrarModalInscripcion.value = false; // Close the modal
-        router.reload(); // Reload the page to reflect changes
+        mostrarModalInscripcion.value = false;
+        router.reload();
       },
       onError: (error) => {
         console.error('Error al inscribirse como evaluador:', error);
@@ -173,6 +187,7 @@ const inscribirEvaluador = () => {
   }
 };
 
+// Variables y funciones para el modal de evaluaciones y creación manual de evaluaciones
 const mostrarModalEvaluaciones = ref(false);
 const evaluaciones = ref([]);
 const resumenEvaluaciones = ref({ pendientes: 0, completadas: 0 });
@@ -181,16 +196,18 @@ const mostrarCrearEvaluacionManual = ref(false);
 const equiposEvaluacion = ref([]);
 const evaluadoresEvaluacion = ref([]);
 
+// Muestra el modal de configuración de evaluaciones para un concurso
 const handleConfiguracion = async (concurso) => {
-  console.log('Concurso seleccionado para configuración:', concurso); // Log para verificar el concurso seleccionado
+  console.log('Concurso seleccionado para configuración:', concurso);
   concursoSeleccionadoParaEvaluaciones.value = concurso;
 
   try {
+    // Obtiene las evaluaciones del concurso
     const response = await axios.get(route('concursos.evaluaciones', concurso.id));
     if (response.data.success) {
       evaluaciones.value = response.data.evaluaciones;
 
-      // Obtener el resumen de evaluaciones
+      // Obtiene el resumen de evaluaciones (pendientes y completadas)
       const resumenResponse = await axios.get(route('concursos.resumen.evaluaciones', concurso.id));
       if (resumenResponse.data.success) {
         resumenEvaluaciones.value = resumenResponse.data.resumen;
@@ -212,6 +229,7 @@ const handleConfiguracion = async (concurso) => {
   mostrarModalEvaluaciones.value = true;
 };
 
+// Finaliza un concurso después de confirmación
 const handleFinalizarConcurso = async (concurso) => {
   if (!concurso || !concurso.id) {
     alert('El concurso no es válido.');
@@ -226,8 +244,8 @@ const handleFinalizarConcurso = async (concurso) => {
 
     if (response.data.success) {
       alert('El concurso ha sido finalizado exitosamente.');
-      mostrarModalEvaluaciones.value = false; // Cerrar el modal
-      router.reload(); // Recargar la página para reflejar los cambios
+      mostrarModalEvaluaciones.value = false;
+      router.reload();
     } else {
       alert(response.data.message || 'No se pudo finalizar el concurso. Intenta nuevamente.');
     }
@@ -237,7 +255,7 @@ const handleFinalizarConcurso = async (concurso) => {
   }
 };
 
-// Agrega el método para redirigir al podio
+// Redirige a la vista del podio del concurso
 const handlePodio = (concurso) => {
   if (concurso && concurso.id) {
     router.get(route('concursos.podio', { id: concurso.id }));
@@ -246,18 +264,18 @@ const handlePodio = (concurso) => {
   }
 };
 
+// Abre el formulario para crear una evaluación manual
 const handleAbrirCrearEvaluacionManual = async () => {
   if (concursoSeleccionadoParaEvaluaciones.value) {
     try {
-      // Obtener equipos con su proyecto relacionado
+      // Obtiene los equipos con su proyecto relacionado
       const equiposRes = await axios.get(route('concursos.equipos', concursoSeleccionadoParaEvaluaciones.value.id));
-      // Asegúrate que cada equipo tenga la relación proyecto cargada
       equiposEvaluacion.value = (equiposRes.data.equipos || []).map(e => ({
         ...e,
         proyecto: e.proyecto || null
       }));
 
-      // Obtener usuarios con rol evaluador (asegúrate que el backend filtra correctamente)
+      // Obtiene los usuarios con rol evaluador
       const evaluadoresRes = await axios.get(route('concursos.evaluadores', concursoSeleccionadoParaEvaluaciones.value.id));
       evaluadoresEvaluacion.value = evaluadoresRes.data.evaluadores || [];
       
@@ -271,16 +289,19 @@ const handleAbrirCrearEvaluacionManual = async () => {
   }
 };
 
+// Cierra el formulario de creación manual de evaluación
 const handleCerrarCrearEvaluacionManual = () => {
   mostrarCrearEvaluacionManual.value = false;
 };
 
+// Recarga la lista de evaluaciones del concurso seleccionado
 const recargarEvaluaciones = async () => {
   if (concursoSeleccionadoParaEvaluaciones.value) {
     await handleConfiguracion(concursoSeleccionadoParaEvaluaciones.value);
   }
 };
 
+// Elimina una evaluación después de confirmación
 const eliminarEvaluacion = async (evaluacion) => {
   if (!evaluacion || !evaluacion.id) return;
   if (!confirm('¿Estás seguro de eliminar esta evaluación?')) return;
@@ -292,15 +313,16 @@ const eliminarEvaluacion = async (evaluacion) => {
   }
 };
 
+// Cambia el estado del concurso (cerrado o abierto)
 const handleCambioEstadoConcurso = ({ concurso, nuevoEstado }) => {
   if (!concurso || !concurso.id) return;
   if (nuevoEstado === 'cerrado') {
-    // Mantener la lógica actual
+    // Muestra el modal de confirmación para cerrar el concurso
     concursoParaCerrar.value = concurso;
     mostrarModalCerrar.value = true;
     modalCerrarMensaje.value = '¿Está seguro que desea cambiar el estado del concurso a cerrado?';
   } else if (nuevoEstado === 'abierto') {
-    // Llamar a la nueva ruta para abrir el concurso
+    // Llama a la ruta para abrir el concurso
     router.post(route('concursos.abrir', concurso.id), {}, {
       onSuccess: () => {
         mostrarModalEvaluaciones.value = false;
@@ -314,6 +336,7 @@ const handleCambioEstadoConcurso = ({ concurso, nuevoEstado }) => {
   }
 };
 
+// Inicializa el concurso en pantalla al cargar el componente
 obtenerConcursoEnPantalla();
 </script>
 

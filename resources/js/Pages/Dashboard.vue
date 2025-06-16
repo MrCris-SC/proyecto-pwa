@@ -1,12 +1,17 @@
 <script setup>
+// Importa el layout autenticado y utilidades de Inertia y Vue
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, usePage, router } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 
+// Variable reactiva para mostrar mensajes de éxito
 const successMessage = ref('');
+// Acceso a las propiedades globales de la página
 const page = usePage();
 
+// Al montar el componente, realiza verificaciones y redirecciones
 onMounted(() => {
+    // Si hay un mensaje flash de éxito, lo muestra temporalmente
     if (page.props.flash?.success) {
         successMessage.value = page.props.flash.success;
 
@@ -15,10 +20,12 @@ onMounted(() => {
         }, 5000);
     }
 
+    // Si el usuario debe completar su perfil, lo redirige
     if (page.props.completar_perfil) {
         router.get(route('perfil.completar'));
     }
 
+    // Si el usuario es evaluador y no ha completado perfiles, lo redirige a seleccionar perfil
     if (page.props.user.rol === 'evaluador' && !page.props.user.has_completed_profiles) {
         router.get(route('perfil.select'));
     }
