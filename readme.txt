@@ -57,3 +57,8 @@ Al ejecutar las migracones para las migraciones para la base de datos
 puedes iniciar sesión con el usuario por default:
 email: admin@admin.com
 pass: admin123
+
+En caso de que quieras visualizar el proyecto mas rapido subí proyecto 
+a un server de aws ahora mismo, pero no tiene tanta info, para visualizarlo
+accede a:
+18.226.187.152
