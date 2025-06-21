@@ -513,10 +513,11 @@ class ConcursoController extends Controller
 
     public function verEquipos()
     {
-        // Retrieve all teams with their related projects, contests, and participants
+        // Retrieve all teams with their related projects, contests, participants, and advisors
         $equipos = Equipo::with([
             'proyecto.concurso', 
-            'participantes'
+            'participantes',
+            'asesores' // Asegúrate de tener esta relación en el modelo Equipo
         ])->get();
     
         return Inertia::render('ConcursosLayouts/EquiposRegistrados', [
