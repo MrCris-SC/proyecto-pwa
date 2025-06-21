@@ -319,31 +319,39 @@ class ConcursoController extends Controller
                 return false;
             });
 
-            if ($evaluadoresCompatibles->isNotEmpty()) {
-                $evaluador = $evaluadoresCompatibles->first();
-                \Log::info("Asignando evaluador compatible ID: {$evaluador->user_id} al equipo ID: {$equipo->id}");
-            } else {
-                if ($evaluadores->isEmpty()) {
-                    \Log::warning("No hay evaluadores disponibles para asignar al equipo ID: {$equipo->id}");
-                    continue;
+            // Seleccionar entre 2 y 4 evaluadores (priorizando compatibles)
+            $asignados = collect();
+            $numEvaluadores = min(4, max(2, $evaluadores->count()));
+            $compatibles = $evaluadoresCompatibles->shuffle()->take($numEvaluadores);
+            $asignados = $compatibles;
+            if ($asignados->count() < 2) {
+                // Si hay menos de 2 compatibles, completar con otros evaluadores no asignados
+                $faltan = 2 - $asignados->count();
+                $restantes = $evaluadores->whereNotIn('user_id', $asignados->pluck('user_id'))->shuffle()->take($faltan);
+                $asignados = $asignados->concat($restantes);
+            } else if ($asignados->count() < $numEvaluadores) {
+                // Si hay menos de 4 compatibles, completar hasta 4 con otros
+                $faltan = $numEvaluadores - $asignados->count();
+                $restantes = $evaluadores->whereNotIn('user_id', $asignados->pluck('user_id'))->shuffle()->take($faltan);
+                $asignados = $asignados->concat($restantes);
+            }
+            // Evitar duplicados
+            $asignados = $asignados->unique('user_id');
+            // Limitar a máximo 4
+            $asignados = $asignados->take(4);
+
+            foreach ($asignados as $evaluador) {
+                try {
+                    Evaluaciones::create([
+                        'evaluador_id' => $evaluador->user_id,
+                        'equipo_id' => $equipo->id,
+                        'estado' => 'pendiente',
+                    ]);
+                    \Log::info("Evaluación creada para equipo ID: {$equipo->id} y evaluador ID: {$evaluador->user_id}");
+                } catch (\Exception $e) {
+                    \Log::error("Error al crear evaluación para equipo ID: {$equipo->id} y evaluador ID: {$evaluador->user_id}: " . $e->getMessage());
                 }
-                $evaluador = $evaluadores->random();
-                \Log::info("No hay evaluadores compatibles, asignando evaluador aleatorio ID: {$evaluador->user_id} al equipo ID: {$equipo->id}");
             }
-
-            try {
-                Evaluaciones::create([
-                    'evaluador_id' => $evaluador->user_id,
-                    'equipo_id' => $equipo->id,
-                    'estado' => 'pendiente',
-                ]);
-                \Log::info("Evaluación creada para equipo ID: {$equipo->id} y evaluador ID: {$evaluador->user_id}");
-            } catch (\Exception $e) {
-                \Log::error("Error al crear evaluación para equipo ID: {$equipo->id} y evaluador ID: {$evaluador->user_id}: " . $e->getMessage());
-            }
-
-            // Remover el evaluador asignado para evitar duplicados
-            $evaluadores = $evaluadores->reject(fn($e) => $e->user_id === $evaluador->user_id);
         }
 
         \Log::info("Finalizó la asignación de evaluaciones para concurso ID: {$concurso->id}");
@@ -513,11 +521,10 @@ class ConcursoController extends Controller
 
     public function verEquipos()
     {
-        // Retrieve all teams with their related projects, contests, participants, and advisors
+        // Retrieve all teams with their related projects, contests, and participants
         $equipos = Equipo::with([
             'proyecto.concurso', 
-            'participantes',
-            'asesores' // Asegúrate de tener esta relación en el modelo Equipo
+            'participantes'
         ])->get();
     
         return Inertia::render('ConcursosLayouts/EquiposRegistrados', [

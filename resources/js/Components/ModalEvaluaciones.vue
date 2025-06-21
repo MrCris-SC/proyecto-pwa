@@ -17,18 +17,25 @@
         </p>
       </div>
 
-      <!-- Botón para crear evaluación manualmente (solo admin) -->
-      <div class="mb-4 flex justify-end">
+      <!-- Buscador -->
+      <div class="mb-4 flex justify-between items-center">
+        <input
+          v-model="busqueda"
+          type="text"
+          placeholder="Buscar por equipo, proyecto o evaluador..."
+          class="border rounded px-3 py-2 w-full max-w-xs"
+        />
+        <!-- Botón para crear evaluación manualmente (solo admin) -->
         <button
           v-if="$page.props.auth.user.rol === 'admin'"
           @click="$emit('crear-evaluacion-manual')"
-          class="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
+          class="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-700 ml-2"
         >
           Crear Evaluación Manual
         </button>
       </div>
 
-      <div v-if="evaluaciones.length" class="overflow-x-auto">
+      <div v-if="evaluacionesFiltradas.length" class="overflow-x-auto">
         <table class="table-auto w-full border-collapse border border-gray-300">
           <thead>
             <tr class="bg-gray-100">
@@ -41,7 +48,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="evaluacion in evaluaciones" :key="evaluacion.id">
+            <tr v-for="evaluacion in evaluacionesPaginadas" :key="evaluacion.id">
               <td class="border border-gray-300 px-4 py-2">
                 {{ evaluacion.equipo?.id || 'Sin equipo' }}
               </td>
@@ -68,6 +75,24 @@
             </tr>
           </tbody>
         </table>
+        <!-- Paginador -->
+        <div class="flex justify-end items-center mt-2 gap-2">
+          <button
+            @click="paginaActual = Math.max(1, paginaActual - 1)"
+            :disabled="paginaActual === 1"
+            class="px-2 py-1 border rounded disabled:opacity-50"
+          >
+            Anterior
+          </button>
+          <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
+          <button
+            @click="paginaActual = Math.min(totalPaginas, paginaActual + 1)"
+            :disabled="paginaActual === totalPaginas"
+            class="px-2 py-1 border rounded disabled:opacity-50"
+          >
+            Siguiente
+          </button>
+        </div>
       </div>
       <p v-else class="text-gray-500">No hay evaluaciones disponibles.</p>
 
@@ -110,9 +135,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 const estadoSeleccionado = ref('');
+const busqueda = ref('');
+const paginaActual = ref(1);
+const registrosPorPagina = 10;
 
 // Obtener props y desestructurar concurso
 const props = defineProps({
@@ -130,6 +158,36 @@ const props = defineProps({
   },
 });
 const { concurso } = props;
+
+// Filtrado de evaluaciones
+const evaluacionesFiltradas = computed(() => {
+  if (!busqueda.value) return props.evaluaciones;
+  const texto = busqueda.value.toLowerCase();
+  return props.evaluaciones.filter(e => {
+    const equipo = e.equipo?.id?.toString() || '';
+    const proyecto = e.equipo?.proyecto?.nombre?.toLowerCase() || '';
+    const evaluador = e.evaluador?.name?.toLowerCase() || '';
+    return (
+      equipo.includes(texto) ||
+      proyecto.includes(texto) ||
+      evaluador.includes(texto)
+    );
+  });
+});
+
+const totalPaginas = computed(() => {
+  return Math.max(1, Math.ceil(evaluacionesFiltradas.value.length / registrosPorPagina));
+});
+
+const evaluacionesPaginadas = computed(() => {
+  const inicio = (paginaActual.value - 1) * registrosPorPagina;
+  return evaluacionesFiltradas.value.slice(inicio, inicio + registrosPorPagina);
+});
+
+// Resetear página al cambiar búsqueda
+watch(busqueda, () => {
+  paginaActual.value = 1;
+});
 
 // Definir emits y obtener la función emit
 const emit = defineEmits(['cambiar-estado-concurso']);

@@ -109,7 +109,8 @@ class PerfilController extends Controller
 
         $user = Auth::user();
         $evaluador = Evaluadores::firstOrCreate(['userID' => $user->id]);
-        $evaluador->update(['perfil' => json_encode($request->perfil)]);
+        $evaluador->update(['perfil' => implode(',', $request->perfil)]);
+
 
         $user->update(['has_completed_profiles' => true]);
 
