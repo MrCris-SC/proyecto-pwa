@@ -1,63 +1,89 @@
 <template>
-    <div class="max-w-4xl mx-auto mt-10">
-        <h1 class="text-2xl font-bold mb-4">Seleccionar Perfiles</h1>
-        <form @submit.prevent="submit">
-            <!-- Sección de Perfil de Jurado -->
-            <div class="mt-8">
-                <h3 class="text-xl font-bold mb-4">Selecciona tu Perfil</h3>
-
-                <!-- Mostrar lista de perfiles solo si mostrarListaPerfiles es true -->
-                <div v-if="mostrarListaPerfiles">
-                    <input
-                        v-model="busquedaPerfil"
-                        type="text"
-                        placeholder="Buscar perfil..."
-                        class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#611232] mb-4"
-                    />
-                    <div class="space-y-2">
-                        <div v-for="(categoria, index) in categoriasPerfiles" :key="index" class="mb-4">
-                            <h4 class="font-semibold text-[#611232] mb-2">{{ categoria.nombre }}</h4>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div v-for="perfil in categoria.perfiles" :key="perfil" class="flex items-center">
-                                    <input
-                                        type="radio"
-                                        :id="perfil"
-                                        :value="perfil"
-                                        v-model="perfilSeleccionado"
-                                        class="mr-2"
-                                    />
-                                    <label :for="perfil">{{ perfil }}</label>
-                                </div>
+    <div>
+        <div class="min-h-screen bg-gray-100">
+            <nav class="border-b border-gray-100 bg-customColor">
+                <!-- Primary Navigation Menu -->
+                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 bg-customColor">
+                    <div class="flex h-16 justify-between">
+                        <div class="flex">
+                            <!-- Logo -->
+                            <div class="flex shrink-0 items-center">
+                                <Link :href="route('dashboard')">
+                                    <ApplicationLogo class="block h-9 w-auto fill-current text-gray-800" />
+                                </Link>
                             </div>
                         </div>
                     </div>
                 </div>
+            </nav>
+            <main 
+            class="w-full max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-lg relative"
+            :class="{ 'opacity-50 pointer-events-none': mostrarModalEvaluaciones || mostrarModalInscripcion || mostrarModalCerrar }">
+            
+                <div class="max-w-4xl mx-auto mt-10">
+                    <h1 class="text-2xl font-bold mb-4">Seleccionar Perfiles</h1>
+                    <form @submit.prevent="submit">
+                        <!-- Sección de Perfil de Jurado -->
+                        <div class="mt-8">
+                            <h3 class="text-xl font-bold mb-4">Selecciona tu Perfil</h3>
 
-                <!-- Mostrar perfil seleccionado y botón para editar -->
-                <div v-if="perfilSeleccionado" class="mt-4 mb-6">
-                    <h4 class="font-semibold text-[#611232] mb-2">Perfil seleccionado:</h4>
-                    <ul>
-                        <li class="text-sm mb-2">{{ perfilSeleccionado }}</li>
-                    </ul>
-                    <button
-                        v-if="!mostrarListaPerfiles"
-                        @click="editarSeleccionPerfiles"
-                        class="mt-4 bg-[#611232] text-white px-6 py-2 rounded-md hover:bg-[#8A1C4A] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#611232] focus:ring-offset-2"
-                    >
-                        Editar selección
-                    </button>
+                            <!-- Mostrar lista de perfiles solo si mostrarListaPerfiles es true -->
+                            <div v-if="mostrarListaPerfiles">
+                                <input
+                                    v-model="busquedaPerfil"
+                                    type="text"
+                                    placeholder="Buscar perfil..."
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#611232] mb-4"
+                                />
+                                <div class="space-y-2">
+                                    <div v-for="(categoria, index) in categoriasPerfiles" :key="index" class="mb-4">
+                                        <h4 class="font-semibold text-[#611232] mb-2">{{ categoria.nombre }}</h4>
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div v-for="perfil in categoria.perfiles" :key="perfil" class="flex items-center">
+                                                <input
+                                                    type="radio"
+                                                    :id="perfil"
+                                                    :value="perfil"
+                                                    v-model="perfilSeleccionado"
+                                                    class="mr-2"
+                                                />
+                                                <label :for="perfil">{{ perfil }}</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Mostrar perfil seleccionado y botón para editar -->
+                            <div v-if="perfilSeleccionado" class="mt-4 mb-6">
+                                <h4 class="font-semibold text-[#611232] mb-2">Perfil seleccionado:</h4>
+                                <ul>
+                                    <li class="text-sm mb-2">{{ perfilSeleccionado }}</li>
+                                </ul>
+                                <button
+                                    v-if="!mostrarListaPerfiles"
+                                    @click="editarSeleccionPerfiles"
+                                    class="mt-4 bg-[#611232] text-white px-6 py-2 rounded-md hover:bg-[#8A1C4A] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#611232] focus:ring-offset-2"
+                                >
+                                    Editar selección
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Botón para guardar -->
+                        <button
+                            type="submit"
+                            class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        >
+                            Guardar
+                        </button>
+                    </form>
                 </div>
-            </div>
-
-            <!-- Botón para guardar -->
-            <button
-                type="submit"
-                class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-                Guardar
-            </button>
-        </form>
+            </main>
+            
+        </div>
     </div>
+    
 </template>
 
 <script>
@@ -162,6 +188,13 @@ export default {
             mostrarListaPerfiles: true,
         };
     },
+    watch: {
+        perfilSeleccionado(newVal) {
+            if (newVal) {
+                this.mostrarListaPerfiles = false;
+            }
+        }
+    },
     computed: {
         categoriasPerfiles() {
             const categorias = [
@@ -196,7 +229,8 @@ export default {
             this.mostrarListaPerfiles = true;
         },
         submit() {
-            router.post(route('perfil.save'), { perfil: this.perfilSeleccionado }, {
+            // Enviar el perfil seleccionado como un array para cumplir con la validación del backend
+            router.post(route('perfil.save'), { perfil: [this.perfilSeleccionado] }, {
                 onSuccess: () => {
                     router.get(route('dashboard'));
                 }

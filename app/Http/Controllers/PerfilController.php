@@ -96,6 +96,12 @@ class PerfilController extends Controller
 
     public function guardarPerfiles(Request $request)
     {
+        // Permitir string o array para compatibilidad
+        $perfil = $request->perfil;
+        if (is_string($perfil)) {
+            $perfil = [$perfil];
+        }
+        $request->merge(['perfil' => $perfil]);
         $request->validate([
             'perfil' => 'required|array|max:3', // Maximum of 3 profiles
             'perfil.*' => 'string',

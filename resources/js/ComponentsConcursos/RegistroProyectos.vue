@@ -378,7 +378,7 @@ export default {
         </select>
       </div>
 
-      <!-- Sección de Perfil de Jurado -->
+    <!-- Sección de Perfil de Jurado -->
     <!-- Sección de Perfil de Jurado -->
     <div class="mt-8">
       <h3 class="text-xl font-bold mb-4">Perfil de Jurado (Máximo 3)</h3>
