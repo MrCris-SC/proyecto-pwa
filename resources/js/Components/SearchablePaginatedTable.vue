@@ -60,6 +60,13 @@
                     </li>
                   </ul>
                 </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <ul v-if="equipo.asesores && equipo.asesores.length > 0" class="list-disc list-inside">
+                    <li v-for="asesor in equipo.asesores" :key="asesor.id">
+                      {{ asesor.nombre }}
+                    </li>
+                  </ul>
+                </td>
               </tr>
               <tr v-if="paginatedData.length === 0">
                 <td colspan="4" class="px-6 py-4 text-center text-gray-500">
