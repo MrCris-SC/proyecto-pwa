@@ -166,4 +166,7 @@ Route::get('/concursos-finales/proyecto/{proyecto}/evaluaciones-resumen', [App\H
 Route::post('/concursos-finales/proyecto/{proyecto}/cambiar-estado', [App\Http\Controllers\ConcursosFinales::class, 'cambiarEstadoProyecto'])
     ->name('concursosFinales.cambiarEstadoProyecto');
 
+// Ruta para obtener participantes de un concurso (para admin)
+Route::get('/concursos-finales/{concurso}/participantes', [\App\Http\Controllers\ConcursosFinales::class, 'participantesPorConcurso'])->name('concursosFinales.participantesPorConcurso');
+
 require __DIR__.'/auth.php';

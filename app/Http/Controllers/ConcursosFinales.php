@@ -17,22 +17,7 @@ class ConcursosFinales extends Controller
             ->where('concurso_id', $concursoId)
             ->get();
 
-        // Forzar conversión a array para evitar problemas de serialización
-        $equiposArray = $equipos->map(function($equipo) {
-            return [
-                'id' => $equipo->id,
-                'proyecto' => $equipo->proyecto,
-                'participantes' => $equipo->participantes ? $equipo->participantes->map(function($p) {
-                    return [
-                        'id' => $p->id,
-                        'nombre' => $p->nombre,
-                        // agrega otros campos si es necesario
-                    ];
-                })->toArray() : [],
-            ];
-        });
-
-        return response()->json(['equipos' => $equiposArray]);
+        return response()->json(['equipos' => $equipos]);
     }
 
     public function evaluacionesResumenProyecto($proyectoId)
@@ -72,5 +57,17 @@ class ConcursosFinales extends Controller
         $proyecto->save();
 
         return response()->json(['success' => true, 'estado' => $proyecto->estado]);
+    }
+
+    // Nueva función para obtener participantes por concurso
+    public function participantesPorConcurso($concursoId)
+    {
+        // Obtiene los equipos del concurso
+        $equipos = Equipo::where('concurso_id', $concursoId)->pluck('id');
+        // Obtiene los participantes de esos equipos
+        $participantes = \App\Models\Participantes::whereIn('equipo_id', $equipos)
+            ->get(['id', 'nombre', 'equipo_id']);
+
+        return response()->json(['participantes' => $participantes]);
     }
 }

@@ -1,7 +1,7 @@
 <template>
   <div class="fixed inset-0 z-20 flex items-center justify-center bg-gray-800 bg-opacity-75">
     <div 
-      class="bg-white rounded-lg shadow-lg w-11/12 max-w-4xl p-6 lg:ml-[255px]"
+      class="bg-white rounded-lg shadow-lg w-11/12 max-w-4xl p-6 lg:ml-[255px] max-h-screen overflow-y-auto"
     >
       <h2 class="text-xl font-bold text-[#611232] mb-4">
         Evaluaciones de {{ concurso?.nombre }}

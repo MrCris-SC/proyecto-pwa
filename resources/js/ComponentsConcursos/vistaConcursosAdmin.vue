@@ -29,9 +29,9 @@
                 <span class="ml-2 text-gray-500 text-sm">
                   Integrantes: 
                   <!-- Imprime los nombres de los integrantes separados por coma -->
-                  <span v-if="Array.isArray(equipo.participantes) && equipo.participantes.length > 0">
-                    {{ equipo.participantes.map(p => p.nombre).join(', ') }}
-                  </span>
+                <span v-if="Array.isArray(equipo.participantes) && equipo.participantes.length > 0">
+                    {{ equipo.participantes.length }}
+                </span>
                   <span v-else>
                     <!-- Depuración: muestra el array de participantes -->
                     {{ equipo.participantes && equipo.participantes.length === 0 ? '0' : 'Error de datos' }}
@@ -60,7 +60,9 @@
                 <div>
                   <strong>Integrantes:</strong>
                   <ul class="list-disc ml-6">
-                    <li v-for="p in (equipo.participantes || [])" :key="p.id">{{ p.nombre }}</li>
+                    <li v-for="p in (equipo.participantes || [])" :key="p.nombre">
+                      {{ p.nombre }} 
+                    </li>
                   </ul>
                 </div>
                 <div class="mt-2">
@@ -131,13 +133,44 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import axios from 'axios';
 
 const props = defineProps({
   concurso: Object,
   equipos: Array
 });
+
+const participantes = ref([]);
+
+// Carga los participantes al montar el componente
+onMounted(async () => {
+  if (props.concurso && props.concurso.id) {
+    try {
+      const res = await axios.get(route('concursosFinales.participantesPorConcurso', { concurso: props.concurso.id }));
+      participantes.value = res.data.participantes || [];
+    } catch (e) {
+      participantes.value = [];
+    }
+  }
+});
+
+// Asocia solo nombre y teléfono de los participantes a cada equipo
+const equiposConParticipantes = computed(() => {
+  if (!props.equipos || !participantes.value) return [];
+  return props.equipos.map(equipo => ({
+    ...equipo,
+    participantes: participantes.value
+      .filter(p => p.equipo_id === equipo.id)
+      .map(p => ({
+        nombre: p.nombre,
+        telefono: p.telefono
+      }))
+  }));
+});
+
+// Depuración: revisa la estructura de los equipos y sus participantes en el frontend
+console.log('Equipos con participantes asociados:', equiposConParticipantes.value);
 
 const openEquipos = ref([]);
 const evaluacionesResumen = ref({});
@@ -149,13 +182,11 @@ const paginaActual = ref(1);
 const elementosPorPagina = 10;
 
 const equiposFiltrados = computed(() => {
-  if (!props.equipos) return [];
+  if (!equiposConParticipantes.value) return [];
   const texto = busqueda.value.trim().toLowerCase();
-  if (!texto) return props.equipos;
-  return props.equipos.filter(equipo => {
-    // Buscar por nombre de proyecto
+  if (!texto) return equiposConParticipantes.value;
+  return equiposConParticipantes.value.filter(equipo => {
     const nombreProyecto = (equipo.proyecto?.nombre || '').toLowerCase();
-    // Buscar por nombre de algún integrante
     const nombresIntegrantes = (equipo.participantes || []).map(p => (p.nombre || '').toLowerCase()).join(' ');
     return nombreProyecto.includes(texto) || nombresIntegrantes.includes(texto);
   });
@@ -227,3 +258,4 @@ async function cambiarEstadoProyecto(proyectoId, nuevoEstado, equipo) {
   max-height: 500px;
 }
 </style>
+
