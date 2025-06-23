@@ -16,7 +16,7 @@ class ResultadosFinales extends Model
 
     public function equipo()
     {
-        return $this->belongsTo(Equipo::class, 'equipo_id');
+        return $this->belongsTo(Equipo::class, 'equipo_id', 'id');
     }
 
     public function concurso()

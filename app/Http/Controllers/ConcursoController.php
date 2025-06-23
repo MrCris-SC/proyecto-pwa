@@ -22,6 +22,7 @@ use App\Models\Linea;
 use App\Models\Evaluacion;
 use App\Models\ResultadosFinales;
 use App\Models\PuntajesEvaluacion;
+use App\Models\PuntajesParciales;
 
 class ConcursoController extends Controller
 {
@@ -578,12 +579,42 @@ class ConcursoController extends Controller
         // Calcular promedios finales
         $equipos = Equipo::where('concurso_id', $concursoId)->get();
         foreach ($equipos as $equipo) {
-            $puntajes = PuntajesEvaluacion::whereHas('evaluacion', function ($query) use ($equipo) {
-                $query->where('equipo_id', $equipo->id);
-            })->pluck('puntaje_obtenido');
+            // Obtener todas las evaluaciones del equipo
+            $evaluaciones = Evaluaciones::where('equipo_id', $equipo->id)->get();
+            $puntajesParciales = [];
 
-            if ($puntajes->isNotEmpty()) {
-                $promedioFinal = $puntajes->avg();
+            foreach ($evaluaciones as $evaluacion) {
+                // Sumar los puntajes de todos los criterios de esta evaluación
+                $puntajeTotal = PuntajesEvaluacion::where('evaluacion_id', $evaluacion->id)->sum('puntaje_obtenido');
+                
+                // Loguear el puntaje parcial
+                \Log::info("Equipo {$equipo->id} - Evaluacion {$evaluacion->id} - Puntaje parcial: {$puntajeTotal}");
+
+                // Validar que el puntaje parcial no exceda 100
+                if ($puntajeTotal > 100) {
+                    \Log::warning("Puntaje parcial excede 100: Equipo {$equipo->id}, Evaluacion {$evaluacion->id}, Puntaje: {$puntajeTotal}");
+                    $puntajeTotal = 100;
+                }
+
+                // Guardar el puntaje parcial (debe ser 100 máx)
+                PuntajesParciales::updateOrCreate(
+                    [
+                        'evaluacion_id' => $evaluacion->id,
+                        'equipo_id' => $equipo->id,
+                        'concurso_id' => $concursoId,
+                    ],
+                    [
+                        'puntaje_total' => $puntajeTotal,
+                    ]
+                );
+                $puntajesParciales[] = $puntajeTotal;
+            }
+
+            if (count($puntajesParciales) > 0) {
+                $promedioFinal = array_sum($puntajesParciales) / count($puntajesParciales);
+
+                // Loguear el promedio final
+                \Log::info("Equipo {$equipo->id} - Promedio final: {$promedioFinal}");
 
                 // Guardar el resultado final
                 ResultadosFinales::updateOrCreate(

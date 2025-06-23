@@ -52,8 +52,8 @@ class Equipo extends Model
         return $this->belongsTo(Concursos::class, 'concurso_id');
     }
 
-    public function resultadosFinales()
+    public function resultadoFinal()
     {
-        return $this->hasOne(ResultadosFinales::class, 'equipo_id');
+        return $this->hasOne(ResultadosFinales::class, 'equipo_id', 'id');
     }
 }

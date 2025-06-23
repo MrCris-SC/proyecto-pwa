@@ -2,6 +2,13 @@
   <div>
     <div class="bg-white rounded-lg shadow-lg p-4 sm:p-8 w-full max-w-6xl mx-auto">
       <h2 class="text-xl font-bold mb-4">Equipos registrados en {{ concurso?.nombre }}</h2>
+      <!-- Botón para descargar PDF -->
+      <button
+        class="mb-4 px-4 py-2 bg-blue-600 text-white rounded"
+        @click="descargarPDF"
+      >
+        Descargar reporte PDF
+      </button>
       <!-- Buscador -->
       <div class="mb-4 flex flex-col sm:flex-row gap-2 items-center">
         <input
@@ -73,7 +80,7 @@
                         <div>
                           <span class="font-semibold">Evaluador:</span> {{ ev.evaluador_nombre }} |
                           <span class="font-semibold">Estado:</span> {{ ev.estado }} |
-                          <span class="font-semibold">Puntaje:</span> {{ ev.puntaje_total }}
+                          
                         </div>
                         <div v-if="ev.comentarios" class="ml-4 mt-1 text-gray-700">
                           <span class="font-semibold">Comentarios:</span>
@@ -81,6 +88,11 @@
                         </div>
                       </li>
                     </ul>
+                    <!-- Mostrar promedio final si existe -->
+                    <div v-if="promedioFinal[equipo.id] !== null" class="mt-2">
+                      <span class="font-semibold">Promedio final:</span>
+                      <span>{{ promedioFinal[equipo.id] }}</span>
+                    </div>
                   </div>
                   <div v-else-if="cargandoEvaluaciones === equipo.id">
                     <span class="text-gray-400">Cargando evaluaciones...</span>
@@ -174,6 +186,7 @@ console.log('Equipos con participantes asociados:', equiposConParticipantes.valu
 
 const openEquipos = ref([]);
 const evaluacionesResumen = ref({});
+const promedioFinal = ref({}); // Nuevo: almacena el promedio final por equipo
 const cargandoEvaluaciones = ref(null);
 
 // Buscador y paginador
@@ -219,8 +232,10 @@ async function toggleEquipo(equipoId, proyectoId) {
       try {
         const res = await axios.get(route('concursosFinales.evaluacionesResumen', { proyecto: proyectoId }));
         evaluacionesResumen.value[equipoId] = res.data.resumen || [];
+        promedioFinal.value[equipoId] = res.data.promedio_final ?? null; // Guarda el promedio final
       } catch (e) {
         evaluacionesResumen.value[equipoId] = [];
+        promedioFinal.value[equipoId] = null;
       } finally {
         cargandoEvaluaciones.value = null;
       }
@@ -242,6 +257,11 @@ async function cambiarEstadoProyecto(proyectoId, nuevoEstado, equipo) {
   } catch (e) {
     alert('No se pudo cambiar el estado del proyecto.');
   }
+}
+
+function descargarPDF() {
+  if (!props.concurso || !props.concurso.id) return;
+  window.open(route('concursosFinales.descargarReporteEquipos', { concurso: props.concurso.id }), '_blank');
 }
 </script>
 

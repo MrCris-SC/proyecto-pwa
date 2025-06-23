@@ -506,7 +506,7 @@ const validarPuntaje = (criterio) => {
   }
 };
 
-const guardarTipo = async (tipo) => {
+const guardarTipo = async (tipo) => {e
   if (!proyectoSeleccionado.value) return;
 
   loading.value = true;
