@@ -36,45 +36,47 @@
       </div>
 
       <div v-if="evaluacionesFiltradas.length" class="overflow-x-auto">
-        <table class="table-auto w-full border-collapse border border-gray-300">
-          <thead>
-            <tr class="bg-gray-100">
-              <th class="border border-gray-300 px-4 py-2 text-left">Equipo</th>
-              <th class="border border-gray-300 px-4 py-2 text-left">Proyecto</th>
-              <th class="border border-gray-300 px-4 py-2 text-left">Evaluador</th>
-              <th class="border border-gray-300 px-4 py-2 text-left">Estado</th>
-              <th class="border border-gray-300 px-4 py-2 text-left">Puntaje</th>
-              <th v-if="$page.props.auth.user.rol === 'admin'" class="border border-gray-300 px-4 py-2 text-left">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="evaluacion in evaluacionesPaginadas" :key="evaluacion.id">
-              <td class="border border-gray-300 px-4 py-2">
-                {{ evaluacion.equipo?.id || 'Sin equipo' }}
-              </td>
-              <td class="border border-gray-300 px-4 py-2">
-                {{ evaluacion.equipo?.proyecto?.nombre || 'Sin proyecto' }}
-              </td>
-              <td class="border border-gray-300 px-4 py-2">
-                {{ evaluacion.evaluador?.name || 'Sin evaluador' }}
-              </td>
-              <td class="border border-gray-300 px-4 py-2">
-                {{ evaluacion.estado }}
-              </td>
-              <td class="border border-gray-300 px-4 py-2">
-                {{ evaluacion.puntaje || 'Sin puntaje' }}
-              </td>
-              <td v-if="$page.props.auth.user.rol === 'admin'" class="border border-gray-300 px-4 py-2">
-                <button
-                  @click="$emit('eliminar-evaluacion', evaluacion)"
-                  class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700"
-                >
-                  Eliminar
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="max-h-[60vh] overflow-y-auto">
+          <table class="table-auto w-full border-collapse border border-gray-300">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="border border-gray-300 px-4 py-2 text-left">Equipo</th>
+                <th class="border border-gray-300 px-4 py-2 text-left">Proyecto</th>
+                <th class="border border-gray-300 px-4 py-2 text-left">Evaluador</th>
+                <th class="border border-gray-300 px-4 py-2 text-left">Estado</th>
+                <th class="border border-gray-300 px-4 py-2 text-left">Puntaje</th>
+                <th v-if="$page.props.auth.user.rol === 'admin'" class="border border-gray-300 px-4 py-2 text-left">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="evaluacion in evaluacionesPaginadas" :key="evaluacion.id">
+                <td class="border border-gray-300 px-4 py-2">
+                  {{ evaluacion.equipo?.id || 'Sin equipo' }}
+                </td>
+                <td class="border border-gray-300 px-4 py-2">
+                  {{ evaluacion.equipo?.proyecto?.nombre || 'Sin proyecto' }}
+                </td>
+                <td class="border border-gray-300 px-4 py-2">
+                  {{ evaluacion.evaluador?.name || 'Sin evaluador' }}
+                </td>
+                <td class="border border-gray-300 px-4 py-2">
+                  {{ evaluacion.estado }}
+                </td>
+                <td class="border border-gray-300 px-4 py-2">
+                  {{ evaluacion.puntaje || 'Sin puntaje' }}
+                </td>
+                <td v-if="$page.props.auth.user.rol === 'admin'" class="border border-gray-300 px-4 py-2">
+                  <button
+                    @click="$emit('eliminar-evaluacion', evaluacion)"
+                    class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700"
+                  >
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         <!-- Paginador -->
         <div class="flex justify-end items-center mt-2 gap-2">
           <button

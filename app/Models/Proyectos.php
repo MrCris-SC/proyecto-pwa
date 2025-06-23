@@ -19,6 +19,7 @@ class Proyectos extends Model
         'linea_investigacion_id',
         'concurso_id',
         'perfil_jurado',
+        'estado',
     ];
     
     protected $casts = [

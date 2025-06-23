@@ -154,4 +154,16 @@ Route::post('/evaluaciones', [EvaluacionesController::class, 'store'])->name('ev
 Route::get('/evaluador/equipo/{equipoId}/descargar-documentos', [EvaluadorController::class, 'descargarDocumentosEquipo'])
     ->name('evaluador.descargarDocumentosEquipo');
 
+// Ruta para obtener equipos de un concurso con participantes y proyecto (para admin)
+Route::get('/concursos-finales/{concurso}/equipos', [App\Http\Controllers\ConcursosFinales::class, 'equiposConParticipantes'])
+    ->name('concursosFinales.equipos');
+
+// Ruta para obtener resumen de evaluaciones de un proyecto (para admin)
+Route::get('/concursos-finales/proyecto/{proyecto}/evaluaciones-resumen', [App\Http\Controllers\ConcursosFinales::class, 'evaluacionesResumenProyecto'])
+    ->name('concursosFinales.evaluacionesResumen');
+
+// Ruta para cambiar el estado de un proyecto (admin)
+Route::post('/concursos-finales/proyecto/{proyecto}/cambiar-estado', [App\Http\Controllers\ConcursosFinales::class, 'cambiarEstadoProyecto'])
+    ->name('concursosFinales.cambiarEstadoProyecto');
+
 require __DIR__.'/auth.php';

@@ -17,6 +17,8 @@ class Participantes extends Model
         'proyecto_id',
     ];
 
+    protected $primaryKey = 'id'; // Asegúrate que existe el campo 'id' en la tabla
+
     public function equipo()
     {
         return $this->belongsTo(Equipo::class, 'equipo_id');

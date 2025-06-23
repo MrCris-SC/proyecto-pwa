@@ -14,6 +14,7 @@ import RegistroCriterios from '@/Pages/ConcursosLayouts/RegistroCriterios.vue';
 import ModalEvaluaciones from '@/Components/ModalEvaluaciones.vue';
 import CrearEvaluacionManual from '@/ComponentsConcursos/CrearEvaluacionManual.vue';
 import axios from 'axios';
+import vistaConcursosAdmin from '@/ComponentsConcursos/vistaConcursosAdmin.vue';
 
 // Variables reactivas para controlar el estado de la vista y los formularios
 const selectedMenu = ref('Concursos'); // Menú seleccionado actualmente
@@ -135,9 +136,14 @@ const confirmarCerrarConcurso = () => {
 const mostrarModalInscripcion = ref(false);
 
 // Maneja el clic en una tarjeta de concurso según el rol del usuario
-const handleConcursoClick = (concurso) => {
+const handleConcursoClick = async (concurso) => {
   if (concurso && concurso.id) {
-    if (userRole === 'evaluador') {
+    if (userRole === 'admin') {
+      // Mostrar modal admin y cargar equipos
+      concursoSeleccionadoAdmin.value = concurso;
+      await cargarEquiposConcurso(concurso.id);
+      mostrarModalVistaConcursosAdmin.value = true;
+    } else if (userRole === 'evaluador') {
       // Si el evaluador ya está inscrito, redirige a la evaluación
       if (concurso.inscrito) {
         router.get(route('evaluacion.index'));
@@ -336,6 +342,22 @@ const handleCambioEstadoConcurso = ({ concurso, nuevoEstado }) => {
   }
 };
 
+// Variables reactivas para el modal de vistaConcursosAdmin y equipos
+const mostrarModalVistaConcursosAdmin = ref(false);
+const equiposConcursoAdmin = ref([]);
+const concursoSeleccionadoAdmin = ref(null);
+
+// Función para cargar equipos de un concurso (para admin)
+const cargarEquiposConcurso = async (concursoId) => {
+  try {
+    const res = await axios.get(route('concursos.equipos', concursoId));
+    equiposConcursoAdmin.value = res.data.equipos || [];
+  } catch (e) {
+    equiposConcursoAdmin.value = [];
+    alert('No se pudieron cargar los equipos del concurso.');
+  }
+};
+
 // Inicializa el concurso en pantalla al cargar el componente
 obtenerConcursoEnPantalla();
 </script>
@@ -360,14 +382,22 @@ obtenerConcursoEnPantalla();
         class="w-full max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-lg relative"
         :class="{ 'opacity-50 pointer-events-none': mostrarModalEvaluaciones || mostrarModalInscripcion || mostrarModalCerrar }"
       >
-        <!-- Overlay for modal (solo para los modales de confirmación y evaluaciones) -->
+        <!-- Overlay for modal (sin admin modal) -->
         <div 
           v-if="mostrarModalEvaluaciones || mostrarModalInscripcion || mostrarModalCerrar" 
-          class="absolute inset-0 bg-gray-800 bg-opacity-50 z-10"
+          class="fixed inset-0 bg-gray-800 bg-opacity-50 z-40"
         ></div>
 
+        <!-- Modal admin SOLO dentro del main -->
+        <vistaConcursosAdmin
+          v-if="mostrarModalVistaConcursosAdmin"
+          :concurso="concursoSeleccionadoAdmin"
+          :equipos="equiposConcursoAdmin"
+          @close="mostrarModalVistaConcursosAdmin = false"
+        />
+
         <!-- Contenido principal y formularios dentro del main -->
-        <div v-if="!mostrarModalEvaluaciones && !mostrarModalInscripcion && !mostrarModalCerrar">
+        <div v-if="!mostrarModalEvaluaciones && !mostrarModalInscripcion && !mostrarModalCerrar && !mostrarModalVistaConcursosAdmin">
           <h2 class="text-2xl font-bold mb-6 text-[#611232]">
             {{ selectedMenu }}
           </h2>

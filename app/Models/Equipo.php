@@ -39,7 +39,8 @@ class Equipo extends Model
 
     public function participantes()
     {
-        return $this->hasMany(Participantes::class, 'equipo_id');
+        // Usa el modelo correcto y asegúrate que el namespace es válido
+        return $this->hasMany(Participantes::class, 'equipo_id', 'id');
     }
     public function asesores()
     {
