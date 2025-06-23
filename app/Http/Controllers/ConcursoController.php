@@ -610,13 +610,30 @@ class ConcursoController extends Controller
      */
     public function obtenerPodio($concursoId)
     {
+        // Obtener todos los resultados con estado del proyecto
         $resultados = ResultadosFinales::where('concurso_id', $concursoId)
             ->with(['equipo.proyecto']) // Eager-load the proyecto relationship
             ->orderByDesc('promedio_final')
-            ->take(3) // Obtener los tres primeros lugares
             ->get();
 
+        // Filtrar los que no están descalificados para el podio
+        $podio = $resultados->filter(function ($resultado) {
+            // Si no hay proyecto, lo excluimos del podio
+            if (!$resultado->equipo || !$resultado->equipo->proyecto) return false;
+            // Si el estado es 'descalificado', lo excluimos del podio
+            return strtolower($resultado->equipo->proyecto->estado ?? '') !== 'descalificado';
+        })->take(3)->values();
+
+        // Adjuntar el estado del proyecto a cada resultado para la tabla
+        $resultados = $resultados->map(function ($resultado) {
+            $resultado->estado_proyecto = $resultado->equipo && $resultado->equipo->proyecto
+                ? ($resultado->equipo->proyecto->estado ?? 'En orden')
+                : 'N/A';
+            return $resultado;
+        });
+
         return Inertia::render('ConcursosLayouts/Podio', [
+            'podio' => $podio,
             'resultados' => $resultados,
         ]);
     }

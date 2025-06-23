@@ -21,8 +21,8 @@
                 <span class="text-4xl md:text-5xl">🥈</span>
               </div>
               <div class="mt-2 text-center">
-                <p class="text-base font-semibold text-[#34495E]">{{ resultados[1]?.equipo.proyecto.nombre || 'N/A' }}</p>
-                <p class="text-xs text-gray-500">Promedio: {{ resultados[1]?.promedio_final || 'N/A' }}</p>
+                <p class="text-base font-semibold text-[#34495E]">{{ podio[1]?.equipo.proyecto.nombre || 'N/A' }}</p>
+                <p class="text-xs text-gray-500">Promedio: {{ podio[1]?.promedio_final || 'N/A' }}</p>
               </div>
             </div>
             <!-- Primer lugar -->
@@ -31,8 +31,8 @@
                 <span class="text-6xl md:text-7xl">🥇</span>
               </div>
               <div class="mt-2 text-center">
-                <p class="text-lg font-bold text-[#B7950B]">{{ resultados[0]?.equipo.proyecto.nombre || 'N/A' }}</p>
-                <p class="text-sm text-gray-600">Promedio: {{ resultados[0]?.promedio_final || 'N/A' }}</p>
+                <p class="text-lg font-bold text-[#B7950B]">{{ podio[0]?.equipo.proyecto.nombre || 'N/A' }}</p>
+                <p class="text-sm text-gray-600">Promedio: {{ podio[0]?.promedio_final || 'N/A' }}</p>
               </div>
             </div>
             <!-- Tercer lugar -->
@@ -41,8 +41,8 @@
                 <span class="text-3xl md:text-4xl">🥉</span>
               </div>
               <div class="mt-2 text-center">
-                <p class="text-base font-semibold text-[#CA6F1E]">{{ resultados[2]?.equipo.proyecto.nombre || 'N/A' }}</p>
-                <p class="text-xs text-gray-500">Promedio: {{ resultados[2]?.promedio_final || 'N/A' }}</p>
+                <p class="text-base font-semibold text-[#CA6F1E]">{{ podio[2]?.equipo.proyecto.nombre || 'N/A' }}</p>
+                <p class="text-xs text-gray-500">Promedio: {{ podio[2]?.promedio_final || 'N/A' }}</p>
               </div>
             </div>
           </div>
@@ -56,6 +56,7 @@
                     <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Posición</th>
                     <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Equipo</th>
                     <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Promedio Final</th>
+                    <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Estado</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -63,15 +64,23 @@
                     v-for="(resultado, index) in resultados" 
                     :key="resultado.id" 
                     :class="[
-                      index === 0 ? 'bg-yellow-50' : '', 
-                      index < 3 ? 'bg-gray-50' : '',
+                      resultado.estado_proyecto && resultado.estado_proyecto.toLowerCase() === 'descalificado'
+                        ? 'bg-orange-100 text-orange-700'
+                        : (index === 0 ? 'bg-yellow-50' : (index < 3 ? 'bg-gray-50' : '')),
                       'hover:bg-gray-100 transition-colors'
                     ]"
                     class="text-sm"
                   >
-                    <td class="border border-gray-300 px-4 py-1 text-gray-600">{{ index + 1 }}</td>
-                    <td class="border border-gray-300 px-4 py-1 text-gray-600">{{ resultado.equipo.proyecto.nombre }}</td>
-                    <td class="border border-gray-300 px-4 py-1 text-gray-600">{{ resultado.promedio_final }}</td>
+                    <td class="border border-gray-300 px-4 py-1">{{ index + 1 }}</td>
+                    <td class="border border-gray-300 px-4 py-1">
+                      {{ resultado.equipo?.proyecto?.nombre || 'N/A' }}
+                    </td>
+                    <td class="border border-gray-300 px-4 py-1">
+                      {{ resultado.promedio_final }}
+                    </td>
+                    <td class="border border-gray-300 px-4 py-1">
+                      {{ resultado.estado_proyecto || 'En orden' }}
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -88,6 +97,10 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import MenuLateral from '@/ComponentsConcursos/MenuLateral.vue';
 
 const props = defineProps({
+  podio: {
+    type: Array,
+    required: true,
+  },
   resultados: {
     type: Array,
     required: true,
