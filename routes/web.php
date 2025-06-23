@@ -81,6 +81,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //Route::get('/descargar-formatos/{archivo}', [ProyectosController::class, 'descargarFormato'])->name('descargar.formato');
     Route::get('/evaluacion', [EvaluadorController::class, 'index'])->name('evaluacion.index');
     Route::post('/evaluacion/{evaluacion}/guardar', [EvaluadorController::class, 'guardarEvaluacion'])->name('evaluacion.guardar');
+    // Nueva ruta para enviar la evaluación final
+    Route::post('/evaluacion/{evaluacion}/enviar-final', [EvaluadorController::class, 'enviarEvaluacionFinal'])->name('evaluacion.enviar-final');
     Route::get('/proyectos-asignados', [EvaluadorController::class, 'proyectosAsignados'])->name('proyectos.asignados');
     Route::get('/criterios', [EvaluadorController::class, 'criterios'])->name('criterios.index');
     Route::get('/reportes', [EvaluadorController::class, 'reportes'])->name('reportes.index');

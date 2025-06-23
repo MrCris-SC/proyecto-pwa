@@ -73,13 +73,45 @@ class EvaluadorController extends Controller
                     $validated['comentarios']
                 );
             }
-            
-            // Marcar como completada si corresponde
-            $this->verificarCompletitudEvaluacion($evaluacion, isset($validated['tipo_criterio']));
+            // Ya no se cambia el estado aquí, solo se guardan los puntajes y comentarios parciales
         });
         
         // Devolver datos actualizados
         return $this->respuestaEvaluacionActualizada($evaluacion, $validated['tipo_criterio'] ?? null);
+    }
+
+    /**
+     * Nuevo método para finalizar la evaluación y bloquear edición.
+     */
+    public function enviarEvaluacionFinal(Request $request, $evaluacionId)
+    {
+        $validated = $request->validate([
+            'comentarios' => 'required|string'
+        ]);
+
+        $evaluacion = Evaluaciones::with(['equipo.proyecto', 'puntajes'])->findOrFail($evaluacionId);
+
+        // Verificar que todos los criterios estén completos antes de finalizar
+        if (!$this->verificarTodosCriteriosCompletos($evaluacion)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Debe completar todas las secciones antes de enviar la evaluación final.'
+            ], 422);
+        }
+
+        DB::transaction(function () use ($evaluacion, $validated) {
+            // Guardar comentario final
+            $evaluacion->comentarios = $validated['comentarios'];
+            $evaluacion->estado = 'completada';
+            $evaluacion->save();
+        });
+
+        $evaluacion->refresh();
+        return response()->json([
+            'success' => true,
+            'evaluacion' => $this->mapearDatosEvaluacion($evaluacion),
+            'message' => 'Evaluación final enviada exitosamente'
+        ]);
     }
 
     /**
@@ -95,7 +127,7 @@ class EvaluadorController extends Controller
             'modalidad_id' => $evaluacion->equipo->proyecto->modalidad_id,
             'modalidad_nombre' => $evaluacion->equipo->proyecto->modalidad->nombre ?? 'Modalidad no especificada',
             'linea_investigacion' => $this->getNombreLineaInvestigacion($evaluacion->equipo->proyecto->linea_investigacion_id),
-            'ya_evaluado' => $evaluacion->estado === 'completada' || $criteriosCompletos,
+            'ya_evaluado' => $evaluacion->estado === 'completada',
             'evaluacion_completa' => $evaluacion->estado === 'completada',
             'comentarios' => $evaluacion->puntajes->first()->comentario ?? '',
             'criterios' => $evaluacion->equipo->concurso->criteriosEvaluacion
@@ -154,10 +186,8 @@ class EvaluadorController extends Controller
 
     private function verificarCompletitudEvaluacion($evaluacion, $esGuardadoParcial = false)
     {
-        if (!$esGuardadoParcial && $this->verificarTodosCriteriosCompletos($evaluacion)) {
-            $evaluacion->estado = 'completada';
-            $evaluacion->save();
-        }
+        // Ya no cambiar el estado aquí, solo verificar si está completa (puedes eliminar este método si ya no se usa)
+        // Si lo usas en otro lado, asegúrate de que no cambie el estado aquí.
     }
 
     private function respuestaEvaluacionActualizada($evaluacion, $tipoCriterio = null)

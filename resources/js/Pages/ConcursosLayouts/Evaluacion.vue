@@ -448,14 +448,14 @@ const porcentajeTotal = computed(() => {
 
 const formularioValido = computed(() => {
   if (!proyectoSeleccionado.value) return false;
-  
   // Verificar que todos los criterios tengan puntaje válido
   for (const criterio of proyectoSeleccionado.value.criterios) {
     const puntaje = parseFloat(puntajes.value[criterio.id]);
     if (isNaN(puntaje)) return false;
     if (puntaje < 0 || puntaje > criterio.puntaje_maximo) return false;
   }
-  
+  // El comentario es obligatorio para enviar evaluación final
+  if (!comentarios.value || comentarios.value.trim().length === 0) return false;
   return true;
 });
 
@@ -506,7 +506,7 @@ const validarPuntaje = (criterio) => {
   }
 };
 
-const guardarTipo = async (tipo) => {e
+const guardarTipo = async (tipo) => {
   if (!proyectoSeleccionado.value) return;
 
   loading.value = true;
@@ -548,6 +548,7 @@ const guardarTipo = async (tipo) => {e
       proyectoSeleccionado.value.criterios = evaluacionActualizada.criterios;
       proyectoSeleccionado.value.comentarios = evaluacionActualizada.comentarios;
       
+      // Cuando recibas la evaluación actualizada del backend:
       if (evaluacionActualizada.evaluacion_completa) {
         proyectoSeleccionado.value.evaluacion_completa = true;
         proyectoSeleccionado.value.ya_evaluado = true;
@@ -569,7 +570,40 @@ const confirmarEnvio = () => {
     }
   }
   
-  guardarEvaluacion();
+  enviarEvaluacionFinal();
+};
+
+const enviarEvaluacionFinal = async () => {
+  if (!formularioValido.value) return;
+
+  loading.value = true;
+
+  try {
+    const response = await axios.post(route('evaluacion.enviar-final', proyectoSeleccionadoId.value), {
+      comentarios: comentarios.value
+    });
+
+    if (response.data.success) {
+      router.reload();
+    } else {
+      alert(response.data.message || 'No se pudo enviar la evaluación final.');
+    }
+  } catch (error) {
+    // Mostrar mensaje de error detallado del backend
+    let msg = 'Error al enviar la evaluación final.';
+    if (error.response) {
+      if (error.response.data && error.response.data.message) {
+        msg = error.response.data.message;
+      } else if (typeof error.response.data === 'string') {
+        msg = error.response.data;
+      }
+    } else if (error.message) {
+      msg = error.message;
+    }
+    alert(msg);
+  } finally {
+    loading.value = false;
+  }
 };
 
 const guardarEvaluacion = async () => {
