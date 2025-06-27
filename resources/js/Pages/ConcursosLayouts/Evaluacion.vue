@@ -357,6 +357,32 @@
         </div>
       </main>
     </div>
+
+    <!-- Modal de confirmación para enviar evaluación final -->
+    <div v-if="mostrarModalConfirmacion" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative">
+        <h3 class="text-lg font-semibold text-[#611232] mb-2">Confirmar envío</h3>
+        <p class="text-gray-700 mb-4">
+          ¿Estás seguro de enviar la evaluación? <br>
+          <span class="font-semibold text-red-600">Una vez enviada la Evaluación Final ya no se podrá editar.</span>
+        </p>
+        <div class="flex justify-end space-x-2 mt-6">
+          <button
+            @click="cerrarModal"
+            class="px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition"
+          >Cancelar</button>
+          <button
+            @click="confirmarEnvioFinal"
+            class="px-4 py-2 rounded bg-[#611232] text-white font-semibold hover:bg-[#4a0d24] transition"
+          >Sí, enviar evaluación</button>
+        </div>
+        <button @click="cerrarModal" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
   </AuthenticatedLayout>
 </template>
 
@@ -383,6 +409,7 @@ const erroresPuntajes = ref({});
 const loading = ref(false);
 const cargandoProyecto = ref(false);
 const tipoActivo = ref('informe');
+const mostrarModalConfirmacion = ref(false);
 
 // Computed properties
 const proyectosPendientes = computed(() => {
@@ -565,11 +592,19 @@ const confirmarEnvio = () => {
   if (!formularioValido.value) return;
 
   if (totalPuntos.value < 80) {
-    if (!confirm('ADVERTENCIA: El proyecto no alcanza el mínimo recomendado de 80 puntos. ¿Desea enviar igualmente?')) {
-      return;
-    }
+    // Si el puntaje es bajo, puedes mostrar otro modal o mensaje, pero aquí seguimos con el mismo modal
+    mostrarModalConfirmacion.value = true;
+    return;
   }
-  
+  mostrarModalConfirmacion.value = true;
+};
+
+const cerrarModal = () => {
+  mostrarModalConfirmacion.value = false;
+};
+
+const confirmarEnvioFinal = () => {
+  mostrarModalConfirmacion.value = false;
   enviarEvaluacionFinal();
 };
 

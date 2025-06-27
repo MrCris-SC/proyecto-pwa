@@ -140,7 +140,10 @@ Route::delete('/evaluaciones/{id}', [App\Http\Controllers\EvaluacionesController
 
 // Ruta para obtener equipos de un concurso con su proyecto relacionado
 Route::get('/concursos/{concurso}/equipos', function ($concursoId) {
-    $equipos = \App\Models\Equipo::with('proyecto')->where('concurso_id', $concursoId)->get();
+    $equipos = \App\Models\Equipo::with([
+        'proyecto.modalidad',
+        'proyecto.lineaInvestigacion'
+    ])->where('concurso_id', $concursoId)->get();
     return response()->json(['equipos' => $equipos]);
 })->name('concursos.equipos');
 

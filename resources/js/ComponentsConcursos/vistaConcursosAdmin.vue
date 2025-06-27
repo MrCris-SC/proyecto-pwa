@@ -1,50 +1,70 @@
 <template>
   <div>
     <div class="bg-white rounded-lg shadow-lg p-4 sm:p-8 w-full max-w-6xl mx-auto">
-      <h2 class="text-xl font-bold mb-4">Equipos registrados en {{ concurso?.nombre }}</h2>
-      <!-- Botón para descargar PDF -->
-      <button
-        class="mb-4 px-4 py-2 bg-blue-600 text-white rounded"
-        @click="descargarPDF"
-      >
-        Descargar reporte PDF
-      </button>
+      <!-- Cabecera -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+        <h2 class="text-2xl font-bold text-[#611232] mb-2 sm:mb-0">
+          Equipos registrados en {{ concurso?.nombre }}
+        </h2>
+      </div>
+      <!-- Filtros por Modalidad y Línea de Investigación -->
+      <div class="mb-6 p-6 border rounded-lg bg-gray-50 hover:bg-gray-100 transition">
+        <h3 class="text-lg font-semibold text-[#611232] mb-4">Filtros</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Modalidad</label>
+            <select v-model="filtroModalidad" class="w-full border border-gray-300 rounded-md p-2">
+              <option value="">Todas</option>
+              <option v-for="modalidad in modalidadesUnicas" :key="modalidad.id" :value="modalidad.id">
+                {{ modalidad.nombre }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Línea de investigación</label>
+            <select v-model="filtroLinea" class="w-full border border-gray-300 rounded-md p-2">
+              <option value="">Todas</option>
+              <option v-for="linea in lineasUnicas" :key="linea.id" :value="linea.id">
+                {{ linea.nombre }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
       <!-- Buscador -->
-      <div class="mb-4 flex flex-col sm:flex-row gap-2 items-center">
+      <div class="mb-6 flex flex-col sm:flex-row gap-2 items-center">
         <input
           v-model="busqueda"
           type="text"
           placeholder="Buscar por proyecto o integrante..."
-          class="border border-gray-300 rounded px-3 py-2 w-full sm:w-1/2"
+          class="border border-gray-300 rounded-md px-3 py-2 w-full sm:w-1/2"
         />
       </div>
       <div 
         v-if="equiposFiltrados.length"
         class="max-h-[70vh] overflow-y-auto"
       >
-        <div class="divide-y divide-gray-300">
+        <div class="divide-y divide-gray-200">
           <div
             v-for="equipo in equiposPaginados"
             :key="equipo.id"
-            class="py-3 cursor-pointer hover:bg-gray-100 transition"
+            class="py-4 px-2 cursor-pointer hover:bg-gray-50 transition rounded-lg"
             @click="toggleEquipo(equipo.id, equipo.proyecto?.id)"
           >
             <div class="flex justify-between items-center">
               <div>
-                <span class="font-semibold">#{{ equipo.id }}</span>
-                <span class="ml-2">{{ equipo.proyecto?.nombre || 'Sin proyecto' }}</span>
+                <span class="font-semibold text-[#611232]">#{{ equipo.id }}</span>
+                <span class="ml-2 font-medium">{{ equipo.proyecto?.nombre || 'Sin proyecto' }}</span>
                 <span class="ml-2 text-gray-500 text-sm">
                   Integrantes: 
-                  <!-- Imprime los nombres de los integrantes separados por coma -->
-                <span v-if="Array.isArray(equipo.participantes) && equipo.participantes.length > 0">
+                  <span v-if="Array.isArray(equipo.participantes) && equipo.participantes.length > 0">
                     {{ equipo.participantes.length }}
-                </span>
+                  </span>
                   <span v-else>
-                    <!-- Depuración: muestra el array de participantes -->
                     {{ equipo.participantes && equipo.participantes.length === 0 ? '0' : 'Error de datos' }}
                   </span>
                 </span>
-                <span v-if="equipo.proyecto" class="ml-4 px-2 py-1 rounded text-xs"
+                <span v-if="equipo.proyecto" class="ml-4 px-2 py-1 rounded text-xs font-semibold"
                   :class="{
                     'bg-green-100 text-green-800': equipo.proyecto.estado === 'En orden',
                     'bg-red-100 text-red-800': equipo.proyecto.estado === 'Descalificado'
@@ -55,7 +75,7 @@
               </div>
               <svg
                 :class="{'transform rotate-90': isOpen(equipo.id)}"
-                class="w-4 h-4 transition-transform"
+                class="w-4 h-4 transition-transform text-[#611232]"
                 fill="none" stroke="currentColor" viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
               >
@@ -63,24 +83,23 @@
               </svg>
             </div>
             <transition name="fade">
-              <div v-if="isOpen(equipo.id)" class="mt-2 bg-gray-50 rounded p-3">
+              <div v-if="isOpen(equipo.id)" class="mt-3 bg-gray-50 rounded-lg p-4 border">
                 <div>
-                  <strong>Integrantes:</strong>
+                  <strong class="text-[#611232]">Integrantes:</strong>
                   <ul class="list-disc ml-6">
                     <li v-for="p in (equipo.participantes || [])" :key="p.nombre">
                       {{ p.nombre }} 
                     </li>
                   </ul>
                 </div>
-                <div class="mt-2">
-                  <strong>Evaluaciones del proyecto:</strong>
+                <div class="mt-3">
+                  <strong class="text-[#611232]">Evaluaciones del proyecto:</strong>
                   <div v-if="evaluacionesResumen[equipo.id] && evaluacionesResumen[equipo.id].length">
                     <ul>
                       <li v-for="(ev, idx) in evaluacionesResumen[equipo.id]" :key="idx" class="mb-2">
                         <div>
                           <span class="font-semibold">Evaluador:</span> {{ ev.evaluador_nombre }} |
                           <span class="font-semibold">Estado:</span> {{ ev.estado }} |
-                          
                         </div>
                         <div v-if="ev.comentarios" class="ml-4 mt-1 text-gray-700">
                           <span class="font-semibold">Comentarios:</span>
@@ -88,7 +107,6 @@
                         </div>
                       </li>
                     </ul>
-                    <!-- Mostrar promedio final si existe -->
                     <div v-if="promedioFinal[equipo.id] !== null" class="mt-2">
                       <span class="font-semibold">Promedio final:</span>
                       <span>{{ promedioFinal[equipo.id] }}</span>
@@ -104,14 +122,14 @@
                 <div v-if="equipo.proyecto" class="mt-4 flex gap-2">
                   <button
                     v-if="equipo.proyecto.estado !== 'Descalificado'"
-                    class="px-3 py-1 bg-red-600 text-white rounded text-sm"
+                    class="px-3 py-1 bg-red-600 text-white rounded text-sm font-semibold hover:bg-red-700 transition"
                     @click.stop="cambiarEstadoProyecto(equipo.proyecto.id, 'Descalificado', equipo)"
                   >
                     Descalificar
                   </button>
                   <button
                     v-if="equipo.proyecto.estado === 'Descalificado'"
-                    class="px-3 py-1 bg-green-600 text-white rounded text-sm"
+                    class="px-3 py-1 bg-green-600 text-white rounded text-sm font-semibold hover:bg-green-700 transition"
                     @click.stop="cambiarEstadoProyecto(equipo.proyecto.id, 'En orden', equipo)"
                   >
                     Marcar En orden
@@ -124,22 +142,36 @@
         <!-- Paginador -->
         <div class="flex justify-center mt-4 gap-2">
           <button
-            class="px-3 py-1 rounded border"
+            class="px-3 py-1 rounded border border-gray-300 bg-white hover:bg-gray-100 transition"
             :disabled="paginaActual === 1"
             @click="paginaActual--"
           >Anterior</button>
           <span class="px-2 py-1">Página {{ paginaActual }} de {{ totalPaginas }}</span>
           <button
-            class="px-3 py-1 rounded border"
+            class="px-3 py-1 rounded border border-gray-300 bg-white hover:bg-gray-100 transition"
             :disabled="paginaActual === totalPaginas"
             @click="paginaActual++"
           >Siguiente</button>
         </div>
       </div>
-      <div v-else>
-        <p>No hay equipos registrados para este concurso.</p>
+      <div v-else class="p-8 text-center">
+        <p class="text-gray-700">No hay equipos registrados para este concurso.</p>
       </div>
-      <button class="mt-4 px-4 py-2 bg-gray-500 text-white rounded" @click="$emit('close')">Cerrar</button>
+      <!-- Botones al pie: PDF y Cerrar -->
+      <div class="mt-8 flex flex-col sm:flex-row justify-end gap-2">
+        <button class="px-4 py-2 bg-gray-500 text-white rounded-md font-semibold hover:bg-gray-600 transition" @click="$emit('close')">
+          Cerrar
+        </button>
+        <button
+          class="px-4 py-2 bg-[#611232] text-white rounded-md font-semibold hover:bg-[#4a0d24] transition"
+          @click="descargarPDF"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Descargar reporte PDF
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -189,20 +221,60 @@ const evaluacionesResumen = ref({});
 const promedioFinal = ref({}); // Nuevo: almacena el promedio final por equipo
 const cargandoEvaluaciones = ref(null);
 
+// Filtros por modalidad y línea de investigación
+const filtroModalidad = ref('');
+const filtroLinea = ref('');
+
+// Obtener modalidades únicas de los proyectos de los equipos
+const modalidadesUnicas = computed(() => {
+  const set = new Map();
+  (equiposConParticipantes.value || []).forEach(equipo => {
+    if (equipo.proyecto && equipo.proyecto.modalidad) {
+      set.set(equipo.proyecto.modalidad.id, { id: equipo.proyecto.modalidad.id, nombre: equipo.proyecto.modalidad.nombre });
+    }
+  });
+  return Array.from(set.values());
+});
+
+// Obtener líneas de investigación únicas de los proyectos de los equipos
+const lineasUnicas = computed(() => {
+  const set = new Map();
+  (equiposConParticipantes.value || []).forEach(equipo => {
+    if (equipo.proyecto && equipo.proyecto.linea_investigacion) {
+      set.set(equipo.proyecto.linea_investigacion.id, { id: equipo.proyecto.linea_investigacion.id, nombre: equipo.proyecto.linea_investigacion.nombre });
+    }
+  });
+  return Array.from(set.values());
+});
+
 // Buscador y paginador
 const busqueda = ref('');
 const paginaActual = ref(1);
 const elementosPorPagina = 10;
 
+// Filtrado por búsqueda, modalidad y línea
 const equiposFiltrados = computed(() => {
   if (!equiposConParticipantes.value) return [];
   const texto = busqueda.value.trim().toLowerCase();
-  if (!texto) return equiposConParticipantes.value;
-  return equiposConParticipantes.value.filter(equipo => {
-    const nombreProyecto = (equipo.proyecto?.nombre || '').toLowerCase();
-    const nombresIntegrantes = (equipo.participantes || []).map(p => (p.nombre || '').toLowerCase()).join(' ');
-    return nombreProyecto.includes(texto) || nombresIntegrantes.includes(texto);
-  });
+  let filtrados = equiposConParticipantes.value;
+
+  // Filtro por modalidad
+  if (filtroModalidad.value) {
+    filtrados = filtrados.filter(equipo => equipo.proyecto && equipo.proyecto.modalidad && equipo.proyecto.modalidad.id == filtroModalidad.value);
+  }
+  // Filtro por línea de investigación
+  if (filtroLinea.value) {
+    filtrados = filtrados.filter(equipo => equipo.proyecto && equipo.proyecto.linea_investigacion && equipo.proyecto.linea_investigacion.id == filtroLinea.value);
+  }
+  // Filtro por texto
+  if (texto) {
+    filtrados = filtrados.filter(equipo => {
+      const nombreProyecto = (equipo.proyecto?.nombre || '').toLowerCase();
+      const nombresIntegrantes = (equipo.participantes || []).map(p => (p.nombre || '').toLowerCase()).join(' ');
+      return nombreProyecto.includes(texto) || nombresIntegrantes.includes(texto);
+    });
+  }
+  return filtrados;
 });
 
 const totalPaginas = computed(() => Math.max(1, Math.ceil(equiposFiltrados.value.length / elementosPorPagina)));
@@ -212,8 +284,8 @@ const equiposPaginados = computed(() => {
   return equiposFiltrados.value.slice(inicio, inicio + elementosPorPagina);
 });
 
-// Reinicia a la página 1 si cambia la búsqueda o la lista de equipos
-watch([busqueda, () => props.equipos], () => {
+// Reinicia a la página 1 si cambia la búsqueda, los filtros o la lista de equipos
+watch([busqueda, filtroModalidad, filtroLinea, () => props.equipos], () => {
   paginaActual.value = 1;
 });
 

@@ -33,7 +33,7 @@ if (props.auth.user.rol === 'lider') {
         { name: 'Concursos', icon: 'fas fa-trophy', route: 'concursos.index' },
         { name: 'Evaluación', icon: 'fas fa-clipboard-check', route: 'evaluacion.index' },
         { name: 'Proyectos Asignados', icon: 'fas fa-list-ul', route: 'proyectos.asignados' },
-        { name: 'Criterios', icon: 'fas fa-check-square', route: 'criterios.index' },
+        { name: 'Rubrica', icon: 'fas fa-check-square', route: 'criterios.index' },
         { name: 'Reportes', icon: 'fas fa-chart-bar', route: 'reportes.index' },
         { name: 'Perfil', icon: 'fas fa-user', route: 'perfil.index' }
     ];
