@@ -164,13 +164,44 @@
         </button>
         <button
           class="px-4 py-2 bg-[#611232] text-white rounded-md font-semibold hover:bg-[#4a0d24] transition"
-          @click="descargarPDF"
+          @click="abrirModalPDF"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
           </svg>
           Descargar reporte PDF
         </button>
+      </div>
+    </div>
+
+    <!-- Modal de filtros para PDF -->
+    <div v-if="mostrarModalPDF" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+        <h3 class="text-lg font-bold mb-4 text-[#611232]">Opciones de reporte PDF</h3>
+        <div class="mb-4">
+          <label class="block font-medium mb-1">Modalidad</label>
+          <select v-model="filtroPDFModalidad" class="w-full border border-gray-300 rounded-md p-2">
+            <option value="">Todas</option>
+            <option v-for="modalidad in modalidadesUnicas" :key="modalidad.id" :value="modalidad.id">
+              {{ modalidad.nombre }}
+            </option>
+          </select>
+        </div>
+        <div class="mb-4">
+          <label class="block font-medium mb-1">Línea de investigación</label>
+          <select v-model="filtroPDFLinea" class="w-full border border-gray-300 rounded-md p-2">
+            <option value="">Todas</option>
+            <option v-for="linea in lineasUnicas" :key="linea.id" :value="linea.id">
+              {{ linea.nombre }}
+            </option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-2 mt-6">
+          <button class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400" @click="cerrarModalPDF">Cancelar</button>
+          <button class="px-4 py-2 bg-[#611232] text-white rounded hover:bg-[#4a0d24]" @click="descargarPDFConFiltros">
+            Descargar
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -329,6 +360,31 @@ async function cambiarEstadoProyecto(proyectoId, nuevoEstado, equipo) {
   } catch (e) {
     alert('No se pudo cambiar el estado del proyecto.');
   }
+}
+
+const mostrarModalPDF = ref(false);
+const filtroPDFModalidad = ref('');
+const filtroPDFLinea = ref('');
+
+function abrirModalPDF() {
+  filtroPDFModalidad.value = filtroModalidad.value || '';
+  filtroPDFLinea.value = filtroLinea.value || '';
+  mostrarModalPDF.value = true;
+}
+function cerrarModalPDF() {
+  mostrarModalPDF.value = false;
+}
+
+function descargarPDFConFiltros() {
+  if (!props.concurso || !props.concurso.id) return;
+  // Construye la URL con los filtros seleccionados
+  let url = route('concursosFinales.descargarReporteEquipos', { concurso: props.concurso.id });
+  const params = [];
+  if (filtroPDFModalidad.value) params.push('modalidad=' + encodeURIComponent(filtroPDFModalidad.value));
+  if (filtroPDFLinea.value) params.push('linea=' + encodeURIComponent(filtroPDFLinea.value));
+  if (params.length) url += '?' + params.join('&');
+  window.open(url, '_blank');
+  mostrarModalPDF.value = false;
 }
 
 function descargarPDF() {

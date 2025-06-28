@@ -80,14 +80,28 @@ class ConcursosFinales extends Controller
         return response()->json(['participantes' => $participantes]);
     }
 
-    public function descargarReporteEquipos($concursoId)
+    public function descargarReporteEquipos(Request $request, $concursoId)
     {
         $concurso = \App\Models\Concursos::findOrFail($concursoId);
-        $equipos = \App\Models\Equipo::with(['proyecto', 'participantes', 'resultadoFinal'])
-            ->where('concurso_id', $concursoId)
-            ->get();
 
-        $pdf = Pdf::loadView('pdf.reporte_equipos', [
+        $equiposQuery = \App\Models\Equipo::with(['proyecto', 'participantes', 'resultadoFinal'])
+            ->where('concurso_id', $concursoId);
+
+        // Filtros opcionales
+        if ($request->filled('modalidad')) {
+            $equiposQuery->whereHas('proyecto', function($q) use ($request) {
+                $q->where('modalidad_id', $request->input('modalidad'));
+            });
+        }
+        if ($request->filled('linea')) {
+            $equiposQuery->whereHas('proyecto', function($q) use ($request) {
+                $q->where('linea_investigacion_id', $request->input('linea'));
+            });
+        }
+
+        $equipos = $equiposQuery->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.reporte_equipos', [
             'concurso' => $concurso,
             'equipos' => $equipos
         ]);
