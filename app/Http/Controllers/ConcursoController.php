@@ -75,6 +75,9 @@ class ConcursoController extends Controller
             }
         }
 
+        // Asegurar que concursos sea un array indexado para Vue
+        $concursos = $concursos->values()->all();
+
         return Inertia::render('ConcursosLayouts/Concursos', [
             'concursos' => $concursos,
             'inscrito' => (bool)$user->concurso_registrado_id,
