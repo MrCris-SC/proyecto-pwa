@@ -21,8 +21,8 @@
                 <span class="text-4xl md:text-5xl">🥈</span>
               </div>
               <div class="mt-2 text-center">
-                <p class="text-base font-semibold text-[#34495E]">{{ podio[1]?.equipo.proyecto.nombre || 'N/A' }}</p>
-                <p class="text-xs text-gray-500">Promedio: {{ podio[1]?.promedio_final || 'N/A' }}</p>
+                <p class="text-base font-semibold text-[#34495E]">{{ podio[1]?.equipo?.proyecto?.nombre || 'N/A' }}</p>
+                <p class="text-xs text-gray-500">Promedio: {{ podio[1]?.promedio_final ?? 'N/A' }}</p>
               </div>
             </div>
             <!-- Primer lugar -->
@@ -31,8 +31,8 @@
                 <span class="text-6xl md:text-7xl">🥇</span>
               </div>
               <div class="mt-2 text-center">
-                <p class="text-lg font-bold text-[#B7950B]">{{ podio[0]?.equipo.proyecto.nombre || 'N/A' }}</p>
-                <p class="text-sm text-gray-600">Promedio: {{ podio[0]?.promedio_final || 'N/A' }}</p>
+                <p class="text-lg font-bold text-[#B7950B]">{{ podio[0]?.equipo?.proyecto?.nombre || 'N/A' }}</p>
+                <p class="text-sm text-gray-600">Promedio: {{ podio[0]?.promedio_final ?? 'N/A' }}</p>
               </div>
             </div>
             <!-- Tercer lugar -->
@@ -41,8 +41,8 @@
                 <span class="text-3xl md:text-4xl">🥉</span>
               </div>
               <div class="mt-2 text-center">
-                <p class="text-base font-semibold text-[#CA6F1E]">{{ podio[2]?.equipo.proyecto.nombre || 'N/A' }}</p>
-                <p class="text-xs text-gray-500">Promedio: {{ podio[2]?.promedio_final || 'N/A' }}</p>
+                <p class="text-base font-semibold text-[#CA6F1E]">{{ podio[2]?.equipo?.proyecto?.nombre || 'N/A' }}</p>
+                <p class="text-xs text-gray-500">Promedio: {{ podio[2]?.promedio_final ?? 'N/A' }}</p>
               </div>
             </div>
           </div>
@@ -62,7 +62,7 @@
                 <tbody>
                   <tr 
                     v-for="(resultado, index) in resultados" 
-                    :key="resultado.id" 
+                    :key="resultado.id || index" 
                     :class="[
                       resultado.estado_proyecto && resultado.estado_proyecto.toLowerCase() === 'descalificado'
                         ? 'bg-orange-100 text-orange-700'
@@ -104,7 +104,7 @@
                 <tbody>
                   <tr
                     v-for="clasificacion in clasificaciones"
-                    :key="clasificacion.id"
+                    :key="clasificacion.id || clasificacion.equipo_id"
                     :class="[
                       clasificacion.clasifica ? 'bg-green-100' : '',
                       'hover:bg-gray-100 transition-colors'
@@ -119,8 +119,7 @@
                       {{ clasificacion.equipo?.proyecto?.nombre || 'N/A' }}
                     </td>
                     <td class="border border-gray-300 px-4 py-1">
-                      <!-- Si tienes el usuario líder, muéstralo aquí. Si no, deja N/A -->
-                      {{ clasificacion.equipo?.participantes?.find(p => p.rol === 'lider')?.name || 'N/A' }}
+                      {{ clasificacion.usuario_lider?.name || 'N/A' }}
                     </td>
                     <td class="border border-gray-300 px-4 py-1 font-bold text-center">
                       <span v-if="clasificacion.clasifica" class="text-green-700">Clasifica</span>
@@ -156,4 +155,5 @@ const props = defineProps({
     default: () => [],
   },
 });
+</script>
 </script>

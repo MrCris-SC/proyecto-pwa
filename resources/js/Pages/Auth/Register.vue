@@ -83,6 +83,7 @@ const submit = () => {
                             v-model="form.password"
                             required
                             autocomplete="new-password"
+                            inputmode="text"
                         />
 
                         <InputError class="mt-2" :message="form.errors.password" />
@@ -118,8 +119,6 @@ const submit = () => {
                                 {{ rol }}
                             </option>
                         </select>
-                        
-
                         <InputError class="mt-2" :message="form.errors.rol" />
                     </div>
 

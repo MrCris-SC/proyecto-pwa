@@ -20,7 +20,7 @@ class RegisterController extends Controller
     public function showRegistrationForm()
     {
         $rolesPermitidos = [
-            'admin' => ['admin', 'vinculador', 'evaluador', 'participante', 'asesor'],
+            'admin' => ['admin', 'vinculador', 'evaluador', 'lider', 'asesor'],
             'vinculador' => ['lider'],
             'lider' => ['participante', 'asesor'],
             'participante' => [],
