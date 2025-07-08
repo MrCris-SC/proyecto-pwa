@@ -81,14 +81,15 @@ class ConcursoController extends Controller
                     if ($concurso->fase === 'local') {
                         return $concurso->plantel && $concurso->plantel->estado_id === $user->estado_id;
                     }
-                    // Si es estatal, solo si está clasificado en local y el estado coincide
+                    // Si es estatal, mostrar si está clasificado en local y el estado coincide
                     if ($concurso->fase === 'estatal') {
                         $clasificadoLocal = $clasificaciones->get('local');
-                        return $clasificadoLocal;
+                        return $clasificadoLocal && $concurso->estado == $user->estado_id;
                     }
-                    // Si es nacional, solo si está clasificado en estatal
+                    // Si es nacional, solo si está clasificado en estatal y el concurso_id coincide
                     if ($concurso->fase === 'nacional') {
-                        return $clasificaciones->get('estatal') !== null;
+                        $clasificadoEstatal = $clasificaciones->get('estatal');
+                        return $clasificadoEstatal && $clasificadoEstatal->concurso_id == $concurso->id;
                     }
                     return false;
                 });

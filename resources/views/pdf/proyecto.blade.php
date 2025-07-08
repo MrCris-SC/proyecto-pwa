@@ -25,10 +25,17 @@
         }
         .section {
             margin-bottom: 20px;
+            /* text-align: center; */ /* Remove centering from general section */
         }
         .section h2 {
-            font-size: 16px;
+            font-size: 13px; /* Reduce font size for Registro de Proyecto */
             margin-bottom: 10px;
+        }
+        .concurso-nombre {
+            text-align: center;
+            font-size: 28px; /* Larger font for contest name */
+            font-weight: bold;
+            margin-bottom: 20px;
         }
         .participant {
             display: flex;
@@ -55,13 +62,11 @@
         <img src="{{ public_path('images/logo2.png') }}" alt="Logo" class="header-logo2">
     </div>
 
-    
-    <div class="section">
-        <h2>Nombre del Concurso:</h2>
-        <p><strong>Nombre:</strong> {{ $equipo->proyecto->concurso->nombre ?? 'No especificado' }}</p>
+    <div class="concurso-nombre">
+        {{ $equipo->proyecto->concurso->nombre ?? 'No especificado' }}
     </div>
     
-    <div class="section">
+    <div class="section" style="line-height: 1.1;">
         <h2>Registro de Proyecto</h2>
         <p><strong>Número de Registro:</strong> {{ $equipo->proyecto->id }}</p>
         <p><strong>Nombre del Proyecto:</strong> {{ $equipo->proyecto->nombre }}</p>
