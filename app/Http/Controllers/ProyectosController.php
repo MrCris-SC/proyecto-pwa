@@ -94,6 +94,21 @@ class ProyectosController extends Controller
             $proyecto->equipo_id = $equipo->id;
             $proyecto->save();
 
+            // Insertar automáticamente al líder como participante
+            $authUser = Auth::user();
+            Participantes::updateOrCreate(
+                [
+                    'equipo_id' => $equipo->id,
+                    'correo' => $authUser->email,
+                ],
+                [
+                    'nombre' => $authUser->name,
+                    'genero' => $authUser->genero ?? 'no especificado',
+                    'telefono' => $authUser->telefono ?? '',
+                    'direccion' => $authUser->direccion ?? '',
+                ]
+            );
+
             // Crear los participantes del equipo
             foreach ($request->equipo as $integranteData) {
                 Participantes::create([

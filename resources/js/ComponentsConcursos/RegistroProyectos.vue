@@ -120,6 +120,7 @@ export default {
         "Medicina veterinaria",
         
       ],
+      mostrarModalLider: false, // No mostrar el modal al cargar
     };
   },
   computed: {
@@ -219,6 +220,7 @@ export default {
     avanzarPaso() {
       if (this.validarFormularioProyecto()) {
         this.paso = 2; // Avanzar al formulario de integrantes
+        this.mostrarModalLider = true; // Mostrar modal al avanzar de paso
       }
     },
 
@@ -310,12 +312,27 @@ export default {
   },
   mounted() {
     this.fetchData();
+    this.mostrarModalLider = true; // Mostrar modal al montar el componente
   },
 };
 </script>
 
 <template>
   <div class="p-6 bg-white rounded-lg shadow-md">
+    <!-- Modal de advertencia para el líder -->
+    <div v-if="mostrarModalLider" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
+      <div class="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
+        <h3 class="text-lg font-bold mb-4 text-[#611232]">Aviso Importante</h3>
+        <p class="mb-6">NO es necesario registrarte como líder, el sistema te registra automáticamente.</p>
+        <button
+          @click="mostrarModalLider = false"
+          class="bg-[#611232] text-white px-6 py-2 rounded-md hover:bg-[#8A1C4A] transition duration-300"
+        >
+          Entendido
+        </button>
+      </div>
+    </div>
+
     <!-- Indicador de pasos -->
     <div class="flex justify-center mb-6">
       <div class="flex space-x-4">

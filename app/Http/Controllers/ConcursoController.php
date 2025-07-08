@@ -66,13 +66,28 @@ class ConcursoController extends Controller
 
         // Filtrar para líderes si es necesario
         if ($user->rol === 'lider') {
-            if ($user->concurso_registrado_id) {
-                $concursos = $concursos->where('id', $user->concurso_registrado_id);
-            } else {
-                $concursos = $concursos->filter(function ($concurso) use ($user) {
+            // Obtener los concursos clasificados del usuario en la tabla clasificaciones
+            $clasificaciones = \DB::table('clasificaciones')
+                ->where('user_id', $user->id)
+                ->get()
+                ->keyBy('fase');
+
+            $concursos = collect($concursos)->filter(function ($concurso) use ($user, $clasificaciones) {
+                // Si es local, permitir inscripción normal (por estado si aplica)
+                if ($concurso->fase === 'local') {
                     return $concurso->plantel && $concurso->plantel->estado_id === $user->estado_id;
-                });
-            }
+                }
+                // Si es estatal, solo si está clasificado en local y el estado coincide
+                if ($concurso->fase === 'estatal') {
+                    $clasificadoLocal = $clasificaciones->get('local');
+                    return $clasificadoLocal && $concurso->estado == $user->estado_id;
+                }
+                // Si es nacional, solo si está clasificado en estatal
+                if ($concurso->fase === 'nacional') {
+                    return $clasificaciones->get('estatal') !== null;
+                }
+                return false;
+            });
         }
 
         // Asegurar que concursos sea un array indexado para Vue
@@ -643,6 +658,7 @@ class ConcursoController extends Controller
      * @return \Inertia\Response
      */
     public function obtenerPodio($concursoId)
+
     {
         // Obtener todos los resultados con estado del proyecto
         $resultados = ResultadosFinales::where('concurso_id', $concursoId)
@@ -657,6 +673,38 @@ class ConcursoController extends Controller
             // Si el estado es 'descalificado', lo excluimos del podio
             return strtolower($resultado->equipo->proyecto->estado ?? '') !== 'descalificado';
         })->take(3)->values();
+
+        $concurso = Concursos::find($concursoId);
+        if ($concurso && in_array($concurso->fase, ['local', 'estatal'])) {
+            foreach ($podio as $index => $resultado) {
+                if ($resultado->equipo) {
+                    // Buscar usuario líder del equipo
+                    $lider = User::where('equipo_id', $resultado->equipo->id)
+                        ->where('rol', 'lider')
+                        ->first();
+                    if ($lider) {
+                        $lider->fase_clasificado = $concurso->fase === 'local' ? 'clasificado_local' : 'clasificado_estatal';
+                        $lider->save();
+
+                        // Insertar en la tabla clasificaciones
+                        \DB::table('clasificaciones')->updateOrInsert(
+                            [
+                                'concurso_id' => $concurso->id,
+                                'equipo_id' => $resultado->equipo->id,
+                                'user_id' => $lider->id,
+                                'fase' => $concurso->fase,
+                            ],
+                            [
+                                'posicion' => $index + 1,
+                                'observaciones' => null,
+                                'updated_at' => now(),
+                                'created_at' => now(),
+                            ]
+                        );
+                    }
+                }
+            }
+        }
 
         // Adjuntar el estado del proyecto a cada resultado para la tabla
         $resultados = $resultados->map(function ($resultado) {

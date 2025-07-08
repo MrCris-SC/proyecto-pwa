@@ -28,6 +28,7 @@ const userRole = props.auth.user.rol; // Rol del usuario autenticado
 const concursos = ref(props.concursos || []); // Lista de concursos
 const inscrito = ref(props.inscrito || false); // Si el usuario está inscrito en algún concurso
 const concursoEnPantalla = ref(null); // Concurso principal mostrado en pantalla
+const clasificaciones = ref(props.auth.user.clasificaciones || []); // Debes pasar esto desde el backend
 
 // Busca el concurso en pantalla según el usuario líder o el primero disponible
 const obtenerConcursoEnPantalla = () => {
@@ -360,6 +361,24 @@ const cargarEquiposConcurso = async (concursoId) => {
 
 // Inicializa el concurso en pantalla al cargar el componente
 obtenerConcursoEnPantalla();
+
+// Computed para verificar si el usuario puede inscribirse en el concurso
+const puedeInscribirse = (concurso) => {
+  const user = props.auth.user;
+  if (concurso.fase === 'local') {
+    return concurso.plantel && concurso.plantel.estado_id === user.estado_id;
+  }
+  if (concurso.fase === 'estatal') {
+    // Solo si está clasificado en local y el estado coincide
+    const clasificadoLocal = clasificaciones.value.find(c => c.fase === 'local');
+    return clasificadoLocal && concurso.estado === user.estado_id;
+  }
+  if (concurso.fase === 'nacional') {
+    // Solo si está clasificado en estatal
+    return clasificaciones.value.some(c => c.fase === 'estatal');
+  }
+  return false;
+};
 </script>
 
 <template>
