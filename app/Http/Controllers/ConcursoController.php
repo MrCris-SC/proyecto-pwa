@@ -719,9 +719,30 @@ class ConcursoController extends Controller
             return $resultado;
         });
 
+        // Obtener clasificaciones del concurso, incluyendo datos del equipo y proyecto
+        $clasificaciones = \DB::table('clasificaciones')
+            ->where('concurso_id', $concursoId)
+            ->orderBy('posicion')
+            ->get();
+
+        // Obtener IDs de equipos clasificados (top 3)
+        $equiposClasificados = $clasificaciones->pluck('equipo_id')->take(3)->toArray();
+
+        // Cargar datos de equipos y proyectos relacionados
+        $equipos = Equipo::with('proyecto')->whereIn('id', $clasificaciones->pluck('equipo_id'))->get()->keyBy('id');
+
+        // Mapear clasificaciones para agregar columna "Equipos Clasificados" y datos de equipo/proyecto
+        $clasificaciones = $clasificaciones->map(function ($clasificacion, $idx) use ($equiposClasificados, $equipos) {
+            $clasificacion->equipo = $equipos->get($clasificacion->equipo_id);
+            $clasificacion->equipos_clasificados = in_array($clasificacion->equipo_id, $equiposClasificados) ? 'Clasifica' : '';
+            $clasificacion->clasifica = in_array($clasificacion->equipo_id, $equiposClasificados); // Para sombrear en frontend
+            return $clasificacion;
+        });
+
         return Inertia::render('ConcursosLayouts/Podio', [
             'podio' => $podio,
             'resultados' => $resultados,
+            'clasificaciones' => $clasificaciones, // <-- Se pasa a la vista
         ]);
     }
 

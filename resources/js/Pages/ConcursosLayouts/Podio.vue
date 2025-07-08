@@ -86,6 +86,51 @@
               </table>
             </div>
           </div>
+
+          <!-- Tabla de clasificaciones -->
+          <div class="mt-12">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Clasificaciones</h3>
+            <div class="max-h-96 overflow-y-auto border border-gray-300 rounded-lg">
+              <table class="table-auto w-full border-collapse">
+                <thead class="bg-gray-100">
+                  <tr>
+                    <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Posición</th>
+                    <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Equipo</th>
+                    <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Proyecto</th>
+                    <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Usuario Líder</th>
+                    <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Equipos Clasificados</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="clasificacion in clasificaciones"
+                    :key="clasificacion.id"
+                    :class="[
+                      clasificacion.clasifica ? 'bg-green-100' : '',
+                      'hover:bg-gray-100 transition-colors'
+                    ]"
+                    class="text-sm"
+                  >
+                    <td class="border border-gray-300 px-4 py-1">{{ clasificacion.posicion }}</td>
+                    <td class="border border-gray-300 px-4 py-1">
+                      {{ clasificacion.equipo?.nombre || clasificacion.equipo?.proyecto?.nombre || 'N/A' }}
+                    </td>
+                    <td class="border border-gray-300 px-4 py-1">
+                      {{ clasificacion.equipo?.proyecto?.nombre || 'N/A' }}
+                    </td>
+                    <td class="border border-gray-300 px-4 py-1">
+                      <!-- Si tienes el usuario líder, muéstralo aquí. Si no, deja N/A -->
+                      {{ clasificacion.equipo?.participantes?.find(p => p.rol === 'lider')?.name || 'N/A' }}
+                    </td>
+                    <td class="border border-gray-300 px-4 py-1 font-bold text-center">
+                      <span v-if="clasificacion.clasifica" class="text-green-700">Clasifica</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="mt-2 text-xs text-gray-500">Las filas en verde corresponden a los equipos clasificados (top 3).</p>
+          </div>
         </div>
       </main>
     </div>
@@ -104,6 +149,11 @@ const props = defineProps({
   resultados: {
     type: Array,
     required: true,
+  },
+  clasificaciones: {
+    type: Array,
+    required: false,
+    default: () => [],
   },
 });
 </script>
