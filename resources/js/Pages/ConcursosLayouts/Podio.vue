@@ -97,7 +97,7 @@
                     <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Posición</th>
                     <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Equipo</th>
                     <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Proyecto</th>
-                    <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Usuario Líder</th>
+                    <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Líder</th>
                     <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Equipos Clasificados</th>
                   </tr>
                 </thead>

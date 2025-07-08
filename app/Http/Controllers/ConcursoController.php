@@ -729,13 +729,23 @@ class ConcursoController extends Controller
         $equiposClasificados = $clasificaciones->pluck('equipo_id')->take(3)->toArray();
 
         // Cargar datos de equipos y proyectos relacionados
-        $equipos = Equipo::with('proyecto')->whereIn('id', $clasificaciones->pluck('equipo_id'))->get()->keyBy('id');
+        $equipos = Equipo::with(['proyecto'])->whereIn('id', $clasificaciones->pluck('equipo_id'))->get()->keyBy('id');
 
-        // Mapear clasificaciones para agregar columna "Equipos Clasificados" y datos de equipo/proyecto
+        // Mapear clasificaciones para agregar columna "Equipos Clasificados", datos de equipo/proyecto y usuario líder
         $clasificaciones = $clasificaciones->map(function ($clasificacion, $idx) use ($equiposClasificados, $equipos) {
             $clasificacion->equipo = $equipos->get($clasificacion->equipo_id);
             $clasificacion->equipos_clasificados = in_array($clasificacion->equipo_id, $equiposClasificados) ? 'Clasifica' : '';
             $clasificacion->clasifica = in_array($clasificacion->equipo_id, $equiposClasificados); // Para sombrear en frontend
+            // Obtener usuario líder desde la tabla users
+            $clasificacion->usuario_lider = null;
+            if ($clasificacion->equipo) {
+                $usuarioLider = User::where('equipo_id', $clasificacion->equipo->id)
+                    ->where('rol', 'lider')
+                    ->first();
+                if ($usuarioLider) {
+                    $clasificacion->usuario_lider = $usuarioLider;
+                }
+            }
             return $clasificacion;
         });
 
