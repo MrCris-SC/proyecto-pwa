@@ -66,28 +66,33 @@ class ConcursoController extends Controller
 
         // Filtrar para líderes si es necesario
         if ($user->rol === 'lider') {
-            // Obtener los concursos clasificados del usuario en la tabla clasificaciones
-            $clasificaciones = \DB::table('clasificaciones')
-                ->where('user_id', $user->id)
-                ->get()
-                ->keyBy('fase');
+            // Si ya está inscrito, solo mostrar ese concurso
+            if ($user->concurso_registrado_id) {
+                $concursos = $concursos->where('id', $user->concurso_registrado_id);
+            } else {
+                // Obtener los concursos clasificados del usuario en la tabla clasificaciones
+                $clasificaciones = \DB::table('clasificaciones')
+                    ->where('user_id', $user->id)
+                    ->get()
+                    ->keyBy('fase');
 
-            $concursos = collect($concursos)->filter(function ($concurso) use ($user, $clasificaciones) {
-                // Si es local, permitir inscripción normal (por estado si aplica)
-                if ($concurso->fase === 'local') {
-                    return $concurso->plantel && $concurso->plantel->estado_id === $user->estado_id;
-                }
-                // Si es estatal, solo si está clasificado en local y el estado coincide
-                if ($concurso->fase === 'estatal') {
-                    $clasificadoLocal = $clasificaciones->get('local');
-                    return $clasificadoLocal && $concurso->estado == $user->estado_id;
-                }
-                // Si es nacional, solo si está clasificado en estatal
-                if ($concurso->fase === 'nacional') {
-                    return $clasificaciones->get('estatal') !== null;
-                }
-                return false;
-            });
+                $concursos = collect($concursos)->filter(function ($concurso) use ($user, $clasificaciones) {
+                    // Si es local, filtrar por estado del plantel
+                    if ($concurso->fase === 'local') {
+                        return $concurso->plantel && $concurso->plantel->estado_id === $user->estado_id;
+                    }
+                    // Si es estatal, solo si está clasificado en local y el estado coincide
+                    if ($concurso->fase === 'estatal') {
+                        $clasificadoLocal = $clasificaciones->get('local');
+                        return $clasificadoLocal;
+                    }
+                    // Si es nacional, solo si está clasificado en estatal
+                    if ($concurso->fase === 'nacional') {
+                        return $clasificaciones->get('estatal') !== null;
+                    }
+                    return false;
+                });
+            }
         }
 
         // Asegurar que concursos sea un array indexado para Vue
