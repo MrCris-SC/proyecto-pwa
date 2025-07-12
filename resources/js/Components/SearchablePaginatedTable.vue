@@ -19,7 +19,7 @@
         </div>
         <!-- Tabla Responsiva -->
         <div class="overflow-x-auto">
-          <table class="w-full min-w-full divide-y divide-gray-200"> <!-- Added w-full -->
+          <table class="table-auto min-w-max w-full divide-y divide-gray-200">
             <thead class="bg-[#611232]">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
@@ -42,25 +42,25 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
               <tr v-for="equipo in paginatedData" :key="equipo.id" class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap">{{ equipo.id }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-6 py-4 whitespace-normal break-words max-w-xs">{{ equipo.id }}</td>
+                <td class="px-6 py-4 whitespace-normal break-words max-w-xs">
                   {{ equipo.proyecto ? equipo.proyecto.nombre : 'N/A' }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-6 py-4 whitespace-normal break-words max-w-xs">
                   {{
                     equipo.proyecto && equipo.proyecto.concurso 
                       ? equipo.proyecto.concurso.nombre 
                       : (equipo.concurso ? equipo.concurso.nombre : 'N/A')
                   }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-6 py-4 whitespace-normal break-words max-w-xs">
                   <ul v-if="equipo.participantes && equipo.participantes.length > 0" class="list-disc list-inside">
                     <li v-for="integrante in equipo.participantes" :key="integrante.id">
                       {{ integrante.nombre }}
                     </li>
                   </ul>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-6 py-4 whitespace-normal break-words max-w-xs">
                   <ul v-if="equipo.asesores && equipo.asesores.length > 0" class="list-disc list-inside">
                     <li v-for="asesor in equipo.asesores" :key="asesor.id">
                       {{ asesor.nombre }}
@@ -69,7 +69,7 @@
                 </td>
               </tr>
               <tr v-if="paginatedData.length === 0">
-                <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                <td colspan="5" class="px-6 py-4 text-center text-gray-500">
                   No hay equipos registrados.
                 </td>
               </tr>
@@ -145,4 +145,8 @@ function prevPage() {
 
 <style scoped>
 /* Personaliza estilos adicionales si lo necesitas */
+.table-auto td, .table-auto th {
+  word-break: break-word;
+  white-space: normal;
+}
 </style>
