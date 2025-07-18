@@ -10,10 +10,11 @@ import MenuLateral from '@/ComponentsConcursos/MenuLateral.vue';
 import axios from 'axios';
 import DocumentosOpcionales from '@/ComponentsConcursos/DocumentosOpcionales.vue';
 
+const { props } = usePage(); // <-- Primero obtén props
+const userRole = props.auth.user.rol; // <-- Luego úsalo
+
 const mostrarFormulario = ref(false);
 const selectedMenu = ref('Gestión de proyectos');
-
-const { props } = usePage();
 const showForm = ref(false);
 const proyecto = ref(props.proyecto || {});
 const asesorescheck = ref(props.asesorescheck || false);
@@ -155,6 +156,11 @@ const enviarDocumentosOpcionales = async () => {
     alert('Hubo un problema al subir los documentos opcionales.');
   }
 };
+
+const handleDownloadPDF = () => {
+  window.open(route('proyectos.pdf'), '_blank');
+};
+
 </script>
 
 <template>
@@ -179,9 +185,21 @@ const enviarDocumentosOpcionales = async () => {
               Ya estás inscrito en este concurso.
             </p>
           </div>
+          <div class="flex justify-end">
+            <a
+              v-if="selectedMenu === 'Gestión de proyectos' && userRole === 'lider'"
+              :href="route('proyectos.pdf')"
+              download
+              class="mt-3 bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
+            >
+              Descargar FOREGz
+            </a>
+          </div>
 
           <!-- Resumen del Proyecto -->
           <ResumenProyecto v-if="!mostrarFormulario" :proyecto="proyecto" />
+
+          
 
           <!-- Información sobre el registro de asesores -->
           <div class="mb-8" v-if="!mostrarFormulario && !asesorescheck">

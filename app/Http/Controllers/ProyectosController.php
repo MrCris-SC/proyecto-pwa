@@ -148,7 +148,9 @@ class ProyectosController extends Controller
             }
 
             $pdf = Pdf::loadView('pdf.proyecto', ['equipo' => $equipo]);
-            return $pdf->download('equipo.pdf');
+            return response($pdf->output(), 200)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'attachment; filename="equipo.pdf"');
         } catch (\Exception $e) {
             Log::error('Error al generar el PDF: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Error al generar el PDF.');
@@ -201,12 +203,14 @@ class ProyectosController extends Controller
         $validator = Validator::make($request->all(), [
             'asesorTecnico.nombre' => 'nullable|string|max:255',
             'asesorTecnico.tipo' => 'nullable|string',
+            'asesorTecnico.origen' => 'nullable|string|max:255', // Nuevo campo
             'asesorTecnico.clavePresupuestal' => 'nullable|string|max:255',
             'asesorTecnico.nivelAcademico' => 'nullable|string|max:255',
             'asesorTecnico.correo' => 'nullable|email|max:255',
             'asesorTecnico.telefono' => 'nullable|string|max:15',
             'asesorMetodologico.nombre' => 'nullable|string|max:255',
             'asesorMetodologico.tipo' => 'nullable|string', // Nuevo campo
+            'asesorMetodologico.origen' => 'nullable|string|max:255', // Nuevo campo
             'asesorMetodologico.clavePresupuestal' => 'nullable|string|max:255', // Nuevo campo
             'asesorMetodologico.nivelAcademico' => 'nullable|string|max:255',
             'asesorMetodologico.correo' => 'nullable|email|max:255',
@@ -226,6 +230,7 @@ class ProyectosController extends Controller
                     'email' => $request->asesorTecnico['correo'],
                     'telefono' => $request->asesorTecnico['telefono'],
                     'tipo_asesor' => $request->asesorTecnico['tipo'],
+                    'asesor_origen' => $request->asesorTecnico['origen'], // Nuevo campo
                     'clave_presupuestal' => $request->asesorTecnico['clavePresupuestal'],
                     'nivel_academico' => $request->asesorTecnico['nivelAcademico'],
                     'equipo_id' => $equipoId,               
@@ -236,6 +241,7 @@ class ProyectosController extends Controller
                 Asesores::create([
                     'nombre' => $request->asesorMetodologico['nombre'],
                     'tipo_asesor' => $request->asesorMetodologico['tipo'], // Nuevo campo
+                    'asesor_origen' => $request->asesorMetodologico['origen'], // Nuevo campo
                     'clave_presupuestal' => $request->asesorMetodologico['clavePresupuestal'], // Nuevo campo
                     'email' => $request->asesorMetodologico['correo'],
                     'telefono' => $request->asesorMetodologico['telefono'],

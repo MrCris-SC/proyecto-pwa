@@ -12,9 +12,11 @@
         <h2 class="text-2xl font-bold mb-6 text-[#611232]">
           {{ selectedMenu }}
         </h2>
-        <div class="relative"> 
+        <div class="relative overflow-auto max-w-full"> 
           <h1 class="text-xl font-semibold mb-4">Equipos Registrados</h1>
-          <SearchablePaginatedTable :data="equipos" />
+          <div class="w-full">
+            <SearchablePaginatedTable :data="equipos" class="min-w-full" />
+          </div>
         </div>
       </main>
     </div>

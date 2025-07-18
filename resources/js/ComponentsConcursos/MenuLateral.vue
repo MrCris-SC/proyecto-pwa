@@ -35,7 +35,7 @@ if (props.auth.user.rol === 'lider') {
         { name: 'Proyectos Asignados', icon: 'fas fa-list-ul', route: 'proyectos.asignados' },
         { name: 'Rubrica', icon: 'fas fa-check-square', route: 'criterios.index' },
         { name: 'Reportes', icon: 'fas fa-chart-bar', route: 'reportes.index' },
-        { name: 'Perfil', icon: 'fas fa-user', route: 'perfil.index' }
+        
     ];
 } else {
     menuItems.value = [

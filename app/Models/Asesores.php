@@ -21,6 +21,7 @@ class Asesores extends Model
         'nivel_academico',
         'perfiles_jurado',
         'equipo_id',
+        'asesor_origen', 
     ];
 
     // Relación con la tabla equipos

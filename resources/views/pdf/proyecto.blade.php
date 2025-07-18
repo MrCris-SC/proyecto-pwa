@@ -9,33 +9,39 @@
         }
         .header {
             display: flex;
-            justify-content: space-between; /* Space between logos */
+            justify-content: space-between;
             align-items: center;
             font-size: 18px;
             font-weight: bold;
             margin-bottom: 20px;
         }
-        .header-logo {
-            width: 300px; /* Increase the size of the image */
-            height: auto;
-        }
+        .header-logo,
         .header-logo2 {
-            width: 300px; /* Increase the size of the image */
+            width: 300px;
             height: auto;
-        }
-        .section {
-            margin-bottom: 20px;
-            /* text-align: center; */ /* Remove centering from general section */
-        }
-        .section h2 {
-            font-size: 13px; /* Reduce font size for Registro de Proyecto */
-            margin-bottom: 10px;
         }
         .concurso-nombre {
             text-align: center;
-            font-size: 28px; /* Larger font for contest name */
+            font-size: 14px;
             font-weight: bold;
             margin-bottom: 20px;
+        }
+        .titulo {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .registro-proyecto {
+            font-size: 13px;
+            line-height: 1;
+        }
+        .integrantes, .asesores {
+            font-size: 12px;
+            font-family: 'Arial', sans-serif;
         }
         .participant {
             display: flex;
@@ -65,15 +71,19 @@
     <div class="concurso-nombre">
         {{ $equipo->proyecto->concurso->nombre ?? 'No especificado' }}
     </div>
-    
-    <div class="section" style="line-height: 1.1;">
-        <h2>Registro de Proyecto</h2>
-        <p><strong>Número de Registro:</strong> {{ $equipo->proyecto->id }}</p>
-        <p><strong>Nombre del Proyecto:</strong> {{ $equipo->proyecto->nombre }}</p>
-        <p><strong>Modalidad:</strong> {{ $equipo->proyecto->modalidad_id }}</p>
+
+    <div class="titulo">
+        <h2>Formato de registro FOREG</h2>
     </div>
-    
-    <div class="section">
+
+    <div class="section registro-proyecto">
+        <h2>Registro de Proyecto</h2>
+        <p><strong>Número de Registro:</strong> {{ $equipo->id }}</p>
+        <p><strong>Nombre del Proyecto:</strong> {{ $equipo->proyecto->nombre }}</p>
+        <p><strong>Modalidad:</strong> {{ $equipo->proyecto->modalidad->nombre ?? 'No especificada' }}</p>
+    </div>
+
+    <div class="section integrantes">
         <h2>Integrantes del Equipo</h2>
         @foreach ($equipo->participantes as $participante)
             <div class="participant">
@@ -84,26 +94,38 @@
             </div>
         @endforeach
     </div>
-    
-    <div class="section">
-    <h3>Asesores</h3>
-    @php
-        $tiposAsesor = ['Técnico', 'Metodológico'];
-    @endphp
-    @foreach ($tiposAsesor as $tipo)
+
+    <div class="section asesores">
+        <h3>Asesores</h3>
         @php
-            $asesor = $equipo->asesores->firstWhere('tipo_asesor', $tipo);
+            $asesor_origenes = [
+                'tecnico' => 'Técnico',
+                'metodologico' => 'Metodológico',
+            ];
         @endphp
-        <p><strong>Tipo:</strong> {{ $tipo }}</p>
-        @if ($asesor)
-            <p><strong>Nombre:</strong> {{ $asesor->nombre }}</p>
-            <p><strong>Correo:</strong> {{ $asesor->email }}</p>
-            <p><strong>Teléfono:</strong> {{ $asesor->telefono }}</p>
-        @else
-            <p>No especificado</p>
-        @endif
-        <hr>
-    @endforeach
+
+        @foreach ($asesor_origenes as $clave => $etiqueta)
+            @php
+                $asesor = $equipo->asesores->firstWhere('asesor_origen', $clave);
+            @endphp
+
+            <p style="font-weight:bold; margin-bottom:4px;">{{ $etiqueta }}</p>
+
+            @if ($asesor)
+                <p><strong>Nombre:</strong> {{ $asesor->nombre }}</p>               
+            @else
+                <p>No registrado.</p>
+            @endif
+
+            <hr>
+        @endforeach
+    </div>
+
+    <div style="margin-top:40px; font-size:12px;">
+        <p><strong>Sello oficial del plantel:</strong> &nbsp;--------------------------------------</p>
+        <p><strong>Nombre y firma del director del plantel:</strong> &nbsp;--------------------------------------</p>
+        <p>Al requisitar estos datos autorizo la solicitud y captura de datos personales a razón de estadística científica e institucional, sin menoscabo de lo señalado en la Ley Federal de Transparencia y Acceso a la Información Pública Gubernamental. Asimismo, autorizo compartir los datos personales a las organizaciones nacionales e internacionales que coordinan los concursos, ferias y eventos de ciencia y tecnología, así como, para fines académicos y de promoción científica.</p>
+        <p><strong>Fecha de impresión:</strong> {{ \Carbon\Carbon::now()->format('d/m/Y') }}</p>
     </div>
 </body>
 </html>

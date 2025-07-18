@@ -162,6 +162,7 @@ import { useForm } from '@inertiajs/vue3';
 const asesorTecnico = ref({
   nombre: '',
   tipo: '',
+  origen: 'tecnico',
   clavePresupuestal: '',
   nivelAcademico: '',
   correo: '',
@@ -170,7 +171,8 @@ const asesorTecnico = ref({
 
 const asesorMetodologico = ref({
   nombre: '',
-  tipo: '',                            // Nuevo campo
+  tipo: '',    
+  origen: 'metodologico',                        // Nuevo campo
   clavePresupuestal: '',               // Nuevo campo
   nivelAcademico: '',
   correo: '',
