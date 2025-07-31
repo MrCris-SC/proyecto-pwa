@@ -12,14 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('resultados_finales', function (Blueprint $table) {
-        $table->unsignedBigInteger('categoria_id')->nullable()->after('concurso_id');
-        $table->unsignedBigInteger('modalidad_id')->nullable()->after('categoria_id');
+        $table->string('categoria')->nullable()->after('concurso_id');
+        $table->unsignedBigInteger('modalidad_id')->nullable()->after('categoria');
         $table->enum('fase', ['local', 'estatal', 'nacional'])->default('local')->after('modalidad_id');
         $table->boolean('clasificado')->default(false)->after('fase');
         $table->integer('lugar')->nullable()->after('promedio_final');
 
         // FK opcionales
-        $table->foreign('categoria_id')->references('id')->on('categorias')->onDelete('set null');
+        
         $table->foreign('modalidad_id')->references('id')->on('modalidades')->onDelete('set null');
     });
 
@@ -31,9 +31,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('resultados_finales', function (Blueprint $table) {
-            $table->dropForeign(['categoria_id']);
+            
             $table->dropForeign(['modalidad_id']);
-            $table->dropColumn(['categoria_id', 'modalidad_id', 'fase', 'clasificado', 'lugar']);
+            $table->dropColumn(['modalidad_id', 'fase', 'clasificado', 'lugar']);
         });
     }
 };

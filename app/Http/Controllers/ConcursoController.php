@@ -575,7 +575,7 @@ class ConcursoController extends Controller
      * @param  int  $concursoId
      * @return \Illuminate\Http\JsonResponse
      */
-    public function finalizarConcurso(Request $request, $concursoId)
+   public function finalizarConcurso(Request $request, $concursoId)
     {
         $concurso = Concursos::find($concursoId);
 
@@ -597,27 +597,19 @@ class ConcursoController extends Controller
             ], 400);
         }
 
-        // Calcular promedios finales
-        $equipos = Equipo::where('concurso_id', $concursoId)->get();
+        $equipos = Equipo::where('concurso_id', $concursoId)->with('proyecto')->get();
+
         foreach ($equipos as $equipo) {
-            // Obtener todas las evaluaciones del equipo
             $evaluaciones = Evaluaciones::where('equipo_id', $equipo->id)->get();
             $puntajesParciales = [];
 
             foreach ($evaluaciones as $evaluacion) {
-                // Sumar los puntajes de todos los criterios de esta evaluación
                 $puntajeTotal = PuntajesEvaluacion::where('evaluacion_id', $evaluacion->id)->sum('puntaje_obtenido');
-                
-                // Loguear el puntaje parcial
-                \Log::info("Equipo {$equipo->id} - Evaluacion {$evaluacion->id} - Puntaje parcial: {$puntajeTotal}");
 
-                // Validar que el puntaje parcial no exceda 100
                 if ($puntajeTotal > 100) {
-                    \Log::warning("Puntaje parcial excede 100: Equipo {$equipo->id}, Evaluacion {$evaluacion->id}, Puntaje: {$puntajeTotal}");
                     $puntajeTotal = 100;
                 }
 
-                // Guardar el puntaje parcial (debe ser 100 máx)
                 PuntajesParciales::updateOrCreate(
                     [
                         'evaluacion_id' => $evaluacion->id,
@@ -628,20 +620,30 @@ class ConcursoController extends Controller
                         'puntaje_total' => $puntajeTotal,
                     ]
                 );
+
                 $puntajesParciales[] = $puntajeTotal;
             }
 
             if (count($puntajesParciales) > 0) {
                 $promedioFinal = array_sum($puntajesParciales) / count($puntajesParciales);
 
-                // Loguear el promedio final
-                \Log::info("Equipo {$equipo->id} - Promedio final: {$promedioFinal}");
+                $resultadoCategoria = $equipo->proyecto->categoria;
+                $resultadoModalidad = $equipo->proyecto->modalidad_id;
 
-                // Guardar el resultado final
-                ResultadosFinales::updateOrCreate(
-                    ['equipo_id' => $equipo->id, 'concurso_id' => $concursoId],
-                    ['promedio_final' => $promedioFinal]
-                );
+            ResultadosFinales::updateOrCreate(
+                [
+                    'equipo_id' => $equipo->id,
+                    'concurso_id' => $concursoId,
+                ],
+                [
+                    'promedio_final' => $promedioFinal,
+                    'categoria' => $equipo->proyecto->categoria, // tipo varchar
+                    'modalidad_id' => $equipo->proyecto->modalidad_id, // tipo FK
+                    'fase' => $concurso->fase,
+                ]
+            );
+
+
             }
         }
 
@@ -653,106 +655,61 @@ class ConcursoController extends Controller
             'message' => 'El concurso ha sido finalizado exitosamente y los resultados han sido calculados.',
         ]);
     }
+        public function obtenerPodio()
+        {
+            $resultados = ResultadosFinales::with([
+                'equipo.proyecto.modalidad',
+                'equipo.proyecto',
+                'equipo.participantes'
+            ])->get();
 
-    /**
-     * Obtiene el podio de un concurso.
-     *
-     * @param  int  $concursoId
-     * @return \Inertia\Response
-     */
-    public function obtenerPodio($concursoId)
+            // Agrupar por combinación "Categoría - Modalidad"
+            $resultadosAgrupados = $resultados->groupBy(function ($item) {
+                $categoria = $item->equipo->proyecto->categoria ?? 'Sin categoría';
+                $modalidad = optional($item->equipo->proyecto->modalidad)->nombre ?? 'Sin modalidad';
+                return "{$categoria} - {$modalidad}";
+            });
 
-    {
-        // Obtener todos los resultados con estado del proyecto
-        $resultados = ResultadosFinales::where('concurso_id', $concursoId)
-            ->with(['equipo.proyecto']) // Eager-load the proyecto relationship
-            ->orderByDesc('promedio_final')
-            ->get();
 
-        // Filtrar los que no están descalificados para el podio
-        $podio = $resultados->filter(function ($resultado) {
-            // Si no hay proyecto, lo excluimos del podio
-            if (!$resultado->equipo || !$resultado->equipo->proyecto) return false;
-            // Si el estado es 'descalificado', lo excluimos del podio
-            return strtolower($resultado->equipo->proyecto->estado ?? '') !== 'descalificado';
-        })->take(3)->values();
+            $modalidadesAgrupadas = [];
 
-        $concurso = Concursos::find($concursoId);
-        if ($concurso && in_array($concurso->fase, ['local', 'estatal'])) {
-            foreach ($podio as $index => $resultado) {
-                if ($resultado->equipo) {
-                    // Buscar usuario líder del equipo
-                    $lider = User::where('equipo_id', $resultado->equipo->id)
-                        ->where('rol', 'lider')
-                        ->first();
-                    if ($lider) {
-                        $lider->fase_clasificado = $concurso->fase === 'local' ? 'clasificado_local' : 'clasificado_estatal';
-                        $lider->save();
+            foreach ($resultadosAgrupados as $grupo => $items) {
+                $filtrados = $items->filter(function ($r) {
+                    return $r->equipo &&
+                        $r->equipo->proyecto &&
+                        strtolower($r->equipo->proyecto->estado) !== 'descalificado';
+                })->sortByDesc('promedio_final')->values();
 
-                        // Insertar en la tabla clasificaciones
-                        \DB::table('clasificaciones')->updateOrInsert(
-                            [
-                                'concurso_id' => $concurso->id,
-                                'equipo_id' => $resultado->equipo->id,
-                                'user_id' => $lider->id,
-                                'fase' => $concurso->fase,
-                            ],
-                            [
-                                'posicion' => $index + 1,
-                                'observaciones' => null,
-                                'updated_at' => now(),
-                                'created_at' => now(),
-                            ]
-                        );
-                    }
-                }
+                $modalidadesAgrupadas[$grupo] = [
+                    'podio' => $filtrados->take(3)->values(),
+                    'resultados' => $filtrados
+                ];
             }
+
+            return Inertia::render('ConcursosLayouts/Podio', [
+                'modalidadesAgrupadas' => $modalidadesAgrupadas,
+            ]);
         }
 
-        // Adjuntar el estado del proyecto a cada resultado para la tabla
-        $resultados = $resultados->map(function ($resultado) {
-            $resultado->estado_proyecto = $resultado->equipo && $resultado->equipo->proyecto
-                ? ($resultado->equipo->proyecto->estado ?? 'En orden')
-                : 'N/A';
-            return $resultado;
-        });
-
-        // Obtener clasificaciones del concurso, incluyendo datos del equipo y proyecto
-        $clasificaciones = \DB::table('clasificaciones')
-            ->where('concurso_id', $concursoId)
-            ->orderBy('posicion')
-            ->get();
-
-        // Obtener IDs de equipos clasificados (top 3)
-        $equiposClasificados = $clasificaciones->pluck('equipo_id')->take(3)->toArray();
-
-        // Cargar datos de equipos y proyectos relacionados
-        $equipos = Equipo::with(['proyecto'])->whereIn('id', $clasificaciones->pluck('equipo_id'))->get()->keyBy('id');
-
-        // Mapear clasificaciones para agregar columna "Equipos Clasificados", datos de equipo/proyecto y usuario líder
-        $clasificaciones = $clasificaciones->map(function ($clasificacion, $idx) use ($equiposClasificados, $equipos) {
-            $clasificacion->equipo = $equipos->get($clasificacion->equipo_id);
-            $clasificacion->equipos_clasificados = in_array($clasificacion->equipo_id, $equiposClasificados) ? 'Clasifica' : '';
-            $clasificacion->clasifica = in_array($clasificacion->equipo_id, $equiposClasificados); // Para sombrear en frontend
-            // Obtener usuario líder desde la tabla users
-            $clasificacion->usuario_lider = null;
-            if ($clasificacion->equipo) {
-                $usuarioLider = User::where('equipo_id', $clasificacion->equipo->id)
-                    ->where('rol', 'lider')
-                    ->first();
-                if ($usuarioLider) {
-                    $clasificacion->usuario_lider = $usuarioLider;
-                }
+        public function obtenerModalidadesPorCategoria($categoria)
+        {
+            // Si es categoría "Alumno" puede ver ambas modalidades
+            if ($categoria === 'Alumno') {
+                $modalidades = Modalidades::all();
+            } 
+            // Si es "Docente" solo puede ver las de tipo 'prototipo'
+            elseif ($categoria === 'Docente') {
+                $modalidades = Modalidades::where('tipo', 'prototipo')->get();
+            } 
+            else {
+                $modalidades = collect(); // Vacío si no hay categoría válida
             }
-            return $clasificacion;
-        });
 
-        return Inertia::render('ConcursosLayouts/Podio', [
-            'podio' => $podio,
-            'resultados' => $resultados,
-            'clasificaciones' => $clasificaciones, // <-- Se pasa a la vista
-        ]);
-    }
+            return response()->json($modalidades);
+        }
+
+
+
 
     public function obtenerResumenEvaluaciones($id)
     {

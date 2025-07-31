@@ -160,6 +160,10 @@ const handleConcursoClick = async (concurso) => {
         alert('No puedes inscribirte en un concurso cerrado.');
         return;
       }
+      if (concurso.estado === 'finalizado') {
+        alert('El concurso ha finalizado');
+        return;
+      }
       if (inscrito.value) {
         router.get(route('gestion.proyectos'));
       } else {
@@ -421,16 +425,6 @@ const puedeInscribirse = (concurso) => {
             {{ selectedMenu }}
           </h2>
 
-          <!-- Contenedor flex para el botón -->
-          <div class="flex justify-end">
-            <button 
-              v-if="selectedMenu === 'Concursos' && userRole === 'lider'" 
-              @click="handleDownloadPDF" 
-              class="mt-3 bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
-            >
-              Descargar FOREG
-            </button>
-          </div>
 
           <!-- Formulario para Registro -->
           <div v-if="showForm" class="relative">
@@ -462,7 +456,7 @@ const puedeInscribirse = (concurso) => {
               @eliminar="handleEliminar"
               @cerrar="handleCerrar"
               @configuracion="handleConfiguracion"
-              @podio="handlePodio(concurso)"
+              @podio="handlePodio" 
               class="transition-transform transform hover:scale-105 hover:shadow-lg"
             />
           </div>
