@@ -24,8 +24,6 @@ if (props.auth.user.rol === 'lider') {
         { name: 'Usuarios', icon: 'fas fa-users-cog', route: 'new.user' },
         { name: 'Concursos', icon: 'fas fa-trophy', route: 'concursos.index' },
         { name: 'Registro de Criterios', icon: 'fas fa-list-check', route: 'criterios.registro' },
-        { name: 'Configuración', icon: 'fas fa-cog', route: 'configuracion.index' },
-        { name: 'Reportes', icon: 'fas fa-chart-pie', route: 'reportes.index' },
         { name: 'Gestión de Usuarios', icon: 'fas fa-user-shield', route: 'gestion.usuarios.index' } 
         
     ];
