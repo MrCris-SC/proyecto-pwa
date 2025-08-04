@@ -15,6 +15,8 @@ use App\Http\Controllers\EvaluacionesManualesController;
 use App\Http\Controllers\EvaluacionesController;
 use App\Http\Controllers\UsuarioGestionController;
 use App\Models\Concursos;
+use App\Http\Controllers\ResultadosFinalesController;
+
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -188,5 +190,11 @@ Route::get('/concursos-finales/{concurso}/participantes', [\App\Http\Controllers
 
 // Ruta para descargar el reporte de equipos (admin)
 Route::get('/concursos-finales/{concurso}/reporte-equipos', [\App\Http\Controllers\ConcursosFinales::class, 'descargarReporteEquipos'])->name('concursosFinales.descargarReporteEquipos');
+
+// Ruta para generar el PDF de resultados finales
+Route::get('/generar-podio-pdf', [ResultadosFinalesController::class, 'generarPDF']) ->name('resultados.pdf');
+
+// Ruta para solicitar inscripción a un concurso
+Route::post('/concursos/{concurso}/inscribir', [ProyectosController::class, 'solicitarInscripcion'])->name('concursos.inscribir');
 
 require __DIR__.'/auth.php';

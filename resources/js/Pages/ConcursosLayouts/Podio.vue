@@ -1,159 +1,143 @@
 <template>
-  <AuthenticatedLayout>
-    <template #header>
+<AuthenticatedLayout>
+  <template #header>
       <h2 class="text-xl font-semibold leading-tight text-[#611232]">
-        Podio del Concurso
+        Resultados Finales del Concurso
       </h2>
     </template>
-    <div class="flex flex-col lg:flex-row min-h-screen py-6 px-4 lg:px-12 bg-[#F8F9FA]">
+
+   <div class="flex flex-col lg:flex-row min-h-screen py-6 px-4 lg:px-12 bg-[#F8F9FA]">
       <!-- Menú lateral -->
-      <MenuLateral :rol="$page.props.auth.user.rol" />
+      <MenuLateral :rol="userRole" @menu-selected="handleMenuSelected" />
 
-      <!-- Contenido principal -->
-      <main class="w-full max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-lg">
-        <div>
-          <h2 class="text-3xl font-bold mb-6 text-center text-[#611232]">Podio del Concurso</h2>
-          <!-- Podio circular alternativo -->
-          <div class="flex justify-center items-end gap-4 mb-10">
-            <!-- Segundo lugar -->
-            <div class="flex flex-col items-center">
-              <div class="w-28 h-28 md:w-32 md:h-32 bg-gradient-to-b from-[#BFC9CA] to-[#85929E] border-4 border-[#85929E] rounded-full flex items-center justify-center shadow-lg relative z-10">
-                <span class="text-4xl md:text-5xl">🥈</span>
-              </div>
-              <div class="mt-2 text-center">
-                <p class="text-base font-semibold text-[#34495E]">{{ podio[1]?.equipo?.proyecto?.nombre || 'N/A' }}</p>
-                <p class="text-xs text-gray-500">Promedio: {{ podio[1]?.promedio_final ?? 'N/A' }}</p>
-              </div>
-            </div>
-            <!-- Primer lugar -->
-            <div class="flex flex-col items-center">
-              <div class="w-36 h-36 md:w-44 md:h-44 bg-gradient-to-b from-[#F7DC6F] to-[#F1C40F] border-4 border-[#F1C40F] rounded-full flex items-center justify-center shadow-2xl relative z-20 scale-110">
-                <span class="text-6xl md:text-7xl">🥇</span>
-              </div>
-              <div class="mt-2 text-center">
-                <p class="text-lg font-bold text-[#B7950B]">{{ podio[0]?.equipo?.proyecto?.nombre || 'N/A' }}</p>
-                <p class="text-sm text-gray-600">Promedio: {{ podio[0]?.promedio_final ?? 'N/A' }}</p>
-              </div>
-            </div>
-            <!-- Tercer lugar -->
-            <div class="flex flex-col items-center">
-              <div class="w-24 h-24 md:w-28 md:h-28 bg-gradient-to-b from-[#FAD7A0] to-[#CA6F1E] border-4 border-[#CA6F1E] rounded-full flex items-center justify-center shadow-md relative z-10">
-                <span class="text-3xl md:text-4xl">🥉</span>
-              </div>
-              <div class="mt-2 text-center">
-                <p class="text-base font-semibold text-[#CA6F1E]">{{ podio[2]?.equipo?.proyecto?.nombre || 'N/A' }}</p>
-                <p class="text-xs text-gray-500">Promedio: {{ podio[2]?.promedio_final ?? 'N/A' }}</p>
-              </div>
-            </div>
-          </div>
-          <!-- Tabla de resultados -->
-          <div class="mt-8">
-            <h3 class="text-xl font-semibold text-gray-800 mb-4">Resultados Completos</h3>
-            <div class="max-h-96 overflow-y-auto border border-gray-300 rounded-lg">
-              <table class="table-auto w-full border-collapse">
-                <thead class="bg-gray-100">
-                  <tr>
-                    <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Posición</th>
-                    <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Equipo</th>
-                    <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Promedio Final</th>
-                    <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Estado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr 
-                    v-for="(resultado, index) in resultados" 
-                    :key="resultado.id || index" 
-                    :class="[
-                      resultado.estado_proyecto && resultado.estado_proyecto.toLowerCase() === 'descalificado'
-                        ? 'bg-orange-100 text-orange-700'
-                        : (index === 0 ? 'bg-yellow-50' : (index < 3 ? 'bg-gray-50' : '')),
-                      'hover:bg-gray-100 transition-colors'
-                    ]"
-                    class="text-sm"
-                  >
-                    <td class="border border-gray-300 px-4 py-1">{{ index + 1 }}</td>
-                    <td class="border border-gray-300 px-4 py-1">
-                      {{ resultado.equipo?.proyecto?.nombre || 'N/A' }}
-                    </td>
-                    <td class="border border-gray-300 px-4 py-1">
-                      {{ resultado.promedio_final }}
-                    </td>
-                    <td class="border border-gray-300 px-4 py-1">
-                      {{ resultado.estado_proyecto || 'En orden' }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+      <main 
+        class="w-full max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-lg relative"
+        :class="{ 'opacity-50 pointer-events-none': mostrarModalEvaluaciones || mostrarModalInscripcion || mostrarModalCerrar }"
+      >
 
-          <!-- Tabla de clasificaciones -->
-          <div class="mt-12">
-            <h3 class="text-xl font-semibold text-gray-800 mb-4">Clasificaciones</h3>
-            <div class="max-h-96 overflow-y-auto border border-gray-300 rounded-lg">
-              <table class="table-auto w-full border-collapse">
-                <thead class="bg-gray-100">
-                  <tr>
-                    <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Posición</th>
-                    <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Equipo</th>
-                    <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Proyecto</th>
-                    <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Líder</th>
-                    <th class="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Equipos Clasificados</th>
+        <div class="container mx-auto px-4 py-8">
+          <h1 class="text-3xl font-bold mb-8 text-center text-indigo-600">Resultados Finales</h1>
+
+          <div
+            v-for="(modalidadData, modalidad) in modalidadesAgrupadas"
+            :key="modalidad"
+            class="mb-12 space-y-6"
+          >
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">{{ modalidad }}</h2>
+
+            <!-- Podio Estilo Vertical -->
+            <div class="flex flex-row justify-center items-start space-x-6">
+              <div
+                v-for="(puesto, i) in modalidadData.podio"
+                :key="i"
+                :class="[
+                  'w-64 p-6 rounded-xl shadow text-center',
+                  i === 0
+                    ? 'bg-yellow-100 border-2 border-yellow-400'
+                    : 'bg-gray-100 border border-gray-300',
+                ]"
+              >
+                <h3 class="text-xl font-bold" :class="i === 0 ? 'text-yellow-700' : 'text-gray-700'">
+                  {{ i === 0 ? '🥇 1er Lugar' : i === 1 ? '🥈 2do Lugar' : '🥉 3er Lugar' }}
+                </h3>
+                <p class="text-lg font-bold text-indigo-900 mt-2">
+                  {{ puesto.equipo?.proyecto?.nombre || 'Sin nombre' }}
+                </p>
+                <p class="text-sm text-gray-700">Promedio: {{ puesto.promedio_final }}</p>
+              </div>
+            </div>
+
+
+            <!-- Tabla de Resultados Vertical y 100% Responsive -->
+            <div class="w-full overflow-hidden rounded-xl shadow-lg border border-gray-200">
+              <table class="w-full min-w-full text-sm text-gray-800 bg-white">
+                <thead>
+                  <tr class="bg-indigo-100 text-gray-900">
+                    <th class="py-3 px-5 text-left font-bold whitespace-nowrap">Posición</th>
+                    <th class="py-3 px-5 text-left font-bold whitespace-nowrap">Proyecto</th>
+                    <th class="py-3 px-5 text-left font-bold whitespace-nowrap">Promedio Final</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr
-                    v-for="clasificacion in clasificaciones"
-                    :key="clasificacion.id || clasificacion.equipo_id"
+                    v-for="(res, idx) in modalidadData.resultados"
+                    :key="idx"
                     :class="[
-                      clasificacion.clasifica ? 'bg-green-100' : '',
-                      'hover:bg-gray-100 transition-colors'
+                      'transition duration-200 hover:bg-indigo-50',
+                      idx === 0 ? 'bg-yellow-100 font-bold' :
+                      idx === 1 ? 'bg-gray-200 font-semibold' :
+                      idx === 2 ? 'bg-orange-100 font-medium' : ''
                     ]"
-                    class="text-sm"
                   >
-                    <td class="border border-gray-300 px-4 py-1">{{ clasificacion.posicion }}</td>
-                    <td class="border border-gray-300 px-4 py-1">
-                      {{ clasificacion.equipo?.nombre || clasificacion.equipo?.proyecto?.nombre || 'N/A' }}
-                    </td>
-                    <td class="border border-gray-300 px-4 py-1">
-                      {{ clasificacion.equipo?.proyecto?.nombre || 'N/A' }}
-                    </td>
-                    <td class="border border-gray-300 px-4 py-1">
-                      {{ clasificacion.usuario_lider?.name || 'N/A' }}
-                    </td>
-                    <td class="border border-gray-300 px-4 py-1 font-bold text-center">
-                      <span v-if="clasificacion.clasifica" class="text-green-700">Clasifica</span>
-                    </td>
+                    <td class="py-3 px-5 border-t text-center">{{ idx + 1 }}</td>
+                    <td class="py-3 px-5 border-t truncate max-w-[250px]">{{ res.equipo?.proyecto?.nombre || 'Sin nombre' }}</td>
+                    <td class="py-3 px-5 border-t text-center">{{ res.promedio_final }}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
-            <p class="mt-2 text-xs text-gray-500">Las filas en verde corresponden a los equipos clasificados (top 3).</p>
           </div>
         </div>
+        <div class="flex justify-end mb-4">
+          <a
+            :href="route('resultados.pdf')"
+            target="_blank"
+            class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg shadow inline-flex items-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h4a1 1 0 011 1v7h3.586a1 1 0 01.707 1.707l-5.586 5.586a1 1 0 01-1.414 0L1.707 11.707A1 1 0 012.414 10H6V3z" clip-rule="evenodd" />
+            </svg>
+            Descargar PDF de resultados
+          </a>
+        </div>
+
       </main>
-    </div>
-  </AuthenticatedLayout>
+    
+  </div>
+</AuthenticatedLayout>
+   
+  
 </template>
 
+
 <script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { ref } from 'vue'
 import MenuLateral from '@/ComponentsConcursos/MenuLateral.vue';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { usePage } from '@inertiajs/vue3';
+
+
+const handleMenuSelected = (menu) => {
+  selectedMenu.value = menu.toLowerCase();
+  showForm.value = selectedMenu.value !== 'concursos';
+
+  if (selectedMenu.value === 'concursos') {
+    showForm.value = false;
+  } else if (selectedMenu.value === 'gestión de proyectos') {
+    router.get(route('gestion.proyectos'));
+  } else if (selectedMenu.value === 'registro de criterios') {
+    showForm.value = true;
+  } else if (selectedMenu.value === 'equipos registrados') {
+    router.get(route('equipos.registrados'));
+  }
+};
 
 const props = defineProps({
-  podio: {
-    type: Array,
-    required: true,
-  },
-  resultados: {
-    type: Array,
-    required: true,
-  },
-  clasificaciones: {
-    type: Array,
-    required: false,
-    default: () => [],
-  },
+  podio: Array,
+  resultados: Array,
+  clasificaciones: Array,
+  agrupados: Object,
+  modalidadesAgrupadas: Object,
+ 
+  
 });
-</script>
+const userRole = usePage().props.value?.auth?.user?.rol || 'invitado';
 
+const activeTab = ref(
+  props.agrupados && typeof props.agrupados === 'object'
+    ? Object.keys(props.agrupados)[0]
+    : ''
+);
+
+console.log("Agrupación visual (modalidadesAgrupadas):", props.modalidadesAgrupadas);
+</script>
