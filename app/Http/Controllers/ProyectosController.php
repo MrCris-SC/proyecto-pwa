@@ -14,10 +14,11 @@ use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 use ZipArchive;
-
+use App\Models\User;
 class ProyectosController extends Controller
 {
     public function index()
@@ -32,6 +33,9 @@ class ProyectosController extends Controller
             'concursos' => $concursos,
         ]);
     }
+
+    // Metodo pasa saber la fase
+
 
     public function store(Request $request)
     {
@@ -54,86 +58,217 @@ class ProyectosController extends Controller
         }
 
         try {
-            // Obtener inicial de la categoría
-            $categoriaInicial = strtoupper(substr($request->categoria, 0, 1));
-
-            // Obtener inicial de la modalidad (última palabra principal)
-            $modalidad = Modalidades::find($request->modalidad_id);
-            $modalidadInicial = '';
-            if ($modalidad) {
-                $palabras = preg_split('/\s+/', trim($modalidad->nombre));
-                // Buscar la última palabra principal (ignorando preposiciones comunes)
-                $preposiciones = ['de', 'del', 'la', 'el', 'los', 'las', 'y', 'en', 'a', 'con', 'por', 'para', 'un', 'una'];
-                for ($i = count($palabras) - 1; $i >= 0; $i--) {
-                    if (!in_array(strtolower($palabras[$i]), $preposiciones)) {
-                        $modalidadInicial = strtoupper(substr($palabras[$i], 0, 1));
-                        break;
+            $resultado = DB::transaction(function () use ($request) {
+                // Generar prefijo para ID del equipo
+                $categoriaInicial = strtoupper(substr($request->categoria, 0, 1));
+                $modalidad = Modalidades::find($request->modalidad_id);
+                $modalidadInicial = '';
+                if ($modalidad) {
+                    $palabras = preg_split('/\s+/', trim($modalidad->nombre));
+                    $preposiciones = ['de', 'del', 'la', 'el', 'los', 'las', 'y', 'en', 'a', 'con', 'por', 'para', 'un', 'una'];
+                    for ($i = count($palabras) - 1; $i >= 0; $i--) {
+                        if (!in_array(strtolower($palabras[$i]), $preposiciones)) {
+                            $modalidadInicial = strtoupper(substr($palabras[$i], 0, 1));
+                            break;
+                        }
                     }
                 }
-            }
+                $prefijoEquipo = $categoriaInicial . $modalidadInicial;
 
-            // Concatenar las iniciales para usarlas en el ID del equipo
-            $prefijoEquipo = $categoriaInicial . $modalidadInicial;
+                // Crear proyecto
+                $proyecto = Proyectos::create($request->only([
+                    'nombre', 'categoria', 'modalidad_id', 'linea_investigacion_id', 'concurso_id', 'perfil_jurado'
+                ]));
 
-            // Ahora puedes usar $prefijoEquipo para agregarlo al ID del equipo según tu lógica
-
-            $proyecto = Proyectos::create($request->only([
-                'nombre', 'categoria', 'modalidad_id', 'linea_investigacion_id', 'concurso_id','perfil_jurado'
-            ]));
-
-            $equipoId = Equipo::generarCodigoEquipo();
-            $nuevaID = $prefijoEquipo . $equipoId;
-            $equipo = Equipo::create([
-                'id' => $nuevaID,
-                'proyecto_id' => $proyecto->id,
-                'concurso_id' => $request->concurso_id,
-                
-            ]);
-
-            // Actualizar el proyecto con la ID del equipo
-            $proyecto->equipo_id = $equipo->id;
-            $proyecto->save();
-
-            // Insertar automáticamente al líder como participante
-            $authUser = Auth::user();
-            Participantes::updateOrCreate(
-                [
-                    'equipo_id' => $equipo->id,
-                    'correo' => $authUser->email,
-                ],
-                [
-                    'nombre' => $authUser->name,
-                    'genero' => $authUser->genero ?? 'no especificado',
-                    'telefono' => $authUser->telefono ?? '',
-                    'direccion' => $authUser->direccion ?? '',
-                ]
-            );
-
-            // Crear los participantes del equipo
-            foreach ($request->equipo as $integranteData) {
-                Participantes::create([
-                    'equipo_id' => $equipo->id,
-                    'nombre' => $integranteData['nombre'],
-                    'correo' => $integranteData['correo'],
-                    'genero' => $integranteData['genero'],
-                    'telefono' => $integranteData['telefono'],
-                    'direccion' => $integranteData['direccion'],
+                // Crear equipo con ID compuesto
+                $equipoId = Equipo::generarCodigoEquipo();
+                $nuevaID = $prefijoEquipo . $equipoId;
+                $equipo = Equipo::create([
+                    'id' => $nuevaID,
+                    'proyecto_id' => $proyecto->id,
+                    'concurso_id' => $request->concurso_id,
                 ]);
-            }
 
-            $authUser = Auth::user();
-            $authUser->update(['equipo_id' => $equipo->id]);
+                $proyecto->equipo_id = $equipo->id;
+                $proyecto->save();
 
-            if (Auth::user()->rol === 'lider' && $request->concurso_id) {
-                Auth::user()->update(['concurso_registrado_id' => $request->concurso_id]);
-            }
+                // Insertar automáticamente al líder como participante
+                $authUser = Auth::user();
+                Participantes::updateOrCreate(
+                    [
+                        'equipo_id' => $equipo->id,
+                        'correo' => $authUser->email,
+                    ],
+                    [
+                        'nombre' => $authUser->name,
+                        'genero' => $authUser->genero ?? 'no especificado',
+                        'telefono' => $authUser->telefono ?? '',
+                        'direccion' => $authUser->direccion ?? '',
+                    ]
+                );
 
-            return redirect()->route('dashboard')->with('success', 'Proyecto creado exitosamente.');
+                // Crear los demás participantes
+                foreach ($request->equipo as $integranteData) {
+                    Participantes::create([
+                        'equipo_id' => $equipo->id,
+                        'nombre' => $integranteData['nombre'],
+                        'correo' => $integranteData['correo'],
+                        'genero' => $integranteData['genero'],
+                        'telefono' => $integranteData['telefono'],
+                        'direccion' => $integranteData['direccion'],
+                    ]);
+                }
+
+                // Actualizar usuario autenticado con equipo
+                $authUser->update(['equipo_id' => $equipo->id]);
+
+                // Si es líder y hay concurso destino, validar y registrar inscripción
+                if ($authUser->rol === 'lider' && $request->concurso_id) {
+                    $resultadoInscripcion = $this->registrarInscripcionSiAplica($equipo->id, $request->concurso_id, $authUser);
+
+                    if (!$resultadoInscripcion['success']) {
+                        // Forzar rollback lanzando excepción con mensaje de elegibilidad
+                        throw new \Exception($resultadoInscripcion['message']);
+                    }
+
+                    // Referencia rápida (opcional)
+                    $authUser->update(['concurso_registrado_id' => $request->concurso_id]);
+                }
+
+                return $proyecto;
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Proyecto creado exitosamente.',
+                'id' => $resultado->id,
+            ]);
         } catch (\Exception $e) {
             Log::error('Error al crear el proyecto: ' . $e->getMessage());
-            return response()->json(['error' => 'Error al crear el proyecto.'], 500);
+
+            $message = $e->getMessage();
+            $status = 500;
+
+            // Si es problema de elegibilidad, usar 403
+            if (str_contains(strtolower($message), 'clasificado')) {
+                $status = 403;
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => $message,
+            ], $status);
         }
     }
+
+    private function registrarInscripcionSiAplica($equipoId, $concursoDestinoId, User $lider): array
+{
+    $concursoDestino = Concursos::findOrFail($concursoDestinoId);
+    $faseDestino = strtolower($concursoDestino->fase);
+
+    // Validar elegibilidad usando el campo fase_clasificado
+    if (!$this->esElegibleParaFase($lider, $faseDestino)) {
+        return [
+            'success' => false,
+            'message' => "No está clasificado en la fase previa y no puede registrarse en {$faseDestino}."
+        ];
+    }
+
+    // Crear o actualizar inscripción
+    \DB::table('inscripciones')->updateOrInsert(
+        [
+            'concurso_id' => $concursoDestino->id,
+            'equipo_id' => $equipoId,
+        ],
+        [
+            'user_id' => $lider->id,
+            'estado' => 'aprobado',
+            'fase_origen' => $lider->fase_clasificado, // opcional para trazabilidad
+            'updated_at' => now(),
+            'created_at' => now(),
+        ]
+    );
+
+    return ['success' => true];
+}
+
+/**
+ * Devuelve la fase anterior necesaria para elegibilidad.
+    */
+    private function esElegibleParaFase(User $lider, string $faseDestino): bool
+    {
+        $faseDestino = strtolower($faseDestino);
+        $faseClasificada = strtolower($lider->fase_clasificado ?? '');
+
+        return match ($faseDestino) {
+            'estatal' => str_contains($faseClasificada, 'clasificado_local'),
+            'nacional' => str_contains($faseClasificada, 'clasificado_estatal'),
+            default => false,
+        };
+    }
+
+
+    /**
+     * Solicita inscripción a un concurso.
+     *
+     * @param Request $request
+     * @param int $concursoId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function solicitarInscripcion(Request $request, $concursoId)
+    {
+        $request->validate([
+            'equipo_id' => 'required|string',
+            // otros campos si es necesario
+        ]);
+
+        $concursoDestino = Concursos::findOrFail($concursoId);
+        $faseDestino = strtolower($concursoDestino->fase);
+        $faseAnterior = $this->faseAnterior($faseDestino);
+
+        $equipoId = $request->input('equipo_id');
+        $lider = User::where('equipo_id', $equipoId)->where('rol', 'lider')->firstOrFail();
+
+        // Validar clasificación previa si aplica
+        if ($faseAnterior) {
+            $clasificado = \DB::table('clasificaciones')
+                ->where('equipo_id', $equipoId)
+                ->where('user_id', $lider->id)
+                ->where('fase', $faseAnterior)
+                ->exists();
+
+            if (!$clasificado) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "No está clasificado en la fase previa ({$faseAnterior}) y no puede inscribirse en {$faseDestino}."
+                ], 403);
+            }
+        }
+
+        // Crear o actualizar inscripción
+        \DB::table('inscripciones')->updateOrInsert(
+            [
+                'concurso_id' => $concursoDestino->id,
+                'equipo_id' => $equipoId,
+            ],
+            [
+                'user_id' => $lider->id,
+                'estado' => 'aprobado', // o 'pendiente' si quieres revisión manual
+                'fase_origen' => $faseAnterior,
+                'updated_at' => now(),
+                'created_at' => now(),
+            ]
+        );
+
+        // (Opcional) también actualizar concurso_registrado_id si lo usas paralelo
+        $lider->update(['concurso_registrado_id' => $concursoId]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Inscripción registrada correctamente.',
+        ]);
+    }
+
 
     public function generarPDF()
     {

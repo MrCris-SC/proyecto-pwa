@@ -182,4 +182,7 @@ Route::get('/concursos-finales/{concurso}/reporte-equipos', [\App\Http\Controlle
 // Ruta para generar el PDF de resultados finales
 Route::get('/generar-podio-pdf', [ResultadosFinalesController::class, 'generarPDF']) ->name('resultados.pdf');
 
+// Ruta para solicitar inscripción a un concurso
+Route::post('/concursos/{concurso}/inscribir', [ProyectosController::class, 'solicitarInscripcion'])->name('concursos.inscribir');
+
 require __DIR__.'/auth.php';
