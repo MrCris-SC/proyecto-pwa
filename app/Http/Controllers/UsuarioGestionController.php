@@ -186,8 +186,7 @@ public function index(Request $request)
     {
         $asesor->delete();
 
-        return response()->json([
-            'message' => 'Asesor eliminado correctamente'
-        ], 200);
+         return redirect()->route('gestion.usuarios.index')
+            ->with('status', 'Usuario eliminado correctamente');
     }
 }
