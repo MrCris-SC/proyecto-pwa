@@ -26,6 +26,7 @@ if (props.auth.user.rol === 'lider') {
         { name: 'Registro de Criterios', icon: 'fas fa-list-check', route: 'criterios.registro' },
         { name: 'Configuración', icon: 'fas fa-cog', route: 'configuracion.index' },
         { name: 'Reportes', icon: 'fas fa-chart-pie', route: 'reportes.index' },
+        { name: 'Gestión de Usuarios', icon: 'fas fa-user-shield', route: 'gestion.usuarios.index' } 
         
     ];
 } else if (props.auth.user.rol === 'evaluador') {

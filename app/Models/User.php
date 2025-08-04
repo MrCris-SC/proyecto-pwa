@@ -81,4 +81,14 @@ class User extends Authenticatable implements MustVerifyEmail
             'has_completed_profiles' => 'boolean',
         ];
     }
+
+        public function equiposLiderados()
+    {
+        return $this->hasMany(Equipo::class, 'lider_id');
+    }
+
+    public function evaluador()
+    {
+        return $this->hasOne(Evaluadores::class, 'userID');
+    }
 }
