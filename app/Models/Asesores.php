@@ -11,7 +11,6 @@ class Asesores extends Model
     
     protected $table = 'asesores';
 
-    // Campos que se pueden asignar masivamente
     protected $fillable = [
         'nombre',
         'email',
@@ -24,9 +23,23 @@ class Asesores extends Model
         'asesor_origen', 
     ];
 
-    // Relación con la tabla equipos
+    // Relación con el equipo
     public function equipo()
     {
         return $this->belongsTo(Equipo::class, 'equipo_id');
     }
+
+    // Relación con proyecto a través del equipo (opcional)
+    public function proyectoDelEquipo()
+    {
+        return $this->hasOneThrough(
+            Proyectos::class,
+            Equipo::class,
+            'id', // FK en equipos
+            'equipo_id', // FK en proyectos
+            'equipo_id', // Local key en asesores
+            'id' // Local key en equipos
+        );
+    }
+
 }

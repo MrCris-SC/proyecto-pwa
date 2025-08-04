@@ -45,4 +45,9 @@ class Proyectos extends Model
     {
         return $this->hasOne(Equipo::class, 'proyecto_id');
     }
+
+    public function asesores()
+    {
+        return $this->hasMany(Asesores::class, 'equipo_id', 'equipo_id');
+    }
 }

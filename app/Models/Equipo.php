@@ -56,4 +56,9 @@ class Equipo extends Model
     {
         return $this->hasOne(ResultadosFinales::class, 'equipo_id', 'id');
     }
+
+    public function lider()
+    {
+        return $this->belongsTo(User::class, 'lider_id');
+    }
 }
