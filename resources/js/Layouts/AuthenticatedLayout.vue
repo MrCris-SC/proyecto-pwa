@@ -29,15 +29,15 @@ const tutorialContent = {
                 items: [
                     {
                         text: 'Visualiza todas las convocatorias activas en la sección "Concursos"',
-                        image: '/public/images/Tutorial/lider1.png'
+                        image: '/images/Tutorial/lider1.png'
                     },
                     {
                         text: 'Haz clic en la tarjeta del concurso para registrarte',
-                        image: '/public/images/Tutorial/lider3.png'
+                        image: '/images/Tutorial/lider3.png'
                     },
                     {
                         text: 'Completa los datos de tu proyecto y equipo',
-                        image: '/public/images/Tutorial/lider2.png'
+                        image: '/images/Tutorial/lider2.png'
                     }
                 ],
                 },
@@ -47,19 +47,19 @@ const tutorialContent = {
                 items: [
                     {
                         text: '1 Registra a tus asesores (técnico y metodológico)',
-                        image: '/public/images/Tutorial/lider4.png'
+                        image: '/images/Tutorial/lider4.png'
                     },
                     {
                         text: '2 Descarga los formatos requeridos para completar el registro de tu proyecto:',
-                        image: '/public/images/Tutorial/lider5.png'
+                        image: '/images/Tutorial/lider5.png'
                     },
                     {
                         text: '3 Llena y sube los documentos en "Documentación Requerida"',
-                        image: '/public/images/Tutorial/lider6.png'
+                        image: '/images/Tutorial/lider6.png'
                     },
                     {
                         text: '4 Los Documentos opcionales son a consideracion pero de gran ayuda para los evaluadores',
-                        image: '/public/images/Tutorial/lider7.png'
+                        image: '/images/Tutorial/lider7.png'
                     }
                 ],
             },
@@ -69,7 +69,7 @@ const tutorialContent = {
                 items: [
                     {
                         text: 'Seleciona generar reporte y se deacargara un pdf con tus resultados',
-                        image: '/public/images/Tutorial/lider8.png'
+                        image: '/images/Tutorial/lider8.png'
                     },
 
                 ],
@@ -80,7 +80,7 @@ const tutorialContent = {
                 items: [
                     {
                         text: 'Visualiza los equipos registrados en el concurso',
-                        image: '/public/images/Tutorial/lider9.png'
+                        image: '/images/Tutorial/lider9.png'
                     }
                 ]
             }
@@ -95,16 +95,16 @@ const tutorialContent = {
                 items: [
                     {
                         text: 'Creación de usuarios y asignación de roles (administrador, evaluador, vinculador, etc.)',
-                        image: '/public/images/Tutorial/Admin.png',
+                        image: '/images/Tutorial/Admin.png',
                         note: 'Verifica que el correo electrónico sea válido para el envío de credenciales'
                     },
                     {
                         text: 'Edición de perfiles: actualización de datos básicos y ajuste de permisos',
-                        image: '/public/images/Tutorial/Admin3.png'
+                        image: '/images/Tutorial/Admin3.png'
                     },
                     {
                         text: 'Visualización y filtrado del listado completo de usuarios registrados',
-                        image: '/public/images/Tutorial/Admin5.png',
+                        image: '/images/Tutorial/Admin5.png',
                     }
                 ]
             },
