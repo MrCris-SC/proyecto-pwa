@@ -29,15 +29,15 @@ const tutorialContent = {
                 items: [
                     {
                         text: 'Visualiza todas las convocatorias activas en la sección "Concursos"',
-                        image: '/images/Tutorial/lider1.png'
+                        image: '/images/tutorial/lider1.png'
                     },
                     {
                         text: 'Haz clic en la tarjeta del concurso para registrarte',
-                        image: '/images/Tutorial/lider3.png'
+                        image: '/images/tutorial/lider3.png'
                     },
                     {
                         text: 'Completa los datos de tu proyecto y equipo',
-                        image: '/images/Tutorial/lider2.png'
+                        image: '/images/tutorial/lider2.png'
                     }
                 ],
                 },
@@ -47,19 +47,19 @@ const tutorialContent = {
                 items: [
                     {
                         text: '1 Registra a tus asesores (técnico y metodológico)',
-                        image: '/images/Tutorial/lider4.png'
+                        image: '/images/tutorial/lider4.png'
                     },
                     {
                         text: '2 Descarga los formatos requeridos para completar el registro de tu proyecto:',
-                        image: '/images/Tutorial/lider5.png'
+                        image: '/images/tutorial/lider5.png'
                     },
                     {
                         text: '3 Llena y sube los documentos en "Documentación Requerida"',
-                        image: '/images/Tutorial/lider6.png'
+                        image: '/images/tutorial/lider6.png'
                     },
                     {
                         text: '4 Los Documentos opcionales son a consideracion pero de gran ayuda para los evaluadores',
-                        image: '/images/Tutorial/lider7.png'
+                        image: '/images/tutorial/lider7.png'
                     }
                 ],
             },
@@ -69,7 +69,7 @@ const tutorialContent = {
                 items: [
                     {
                         text: 'Seleciona generar reporte y se deacargara un pdf con tus resultados',
-                        image: '/images/Tutorial/lider8.png'
+                        image: '/images/tutorial/lider8.png'
                     },
 
                 ],
@@ -80,7 +80,7 @@ const tutorialContent = {
                 items: [
                     {
                         text: 'Visualiza los equipos registrados en el concurso',
-                        image: '/images/Tutorial/lider9.png'
+                        image: '/images/tutorial/lider9.png'
                     }
                 ]
             }
@@ -95,16 +95,16 @@ const tutorialContent = {
                 items: [
                     {
                         text: 'Creación de usuarios y asignación de roles (administrador, evaluador, vinculador, etc.)',
-                        image: '/images/Tutorial/Admin.png',
+                        image: '/images/tutorial/Admin.png',
                         note: 'Verifica que el correo electrónico sea válido para el envío de credenciales'
                     },
                     {
                         text: 'Edición de perfiles: actualización de datos básicos y ajuste de permisos',
-                        image: '/images/Tutorial/Admin3.png'
+                        image: '/images/tutorial/Admin3.png'
                     },
                     {
                         text: 'Visualización y filtrado del listado completo de usuarios registrados',
-                        image: '/images/Tutorial/Admin5.png',
+                        image: '/images/tutorial/Admin5.png',
                     }
                 ]
             },
@@ -118,7 +118,7 @@ const tutorialContent = {
                             'Accede al formulario mediante el botón (+) en la sección de Concursos',
                             'Completa todos los campos obligatorios marcados con *'
                         ],
-                        image: '/images/Tutorial/Admin6.png'
+                        image: '/images/tutorial/Admin6.png'
                     },
                     {
                         text: '2. Procedimiento de registro completo:',
@@ -128,7 +128,7 @@ const tutorialContent = {
                             'Confirma la creación con el botón "Crear Concurso"',
                             'Espera la notificación de confirmación'
                         ],
-                        image: '/images/Tutorial/Admin7.png',
+                        image: '/images/tutorial/Admin7.png',
                         note: 'Asegúrate de que las fechas sean correctas para evitar problemas posteriores'
                     },
                     {
@@ -139,7 +139,7 @@ const tutorialContent = {
                             'Asignación de evaluadores a proyectos',
                             'Eliminación completa del concurso (acción irreversible)'
                         ],
-                        image: '/images/Tutorial/Admin8.png',
+                        image: '/images/tutorial/Admin8.png',
                         warning: 'La eliminación del concurso borrará todos los datos asociados permanentemente'
                     }
                 ]
@@ -154,7 +154,7 @@ const tutorialContent = {
                             'Elige el concurso al que agregarás criterios',
                             'Selecciona la modalidad donde iniciara el registro de criterios'
                         ],
-                        image: '/images/Tutorial/Admin9.png'
+                        image: '/images/tutorial/Admin9.png'
                     },
                     {
                         text: '2. Distribución de puntajes:',
@@ -162,7 +162,7 @@ const tutorialContent = {
                             'Asigna valores porcentuales a cada categoría',
                             'El total debe sumar exactamente 100%'
                         ],
-                        image: '/images/Tutorial/Admin10.png',
+                        image: '/images/tutorial/Admin10.png',
                     },
                     {
                         text: '3. Registro detallado de criterios:',
@@ -171,7 +171,7 @@ const tutorialContent = {
                             'Agrega con el botón "Agregar Criterio"',
                             'Repite el proceso para todas las modalidades'
                         ],
-                        image: '/images/Tutorial/Admin11.png',
+                        image: '/images/tutorial/Admin11.png',
                         note: 'Los criterios deben ser claros y medibles para los evaluadores'
                     },
                     {
@@ -199,16 +199,16 @@ const tutorialContent = {
                         subitems: [
                             {
                                 text: 'Acceda a la sección "Concursos" y seleccione el concurso a evaluar',
-                                image: '/images/Tutorial/eva1.png'
+                                image: '/images/tutorial/eva1.png'
                             },
                             {
                                 text: 'Confirme su participación como evaluador cuando el sistema lo solicite',
-                                image: '/images/Tutorial/eva2.png'
+                                image: '/images/tutorial/eva2.png'
                             },
                             {
                                 text: 'Revise la documentación de los equipos en la carpeta de archivos antes del día del concurso',
                                 text: 'Evalúe el informe técnico (i.informe) con anticipación y guarde su progreso',
-                                image: '/images/Tutorial/eval.png',//agregar despues de que se agrege esta parte del proyecto
+                                image: '/images/tutorial/eval.png',//agregar despues de que se agrege esta parte del proyecto
                                 note: 'Recomendamos revisar el tutorial de evaluación formal antes de calificar los informes de los equipos',
                                 note: 'Guarde cada avance usando el botón específico para cada sección',
                             },
@@ -220,13 +220,13 @@ const tutorialContent = {
                             {
                                 text: 'En la sección "Evaluación", consulte los proyectos asignados',
                                 text: 'Seleccione un proyecto para evaluar y revise sus detalles completos',
-                                image: '/images/Tutorial/eva3.png'
+                                image: '/images/tutorial/eva3.png'
                             },
                             {
                                 text: 'Complete los tres tipos de criterios en orden:',
                                 subitems: [
                                     {
-                                        image: '/images/Tutorial/eva4.png',
+                                        image: '/images/tutorial/eva4.png',
                                         text: 'a) Informe '
                                     },
                                     {
@@ -240,22 +240,22 @@ const tutorialContent = {
                             },
                             {
                                 text: 'Guarde cada sección individualmente antes de continuar',
-                                image: '/images/Tutorial/eva6.png',
+                                image: '/images/tutorial/eva6.png',
                                 warning: 'No avance sin guardar cada sección'
                             },
                             {
                                 text: 'Agregue comentarios constructivos de retroalimentación',
-                                image: '/images/Tutorial/eva7.png'
+                                image: '/images/tutorial/eva7.png'
                             },
                             {
                                 text: 'Finalice con "Enviar Evaluación Final Cuando los tres tipos de criterio esten completos"',
-                                image: '/images/Tutorial/eva8.png',
-                                image: '/images/Tutorial/eva9.png',
+                                image: '/images/tutorial/eva8.png',
+                                image: '/images/tutorial/eva9.png',
                                 warning: 'Esta acción no puede deshacerse - verifique todo antes de enviar'
                             },
                             {
                                 text: 'Comprueve que aparesca Evaluacion completa',
-                                image: '/images/Tutorial/eva10.png'
+                                image: '/images/tutorial/eva10.png'
                             },
                         ]
                     }
@@ -270,11 +270,11 @@ const tutorialContent = {
                         subitems: [
                             {
                                 text: 'Consulte el listado completo de proyectos asignados',
-                                image: '/images/Tutorial/evaluador-paso3-item1.png'
+                                image: '/images/tutorial/evaluador-paso3-item1.png'
                             },
                             {
                                 text: 'Descargue la carpeta completa de documentos de cada equipo',
-                                image: '/images/Tutorial/evaluador-paso3-item2.png'
+                                image: '/images/tutorial/evaluador-paso3-item2.png'
                             }
                         ]
                     }
@@ -289,7 +289,7 @@ const tutorialContent = {
                         subitems: [
                             {
                                 text: 'Revise los criterios específicos para cada modalidad',
-                                image: '/images/Tutorial/eva11.png'
+                                image: '/images/tutorial/eva11.png'
                             }
                         ],
                         note: 'Los criterios varían según la modalidad del proyecto'
@@ -308,8 +308,8 @@ const tutorialContent = {
                                 text: 'Consulte puntuaciones finales y comentarios',
                                 text: 'Identifique proyectos pendientes de evaluación',
                                 text: 'Identifique proyectos pendientes de evaluación',
-                                image: '/images/Tutorial/eva12.png',
-                                image: '/images/Tutorial/eva13.png'
+                                image: '/images/tutorial/eva12.png',
+                                image: '/images/tutorial/eva13.png'
 
                             }
                         ]
@@ -327,14 +327,14 @@ const tutorialContent = {
                 items: [
                     {
                         text: 'Registro y seguimiento de líderes',
-                        image: '/images/Tutorial/vinculador-paso1-item1.jpg'
+                        image: '/images/tutorial/vinculador-paso1-item1.jpg'
                     },
                     {
                         text: 'Asignación de proyectos a concursos',
-                        image: '/images/Tutorial/vinculador-paso1-item2.jpg'
+                        image: '/images/tutorial/vinculador-paso1-item2.jpg'
                     }
                 ],
-                image: '/images/Tutorial/vinculador-paso1-main.jpg'
+                image: '/images/tutorial/vinculador-paso1-main.jpg'
             },
             {
                 section: 'Soporte a Equipos',
@@ -342,14 +342,14 @@ const tutorialContent = {
                 items: [
                     {
                         text: 'Resolución de dudas y problemas',
-                        image: '/images/Tutorial/vinculador-paso2-item1.jpg'
+                        image: '/images/tutorial/vinculador-paso2-item1.jpg'
                     },
                     {
                         text: 'Verificación de documentación',
-                        image: '/images/Tutorial/vinculador-paso2-item2.jpg'
+                        image: '/images/tutorial/vinculador-paso2-item2.jpg'
                     }
                 ],
-                image: '/images/Tutorial/vinculador-paso2-main.jpg'
+                image: '/images/tutorial/vinculador-paso2-main.jpg'
             }
         ]
     },
@@ -358,15 +358,15 @@ const tutorialContent = {
         steps: [
             {
                 content: '1 Completa tu perfil para acceso completo',
-                image: '/images/Tutorial/default-paso1.jpg'
+                image: '/images/tutorial/default-paso1.jpg'
             },
             {
                 content: '2 Explora las secciones disponibles según tu rol',
-                image: '/images/Tutorial/default-paso2.jpg'
+                image: '/images/tutorial/default-paso2.jpg'
             },
             {
                 content: '3 Consulta esta guía cuando necesites ayuda',
-                image: '/images/Tutorial/default-paso3.jpg'
+                image: '/images/tutorial/default-paso3.jpg'
             }
         ]
     }
