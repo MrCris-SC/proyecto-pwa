@@ -72,6 +72,21 @@
                     <td class="py-3 px-5 border-t text-center">{{ idx + 1 }}</td>
                     <td class="py-3 px-5 border-t truncate max-w-[250px]">{{ res.equipo?.proyecto?.nombre || 'Sin nombre' }}</td>
                     <td class="py-3 px-5 border-t text-center">{{ res.promedio_final }}</td>
+                    <td class="py-3 px-5 border-t text-center">
+                      <button
+                        class="px-2 py-1 text-xs rounded bg-green-600 text-white hover:bg-green-700 mr-1"
+                        @click="clasificarLider(res.equipo?.user_id, 'clasificado_estatal')"
+                      >
+                        Clasificar
+                      </button>
+                      <button
+                        class="px-2 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700"
+                        @click="clasificarLider(res.equipo?.user_id, null)"
+                      >
+                        Anular
+                      </button>
+                    </td>
+
                   </tr>
                 </tbody>
               </table>
@@ -138,6 +153,22 @@ const activeTab = ref(
     ? Object.keys(props.agrupados)[0]
     : ''
 );
+const clasificarLider = async (userId, fase) => {
+  if (!userId) return;
+
+  try {
+    const res = await axios.post(route('usuarios.actualizarClasificacion', { user: userId }), {
+      fase_clasificado: fase
+    });
+
+    if (res.data.success) {
+      alert(`Clasificación ${fase ? 'asignada' : 'anulada'} exitosamente.`);
+    }
+  } catch (error) {
+    alert('Ocurrió un error al actualizar la clasificación.');
+    console.error(error);
+  }
+};
 
 console.log("Agrupación visual (modalidadesAgrupadas):", props.modalidadesAgrupadas);
 </script>

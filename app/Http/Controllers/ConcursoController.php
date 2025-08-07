@@ -23,7 +23,7 @@ use App\Models\Evaluacion;
 use App\Models\ResultadosFinales;
 use App\Models\PuntajesEvaluacion;
 use App\Models\PuntajesParciales;
-
+use Illuminate\Support\Facades\Log;
 class ConcursoController extends Controller
 {
     /**
@@ -652,62 +652,98 @@ class ConcursoController extends Controller
             ->where('rol', 'lider')
             ->update(['concurso_registrado_id' => null]);
 
-            // 4. Procesar podio y clasificaciones en una transacción
+            // 4. Procesar podio y clasificaciones
             DB::transaction(function () use ($concurso) {
                 $concursoId = $concurso->id;
                 $fase = strtolower($concurso->fase); // 'local', 'estatal', etc.
 
-                // Obtener resultados válidos (excluyendo descalificados)
-                $resultados = ResultadosFinales::with(['equipo.proyecto'])
-                    ->where('concurso_id', $concursoId)
-                    ->get()
-                    ->filter(function ($r) {
+                Log::info("Inicio proceso podio y clasificaciones para concurso: {$concursoId}, fase: {$fase}");
+
+                // 1. Obtener resultados con relaciones necesarias para clasificación
+                $resultados = ResultadosFinales::with([
+                    'equipo.proyecto.modalidad',
+                    'equipo.proyecto',
+                    'equipo.participantes',
+                ])
+                ->where('concurso_id', $concursoId)
+                ->get();
+
+                Log::info("Total resultados obtenidos: " . $resultados->count());
+
+                // 2. Agrupar por "categoría - modalidad"
+                $resultadosAgrupados = $resultados->groupBy(function ($item) {
+                    $categoria = $item->equipo->proyecto->categoria ?? 'sin_categoria';
+                    $modalidad = optional($item->equipo->proyecto->modalidad)->nombre ?? 'sin_modalidad';
+                    return strtolower("{$categoria} - {$modalidad}");
+                });
+
+                Log::info("Grupos encontrados (categoria-modalidad): " . $resultadosAgrupados->keys()->implode(', '));
+
+                // 3. Procesar cada grupo para insertar podio y actualizar líderes
+                foreach ($resultadosAgrupados as $grupo => $items) {
+                    Log::info("Procesando grupo: {$grupo}, total items: " . $items->count());
+
+                    // Filtrar descalificados y ordenar por promedio_final descendente
+                    $filtrados = $items->filter(function ($r) {
                         return $r->equipo
                             && $r->equipo->proyecto
-                            && strtolower($r->equipo->proyecto->estado ?? '') !== 'descalificado';
-                    })
-                    ->sortByDesc('promedio_final')
-                    ->values();
+                            && strtolower($r->equipo->proyecto->estado) !== 'descalificado';
+                    })->sortByDesc('promedio_final')->values();
 
-                $podio = $resultados->take(3);
+                    Log::info("Grupo {$grupo} - después de filtrar descalificados: " . $filtrados->count());
 
-                foreach ($podio as $index => $resultado) {
-                    $equipo = $resultado->equipo;
-                    if (!$equipo) {
-                        continue;
+                    // Tomar los primeros 3: podio
+                    $podio = $filtrados->take(3);
+
+                    foreach ($podio as $index => $resultado) {
+                        $equipo = $resultado->equipo;
+                        if (!$equipo) {
+                            Log::warning("Podio grupo {$grupo} posición {$index} no tiene equipo asociado.");
+                            continue;
+                        }
+
+                        $lider = User::where('equipo_id', $equipo->id)
+                            ->where('rol', 'lider')
+                            ->first();
+
+                        if (!$lider) {
+                            Log::warning("Equipo ID {$equipo->id} en grupo {$grupo} posición {$index} no tiene líder asignado.");
+                            continue;
+                        }
+
+                        // Log del líder y equipo procesados
+                        Log::info("Grupo {$grupo} - Podio posición " . ($index + 1) . ": equipo_id={$equipo->id}, lider_id={$lider->id}, proyecto='" . ($equipo->proyecto->nombre ?? 'Sin nombre') . "'");
+
+                        // Actualizar fase_clasificado del líder según fase
+                        $lider->fase_clasificado = $fase === 'local'
+                            ? 'clasificado_local'
+                            : 'clasificado_estatal';
+                        $lider->save();
+
+                        // Insertar o actualizar en clasificaciones
+                        DB::table('clasificaciones')->updateOrInsert(
+                            [
+                                'concurso_id' => $concursoId,
+                                'equipo_id' => $equipo->id,
+                                'user_id' => $lider->id,
+                                'fase' => $fase,
+                            ],
+                            [
+                                'posicion' => $index + 1,
+                                'observaciones' => null,
+                                'updated_at' => now(),
+                                'created_at' => now(),
+                            ]
+                        );
+
+                        Log::info("Clasificación guardada para equipo_id={$equipo->id}, usuario_id={$lider->id}, posición=" . ($index + 1));
                     }
-
-                    $lider = User::where('equipo_id', $equipo->id)
-                        ->where('rol', 'lider')
-                        ->first();
-
-                    if (!$lider) {
-                        continue;
-                    }
-
-                    // Actualizar fase_clasificado del líder
-                    $lider->fase_clasificado = $fase === 'local'
-                        ? 'clasificado_local'
-                        : 'clasificado_estatal';
-                    $lider->save();
-
-                    // Persistir clasificación (idempotente)
-                    DB::table('clasificaciones')->updateOrInsert(
-                        [
-                            'concurso_id' => $concurso->id,
-                            'equipo_id' => $equipo->id,
-                            'user_id' => $lider->id,
-                            'fase' => $fase,
-                        ],
-                        [
-                            'posicion' => $index + 1,
-                            'observaciones' => null,
-                            'updated_at' => now(),
-                            'created_at' => now(),
-                        ]
-                    );
                 }
+
+                Log::info("Fin del proceso de podio y clasificaciones para concurso {$concursoId}");
             });
+
+          
 
             return response()->json([
                 'success' => true,

@@ -68,6 +68,22 @@ class ConcursosFinales extends Controller
         return response()->json(['success' => true, 'estado' => $proyecto->estado]);
     }
 
+    public function actualizarClasificacion(Request $request, User $user)
+    {
+        $request->validate([
+            'fase_clasificado' => 'nullable|string'
+        ]);
+
+        $user->fase_clasificado = $request->fase_clasificado; // puede ser null o 'clasificado_estatal', etc.
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'fase_clasificado' => $user->fase_clasificado
+        ]);
+    }
+
+
     // Nueva función para obtener participantes por concurso
     public function participantesPorConcurso($concursoId)
     {

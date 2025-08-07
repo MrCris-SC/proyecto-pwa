@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ConcursosFinales;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -196,5 +197,10 @@ Route::get('/generar-podio-pdf', [ResultadosFinalesController::class, 'generarPD
 
 // Ruta para solicitar inscripción a un concurso
 Route::post('/concursos/{concurso}/inscribir', [ProyectosController::class, 'solicitarInscripcion'])->name('concursos.inscribir');
+
+// Nueva ruta para actualizar la clasificación de un usuario (admin)
+Route::post('/usuarios/{user}/clasificacion', [ConcursosFinales::class, 'actualizarClasificacion'])
+    ->name('usuarios.actualizarClasificacion');
+
 
 require __DIR__.'/auth.php';
