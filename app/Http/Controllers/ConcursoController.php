@@ -664,8 +664,9 @@ class ConcursoController extends Controller
                     'equipo.proyecto.modalidad',
                     'equipo.proyecto',
                     'equipo.participantes',
+                   
                 ])
-                ->where('concurso_id', $concursoId)
+                ->where('concurso_id', operator: $concursoId)
                 ->get();
 
                 Log::info("Total resultados obtenidos: " . $resultados->count());
@@ -735,6 +736,11 @@ class ConcursoController extends Controller
                                 'created_at' => now(),
                             ]
                         );
+                        
+                        // Marcar como clasificado en resultados_finales
+                        ResultadosFinales::where('concurso_id', $concursoId)
+                            ->where('equipo_id', $equipo->id)
+                            ->update(['clasificado' => 1]); 
 
                         Log::info("Clasificación guardada para equipo_id={$equipo->id}, usuario_id={$lider->id}, posición=" . ($index + 1));
                     }
@@ -756,7 +762,8 @@ class ConcursoController extends Controller
             $resultados = ResultadosFinales::with([
                 'equipo.proyecto.modalidad',
                 'equipo.proyecto',
-                'equipo.participantes'
+                'equipo.participantes',
+                'equipo.lider',
             ])->get();
 
             // Agrupar por combinación "Categoría - Modalidad"

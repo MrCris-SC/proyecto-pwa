@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <title inertia><?php echo e(config('app.name', 'Sistema de Gestión DGETI')); ?></title>
+        <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
 
         <!-- Metadatos de pdwa -->
         <link rel="manifest" href="/manifest.json">

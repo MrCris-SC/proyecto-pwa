@@ -199,8 +199,8 @@ Route::get('/generar-podio-pdf', [ResultadosFinalesController::class, 'generarPD
 Route::post('/concursos/{concurso}/inscribir', [ProyectosController::class, 'solicitarInscripcion'])->name('concursos.inscribir');
 
 // Nueva ruta para actualizar la clasificación de un usuario (admin)
-Route::post('/usuarios/{user}/clasificacion', [ConcursosFinales::class, 'actualizarClasificacion'])
-    ->name('usuarios.actualizarClasificacion');
+Route::post('/usuarios/toggleClasificacion', [ConcursosFinales::class, 'toggleClasificacion'])
+    ->name('usuarios.toggleClasificacion');
 
 
 require __DIR__.'/auth.php';

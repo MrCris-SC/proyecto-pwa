@@ -69,23 +69,21 @@
                       idx === 2 ? 'bg-orange-100 font-medium' : ''
                     ]"
                   >
+                  <!-- Muestra los datos para verlos -->
                     <td class="py-3 px-5 border-t text-center">{{ idx + 1 }}</td>
                     <td class="py-3 px-5 border-t truncate max-w-[250px]">{{ res.equipo?.proyecto?.nombre || 'Sin nombre' }}</td>
                     <td class="py-3 px-5 border-t text-center">{{ res.promedio_final }}</td>
                     <td class="py-3 px-5 border-t text-center">
                       <button
-                        class="px-2 py-1 text-xs rounded bg-green-600 text-white hover:bg-green-700 mr-1"
-                        @click="clasificarLider(res.equipo?.user_id, 'clasificado_estatal')"
+                        class="px-2 py-1 text-xs rounded"
+                        :class="res.clasificado ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-green-600 hover:bg-green-700 text-white'"
+                        @click="toggleClasificacion(res.id, res.equipo?.lider?.id, 'clasificado_estatal', res.clasificado)"
                       >
-                        Clasificar
-                      </button>
-                      <button
-                        class="px-2 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700"
-                        @click="clasificarLider(res.equipo?.user_id, null)"
-                      >
-                        Anular
+                        {{ res.clasificado ? 'Degradar' : 'Clasificar' }}
                       </button>
                     </td>
+
+
 
                   </tr>
                 </tbody>
@@ -120,6 +118,7 @@ import { ref } from 'vue'
 import MenuLateral from '@/ComponentsConcursos/MenuLateral.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { usePage } from '@inertiajs/vue3';
+import Swal from 'sweetalert2';
 
 
 const handleMenuSelected = (menu) => {
@@ -137,15 +136,16 @@ const handleMenuSelected = (menu) => {
   }
 };
 
+
 const props = defineProps({
   podio: Array,
   resultados: Array,
   clasificaciones: Array,
   agrupados: Object,
   modalidadesAgrupadas: Object,
- 
   
 });
+
 const userRole = usePage().props.value?.auth?.user?.rol || 'invitado';
 
 const activeTab = ref(
@@ -153,22 +153,62 @@ const activeTab = ref(
     ? Object.keys(props.agrupados)[0]
     : ''
 );
-const clasificarLider = async (userId, fase) => {
-  if (!userId) return;
+
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+async function toggleClasificacion(resultadoId, userId, fase, estadoActual) {
+  console.log('Datos a enviar:', { resultadoId, userId, fase, estadoActual });
+  if (!resultadoId || !userId) {
+    await Swal.fire({
+      icon: 'error',
+      title: 'Datos incompletos',
+      text: 'No se encontró información suficiente para continuar.'
+    });
+    return;
+  }
 
   try {
-    const res = await axios.post(route('usuarios.actualizarClasificacion', { user: userId }), {
-      fase_clasificado: fase
+    const response = await fetch(route('usuarios.toggleClasificacion'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfToken
+      },
+      body: JSON.stringify({
+        resultado_id: resultadoId,
+        user_id: userId,
+        fase_clasificado: estadoActual ? null : `clasificado_${fase}`, // ej: clasificado_local
+        clasificado: estadoActual ? false : true,
+      })
     });
 
-    if (res.data.success) {
-      alert(`Clasificación ${fase ? 'asignada' : 'anulada'} exitosamente.`);
+    if (!response.ok) throw new Error('Error en la transacción');
+
+    const data = await response.json();
+
+    if (data.success) {
+      await Swal.fire({
+        icon: 'success',
+        title: '¡Éxito!',
+        text: `Usuario ${estadoActual ? 'degradado' : 'clasificado'} exitosamente.`
+      });
+      location.reload();
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: data.message || 'Ocurrió un error al actualizar la clasificación.'
+      });
     }
   } catch (error) {
-    alert('Ocurrió un error al actualizar la clasificación.');
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Ocurrió un error al ejecutar la transacción.'
+    });
     console.error(error);
   }
-};
+}
 
 console.log("Agrupación visual (modalidadesAgrupadas):", props.modalidadesAgrupadas);
 </script>
