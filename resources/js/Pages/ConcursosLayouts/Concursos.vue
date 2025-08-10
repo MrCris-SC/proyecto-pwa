@@ -286,12 +286,14 @@ const handleFinalizarConcurso = async (concurso) => {
 
 // Redirige a la vista del podio del concurso
 const handlePodio = (concurso) => {
+  console.log('Concurso clickeado para podio:', concurso.id, concurso.nombre);
   if (concurso && concurso.id) {
     router.get(route('concursos.podio', { id: concurso.id }));
   } else {
     console.error('Concurso inválido para podio:', concurso);
   }
 };
+
 
 // Abre el formulario para crear una evaluación manual
 const handleAbrirCrearEvaluacionManual = async () => {
@@ -474,7 +476,7 @@ const puedeInscribirse = (concurso) => {
               @eliminar="handleEliminar"
               @cerrar="handleCerrar"
               @configuracion="handleConfiguracion"
-              @podio="handlePodio" 
+              @podio="handlePodio(concurso)" 
               class="transition-transform transform hover:scale-105 hover:shadow-lg"
             />
           </div>
