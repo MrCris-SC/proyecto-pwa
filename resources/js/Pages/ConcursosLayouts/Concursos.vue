@@ -144,7 +144,8 @@ const handleConcursoClick = async (concurso) => {
     return;
   }
 
-  const estado = (concurso.estado || '').toLowerCase().trim();
+  const estado = (concurso?.estado ?? '').toString().toLowerCase().trim();
+
   const user = props.auth.user;
 
   // Si el concurso ya finalizó, bloquear todo inmediatamente

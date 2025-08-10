@@ -9,18 +9,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import { defineProps, ref } from 'vue';
 
 const props = defineProps({
-    rolesParaRegistrar: {
-        type: Array,
-        default: () => []
-    },
-    user: {
-        type: Object,
-        default: null
-    },
-    isEditing: {
-        type: Boolean,
-        default: false
-    }
+    rolesParaRegistrar: Array // Definir que es un array
 });
 
 
