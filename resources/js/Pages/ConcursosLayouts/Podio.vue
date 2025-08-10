@@ -25,27 +25,38 @@
           >
             <h2 class="text-2xl font-semibold mb-4 text-gray-800">{{ modalidad }}</h2>
 
-            <!-- Podio Estilo Vertical -->
-            <div class="flex flex-row justify-center items-start space-x-6">
-              <div
-                v-for="(puesto, i) in modalidadData.podio"
-                :key="i"
-                :class="[
-                  'w-64 p-6 rounded-xl shadow text-center',
-                  i === 0
-                    ? 'bg-yellow-100 border-2 border-yellow-400'
-                    : 'bg-gray-100 border border-gray-300',
-                ]"
-              >
-                <h3 class="text-xl font-bold" :class="i === 0 ? 'text-yellow-700' : 'text-gray-700'">
-                  {{ i === 0 ? '🥇 1er Lugar' : i === 1 ? '🥈 2do Lugar' : '🥉 3er Lugar' }}
-                </h3>
-                <p class="text-lg font-bold text-indigo-900 mt-2">
-                  {{ puesto.equipo?.proyecto?.nombre || 'Sin nombre' }}
-                </p>
-                <p class="text-sm text-gray-700">Promedio: {{ puesto.promedio_final }}</p>
+          <!-- Podio Circular -->
+          <div class="flex justify-center items-end space-x-10 mt-12">
+            <!-- 2do Lugar -->
+            <div class="flex flex-col items-center">
+              <div class="w-28 h-28 bg-gradient-to-br from-gray-200 to-gray-400 rounded-full flex flex-col justify-center items-center shadow-lg border-4 border-gray-500">
+                <span class="text-3xl">🥈</span>
               </div>
+              <p class="mt-2 text-lg font-bold text-gray-700">2do Lugar</p>
+              <p class="text-sm text-gray-500">{{ modalidadData.podio[1]?.equipo?.proyecto?.nombre || 'Sin nombre' }}</p>
+              <p class="text-xs text-gray-400">Prom: {{ modalidadData.podio[1]?.promedio_final }}</p>
             </div>
+
+            <!-- 1er Lugar -->
+            <div class="flex flex-col items-center -mt-12">
+              <div class="w-36 h-36 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-full flex flex-col justify-center items-center shadow-2xl border-4 border-yellow-600">
+                <span class="text-4xl">🥇</span>
+              </div>
+              <p class="mt-2 text-lg font-bold text-yellow-800">1er Lugar</p>
+              <p class="text-sm text-yellow-700">{{ modalidadData.podio[0]?.equipo?.proyecto?.nombre || 'Sin nombre' }}</p>
+              <p class="text-xs text-yellow-600">Prom: {{ modalidadData.podio[0]?.promedio_final }}</p>
+            </div>
+
+            <!-- 3er Lugar -->
+            <div class="flex flex-col items-center">
+              <div class="w-28 h-28 bg-gradient-to-br from-orange-300 to-orange-500 rounded-full flex flex-col justify-center items-center shadow-lg border-4 border-orange-600">
+                <span class="text-3xl">🥉</span>
+              </div>
+              <p class="mt-2 text-lg font-bold text-orange-800">3er Lugar</p>
+              <p class="text-sm text-orange-700">{{ modalidadData.podio[2]?.equipo?.proyecto?.nombre || 'Sin nombre' }}</p>
+              <p class="text-xs text-orange-600">Prom: {{ modalidadData.podio[2]?.promedio_final }}</p>
+            </div>
+          </div>
 
 
             <!-- Tabla de Resultados Vertical y 100% Responsive -->
