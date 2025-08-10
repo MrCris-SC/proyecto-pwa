@@ -757,14 +757,18 @@ class ConcursoController extends Controller
             ]);
         }
 
-        public function obtenerPodio()
+        public function obtenerPodio($id)
         {
             $resultados = ResultadosFinales::with([
                 'equipo.proyecto.modalidad',
                 'equipo.proyecto',
                 'equipo.participantes',
                 'equipo.lider',
-            ])->get();
+            ])
+            ->whereHas('equipo.proyecto', function ($query) use ($id) {
+                $query->where('concurso_id', $id);
+            })
+            ->get();
 
             // Agrupar por combinación "Categoría - Modalidad"
             $resultadosAgrupados = $resultados->groupBy(function ($item) {
