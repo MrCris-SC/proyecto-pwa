@@ -14,6 +14,7 @@ use App\Http\Controllers\EquipoController;
 use App\Http\Controllers\EvaluadorController;
 use App\Http\Controllers\EvaluacionesManualesController;
 use App\Http\Controllers\EvaluacionesController;
+use App\Http\Controllers\UsuarioGestionController;
 use App\Models\Concursos;
 use App\Http\Controllers\ResultadosFinalesController;
 
@@ -121,6 +122,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Nueva ruta para la vista de evaluadores asignados (para líderes)
     Route::get('/evaluadores-asignados', [EvaluacionesManualesController::class, 'vistaEvaluadoresAsignados'])->name('evaluadores.asignados');
+    
+    // ruta para la gestion de usuarios CRUD (admin)
+    // Gestión de usuarios
+    Route::get('/usuarios', [UsuarioGestionController::class, 'index'])->name('gestion.usuarios.index');
+    Route::post('/usuarios', [UsuarioGestionController::class, 'store'])->name('gestion.usuarios.store');
+    Route::put('/usuarios/{user}', [UsuarioGestionController::class, 'update'])->name('gestion.usuarios.update');
+    Route::delete('/usuarios/{user}', [UsuarioGestionController::class, 'destroy'])->name('gestion.usuarios.destroy');
+    
+    // Eliminación específica de asesores
+    Route::delete('/asesores/{asesor}', [UsuarioGestionController::class, 'destroyAsesor'])->name('asesores.destroy');
+ 
 });
 
 

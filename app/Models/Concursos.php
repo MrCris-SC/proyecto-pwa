@@ -59,6 +59,58 @@ class Concursos extends Model
         );
     }
 
+// En App\Models\Concursos.php
+
+public function equiposConLideres()
+{
+    return $this->hasMany(Equipo::class, 'concurso_id')->with('lider');
+}
+
+public function getLideresAttribute()
+{
+    if (!array_key_exists('equiposConLideres', $this->relations)) {
+        $this->load('equiposConLideres');
+    }
+
+    return $this->equiposConLideres->pluck('lider')->filter();
+}
+
+public function proyectosConAsesores()
+{
+    return $this->hasMany(Proyectos::class, 'concurso_id')->with('asesores');
+}
+
+public function getAsesoresAttribute()
+{
+    if (!array_key_exists('proyectosConAsesores', $this->relations)) {
+        $this->load('proyectosConAsesores');
+    }
+
+    return $this->proyectosConAsesores->flatMap->asesores;
+}
+
+public function todosLosUsuarios()
+{
+    // Obtener usuarios evaluadores directamente asociados al concurso
+    $evaluadores = $this->evaluadores;
+    
+    // Obtener líderes de equipos (asumiendo que Equipo tiene relación con User)
+    $lideres = $this->equiposConLideres->map->lider;
+    
+    // Obtener asesores a través de proyectos
+    $asesores = $this->proyectosConAsesores->map->asesor;
+    
+    // Obtener administradores (todos los users con rol admin)
+    $admins = User::where('rol', 'admin')->get();
+    
+    // Combinar todas las colecciones
+    return $evaluadores
+        ->merge($lideres)
+        ->merge($asesores)
+        ->merge($admins)
+        ->unique('id');
+}
+
     public function equipos()
     {
         return $this->hasMany(Equipo::class, 'concurso_id');
