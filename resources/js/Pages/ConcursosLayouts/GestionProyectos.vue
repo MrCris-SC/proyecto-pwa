@@ -192,7 +192,7 @@ const handleDownloadPDF = () => {
               download
               class="mt-3 bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
             >
-              Descargar FOREGz
+              Descargar FOREG
             </a>
           </div>
 

@@ -201,6 +201,7 @@ class ProyectosController extends Controller
         $faseClasificada = strtolower($lider->fase_clasificado ?? '');
 
         return match ($faseDestino) {
+            'local' => true, // No se requiere clasificación previa
             'estatal' => str_contains($faseClasificada, 'clasificado_local'),
             'nacional' => str_contains($faseClasificada, 'clasificado_estatal'),
             default => false,

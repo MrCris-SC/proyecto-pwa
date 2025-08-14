@@ -137,31 +137,40 @@ const confirmarCerrarConcurso = () => {
 // Variables y funciones para el modal de inscripción de evaluador
 const mostrarModalInscripcion = ref(false);
 
-// Maneja el clic en una tarjeta de concurso según el rol del usuario
+
+
 const handleConcursoClick = async (concurso) => {
   if (!concurso || !concurso.id) {
     console.error('Invalid concurso object:', concurso);
     return;
   }
 
-  const estado = (concurso?.estado ?? '').toString().toLowerCase().trim();
-
+  const status = (concurso?.status ?? '').toString().toLowerCase().trim();
   const user = props.auth.user;
 
-  // Si el concurso ya finalizó, bloquear todo inmediatamente
-  if (estado === 'finalizado') {
-    alert('El concurso ha finalizado');
+  // Si el concurso ya finalizó
+  if (status === 'finalizado') {
+    await Swal.fire({
+      icon: 'warning',
+      title: 'Concurso finalizado',
+      text: 'El concurso ha finalizado y no se pueden hacer cambios.',
+      confirmButtonText: 'Entendido'
+    });
     return;
   }
 
-  // Si está cerrado y el líder no está registrado, no puede inscribirse
-  if (userRole === 'lider' && estado === 'cerrado' && !user.concurso_registrado_id) {
-    alert('No puedes inscribirte en un concurso cerrado.');
+  // Si está cerrado y el líder no está registrado
+  if (userRole === 'lider' && status === 'cerrado' && !user.concurso_registrado_id) {
+    await Swal.fire({
+      icon: 'error',
+      title: 'Inscripción no permitida',
+      text: 'No puedes inscribirte en un concurso cerrado.',
+      confirmButtonText: 'Ok'
+    });
     return;
   }
 
   if (userRole === 'admin') {
-    // Mostrar modal admin y cargar equipos
     concursoSeleccionadoAdmin.value = concurso;
     await cargarEquiposConcurso(concurso.id);
     mostrarModalVistaConcursosAdmin.value = true;
@@ -183,7 +192,6 @@ const handleConcursoClick = async (concurso) => {
       router.get(route('gestion.proyectos'));
       return;
     }
-    // No entrará aquí si el concurso está finalizado o cerrado inválidamente por los if anteriores
     selectedMenu.value = 'Registro';
     showForm.value = true;
     concursoSeleccionado.value = concurso.id;
@@ -199,6 +207,7 @@ const handleConcursoClick = async (concurso) => {
     concursoSeleccionado.value = concurso.id;
   }
 };
+
 
 
 // Inscribe al evaluador en el concurso seleccionado

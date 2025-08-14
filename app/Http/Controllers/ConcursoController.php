@@ -795,6 +795,9 @@ class ConcursoController extends Controller
 
             return Inertia::render('ConcursosLayouts/Podio', [
                 'modalidadesAgrupadas' => $modalidadesAgrupadas,
+                'auth' => [
+                    'user' => auth()->user()
+                ]
             ]);
         }
 

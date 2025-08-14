@@ -84,7 +84,10 @@
                     <td class="py-3 px-5 border-t text-center">{{ idx + 1 }}</td>
                     <td class="py-3 px-5 border-t truncate max-w-[250px]">{{ res.equipo?.proyecto?.nombre || 'Sin nombre' }}</td>
                     <td class="py-3 px-5 border-t text-center">{{ res.promedio_final }}</td>
-                    <td class="py-3 px-5 border-t text-center">
+                   <td
+                      v-if="props.auth?.user?.rol === 'admin'"
+                      class="py-3 px-5 border-t text-center"
+                    >
                       <button
                         class="px-2 py-1 text-xs rounded"
                         :class="res.clasificado ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-green-600 hover:bg-green-700 text-white'"
@@ -93,6 +96,7 @@
                         {{ res.clasificado ? 'Degradar' : 'Clasificar' }}
                       </button>
                     </td>
+
 
 
 
@@ -154,7 +158,7 @@ const props = defineProps({
   clasificaciones: Array,
   agrupados: Object,
   modalidadesAgrupadas: Object,
-  
+  auth: Object
 });
 
 const userRole = usePage().props.value?.auth?.user?.rol || 'invitado';
