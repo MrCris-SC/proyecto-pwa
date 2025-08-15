@@ -171,6 +171,15 @@
           </svg>
           Descargar reporte PDF
         </button>
+        <button
+          class="px-4 py-2 bg-blue-700 text-white rounded-md font-semibold hover:bg-blue-900 transition"
+          @click="descargarPDFEvaluacionesTodos"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Descargar todas las evaluaciones
+        </button>
       </div>
     </div>
 
@@ -390,6 +399,11 @@ function descargarPDFConFiltros() {
 function descargarPDF() {
   if (!props.concurso || !props.concurso.id) return;
   window.open(route('concursosFinales.descargarReporteEquipos', { concurso: props.concurso.id }), '_blank');
+}
+
+function descargarPDFEvaluacionesTodos() {
+  if (!props.concurso || !props.concurso.id) return;
+  window.open(route('concursos.reporteEvaluacionesTodos', { concurso: props.concurso.id }), '_blank');
 }
 </script>
 

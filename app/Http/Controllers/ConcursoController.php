@@ -648,10 +648,7 @@ class ConcursoController extends Controller
             $concurso->status = 'finalizado';
             $concurso->save();
 
-            User::where('concurso_registrado_id', $concurso->id)
-            ->where('rol', 'lider')
-            ->update(['concurso_registrado_id' => null]);
-
+            
             // 4. Procesar podio y clasificaciones
             DB::transaction(function () use ($concurso) {
                 $concursoId = $concurso->id;
@@ -664,10 +661,9 @@ class ConcursoController extends Controller
                     'equipo.proyecto.modalidad',
                     'equipo.proyecto',
                     'equipo.participantes',
-                   
                 ])
-                ->where('concurso_id', operator: $concursoId)
-                ->get();
+                    ->where('concurso_id', $concursoId)
+                    ->get();
 
                 Log::info("Total resultados obtenidos: " . $resultados->count());
 
@@ -712,7 +708,6 @@ class ConcursoController extends Controller
                             continue;
                         }
 
-                        // Log del líder y equipo procesados
                         Log::info("Grupo {$grupo} - Podio posición " . ($index + 1) . ": equipo_id={$equipo->id}, lider_id={$lider->id}, proyecto='" . ($equipo->proyecto->nombre ?? 'Sin nombre') . "'");
 
                         // Actualizar fase_clasificado del líder según fase
@@ -721,7 +716,6 @@ class ConcursoController extends Controller
                             : 'clasificado_estatal';
                         $lider->save();
 
-                        // Insertar o actualizar en clasificaciones
                         DB::table('clasificaciones')->updateOrInsert(
                             [
                                 'concurso_id' => $concursoId,
@@ -736,11 +730,10 @@ class ConcursoController extends Controller
                                 'created_at' => now(),
                             ]
                         );
-                        
-                        // Marcar como clasificado en resultados_finales
+
                         ResultadosFinales::where('concurso_id', $concursoId)
                             ->where('equipo_id', $equipo->id)
-                            ->update(['clasificado' => 1]); 
+                            ->update(['clasificado' => 1]);
 
                         Log::info("Clasificación guardada para equipo_id={$equipo->id}, usuario_id={$lider->id}, posición=" . ($index + 1));
                     }
@@ -749,13 +742,85 @@ class ConcursoController extends Controller
                 Log::info("Fin del proceso de podio y clasificaciones para concurso {$concursoId}");
             });
 
-          
+            // 📩 Nuevo paso: Enviar correos con PDF a los usuarios relacionados
+            $this->enviarReportesConcurso($concursoId);
+            
+            User::where('concurso_registrado_id', $concurso->id)
+                ->where('rol', 'lider')
+                ->update(['concurso_registrado_id' => null]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'El concurso ha sido finalizado exitosamente, resultados calculados y clasificaciones actualizadas.',
+                'message' => 'El concurso ha sido finalizado exitosamente, resultados calculados, clasificaciones actualizadas y reportes enviados.',
             ]);
         }
+
+        protected function enviarReportesConcurso($concursoId)
+        {
+            $concurso = Concursos::find($concursoId);
+            if (!$concurso) {
+                \Log::warning("Concurso no encontrado para enviar reportes: $concursoId");
+                return;
+            }
+
+            $usuarios = User::where('concurso_registrado_id', $concursoId)
+                ->where('rol', 'lider')
+                ->get();
+
+            foreach ($usuarios as $usuario) {
+                // Verifica que la relación equipo exista y no sea null
+                $equipo = $usuario->equipo ?? null;
+                if (!$equipo || !isset($equipo->id)) {
+                    \Log::warning("Usuario {$usuario->id} no tiene equipo asignado, se omite el envío de correo.");
+                    continue;
+                }
+
+                $evaluaciones = Evaluaciones::with([
+                    'evaluador',
+                    'puntajes.criterio'
+                ])
+                    ->where('equipo_id', $equipo->id)
+                    ->get();
+
+                // Si no hay evaluaciones, puedes decidir omitir el envío o enviar igual
+                if ($evaluaciones->isEmpty()) {
+                    \Log::warning("Equipo {$equipo->id} no tiene evaluaciones, se omite el envío de correo.");
+                    continue;
+                }
+
+                foreach ($evaluaciones as $evaluacion) {
+                    if ($evaluacion->evaluador) {
+                        $perfil = \App\Models\Evaluadores::where('userID', $evaluacion->evaluador->id)->value('perfil');
+                        $evaluacion->perfil = is_string($perfil) ? json_decode($perfil, true) : $perfil;
+                    } else {
+                        $evaluacion->perfil = [];
+                    }
+                }
+
+                // Validar que concurso, equipo y evaluaciones no sean null/vacíos antes de enviar
+                if (!$concurso || !$equipo || $evaluaciones->isEmpty()) {
+                    \Log::warning("Datos incompletos para usuario {$usuario->id}, no se envía correo.");
+                    continue;
+                }
+
+                $pdfContent = \PDF::loadView('pdf.resultados', [
+                    'concurso' => $concurso,
+                    'equipo' => $equipo,
+                    'evaluaciones' => $evaluaciones,
+                ])->output();
+
+                // Pasa todas las variables requeridas al Mailable
+                \Mail::to($usuario->email)
+                    ->send(new \App\Mail\ReporteConcursoMail(
+                        $pdfContent,
+                        $concurso->nombre,
+                        $concurso,
+                        $equipo,
+                        $evaluaciones
+                    ));
+            }
+        }
+
 
         public function obtenerPodio($id)
         {
@@ -919,4 +984,35 @@ class ConcursoController extends Controller
         return $pdf->stream('reporte_concurso.pdf');
     }
 
+    public function descargarReporteEvaluacionesTodos($concursoId)
+    {
+        $concurso = Concursos::findOrFail($concursoId);
+
+        // Trae todos los equipos con su proyecto y participantes
+        $equipos = Equipo::with(['proyecto', 'participantes'])->where('concurso_id', $concursoId)->get();
+
+        // Para cada equipo, trae sus evaluaciones con evaluador y puntajes
+        foreach ($equipos as $equipo) {
+            $evaluaciones = Evaluaciones::with(['evaluador', 'puntajes.criterio'])
+                ->where('equipo_id', $equipo->id)
+                ->get();
+
+            foreach ($evaluaciones as $evaluacion) {
+                if ($evaluacion->evaluador) {
+                    $perfil = \App\Models\Evaluadores::where('userID', $evaluacion->evaluador->id)->value('perfil');
+                    $evaluacion->perfil = is_string($perfil) ? json_decode($perfil, true) : $perfil;
+                } else {
+                    $evaluacion->perfil = [];
+                }
+            }
+            $equipo->evaluaciones = $evaluaciones;
+        }
+
+        $pdf = Pdf::loadView('pdf.reporte_evaluaciones_todos', [
+            'concurso' => $concurso,
+            'equipos' => $equipos,
+        ]);
+
+        return $pdf->download('reporte_evaluaciones_concurso_' . $concurso->id . '.pdf');
+    }
 }

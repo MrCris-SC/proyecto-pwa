@@ -268,7 +268,7 @@ const handleConfiguracion = async (concurso) => {
 };
 
 // Finaliza un concurso después de confirmación
-const handleFinalizarConcurso = async (concurso) => {
+ const handleFinalizarConcurso = async (concurso) => {
   if (!concurso || !concurso.id) {
     alert('El concurso no es válido.');
     return;
@@ -278,7 +278,14 @@ const handleFinalizarConcurso = async (concurso) => {
   if (!confirmacion) return;
 
   try {
-    const response = await axios.post(route('concursos.finalizar', concurso.id));
+    // Si usas Laravel Sanctum y sesión, primero asegúrate del token CSRF
+    await axios.get('/sanctum/csrf-cookie');
+
+    const response = await axios.post(
+      route('concursos.finalizar', concurso.id),
+      {},
+      { withCredentials: true } // Esto envía cookies y sesión
+    );
 
     if (response.data.success) {
       alert('El concurso ha sido finalizado exitosamente.');
@@ -292,6 +299,7 @@ const handleFinalizarConcurso = async (concurso) => {
     alert('Ocurrió un error inesperado. Intenta nuevamente.');
   }
 };
+
 
 // Redirige a la vista del podio del concurso
 const handlePodio = (concurso) => {

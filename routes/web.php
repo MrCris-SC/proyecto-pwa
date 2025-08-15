@@ -202,5 +202,9 @@ Route::post('/concursos/{concurso}/inscribir', [ProyectosController::class, 'sol
 Route::post('/usuarios/toggleClasificacion', [ConcursosFinales::class, 'toggleClasificacion'])
     ->name('usuarios.toggleClasificacion');
 
+// Ruta para descargar el reporte de evaluaciones de todos los proyectos de un concurso (admin)
+Route::get('/concursos/{concurso}/reporte-evaluaciones-todos', [\App\Http\Controllers\ConcursoController::class, 'descargarReporteEvaluacionesTodos'])
+    ->name('concursos.reporteEvaluacionesTodos');
+
 
 require __DIR__.'/auth.php';
