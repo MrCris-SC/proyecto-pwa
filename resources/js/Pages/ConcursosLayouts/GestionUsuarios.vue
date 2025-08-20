@@ -13,7 +13,7 @@
         <!-- Encabezado y botón -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <h2 class="text-2xl font-bold text-[#611232]">
-            Gestión de Usuarios y Asesores
+            Gestión de Usuarios
           </h2>
           <button 
             @click="navigateToNewUser"

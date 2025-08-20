@@ -575,8 +575,8 @@ onBeforeUnmount(() => {
                         </svg>
                         <h3 class="text-2xl font-bold">Nuestra Dirección</h3>
                     </div>
-                    <p class="text-lg">Av. Educación Tecnológica 123</p>
-                    <p class="text-lg">Ciudad Innovación, 54321</p>
+                    <p class="text-lg">prolongación de la calle 53 s/n</p>
+                    <p class="text-lg">Tekax de Álvaro Obregón, México</p>
                 </div>
 
                 <!-- Teléfonos -->
@@ -588,8 +588,8 @@ onBeforeUnmount(() => {
                         </svg>
                         <h3 class="text-2xl font-bold">Contáctanos</h3>
                     </div>
-                    <p class="text-lg">+52-800-INNOVAR</p>
-                    <p class="text-lg">+52-800-EDUCACION</p>
+                    <p class="text-lg">isc.jsantamaria@gmail.com</p>
+                    <p class="text-lg">9971118771</p>
                 </div>
             </div>
         </div>
