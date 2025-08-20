@@ -107,20 +107,18 @@
         >
           Finalizar Concurso
         </button>
-        <!-- Nuevo menú para cambiar estado -->
-        <div class="w-full sm:w-auto sm:mr-2">
-          <select v-model="estadoSeleccionado" class="border rounded px-2 py-1 w-full sm:w-auto">
-            <option value="" disabled>Seleccionar estado</option>
-            <option value="abierto">Abrir Concurso</option>
-            <option value="cerrado">Cerrar Concurso</option>
-          </select>
-        </div>
+        <!-- Botón reactivo para cambiar estado -->
         <button
-          @click="emitirCambioEstado"
-          class="bg-yellow-500 text-white px-4 py-2 rounded shadow hover:bg-yellow-700 w-full sm:w-auto"
-          :disabled="!estadoSeleccionado"
+          v-if="concurso"
+          @click="abrirModalCambioEstado"
+          :class="[
+            'px-4 py-2 rounded shadow w-full sm:w-auto',
+            concurso.status === 'abierto'
+              ? 'bg-yellow-600 text-white hover:bg-yellow-800'
+              : 'bg-blue-700 text-white hover:bg-blue-900'
+          ]"
         >
-          Cambiar Estado
+          {{ concurso.status === 'abierto' ? 'Cerrar Concurso' : 'Abrir Concurso' }}
         </button>
         <p v-if="resumenEvaluaciones.pendientes > 0" class="text-red-500 text-sm w-full sm:w-auto">
           No se puede finalizar el concurso mientras haya evaluaciones pendientes.
@@ -131,6 +129,28 @@
         >
           Cerrar
         </button>
+      </div>
+
+      <!-- Modal de confirmación para cambiar estado -->
+      <div v-if="mostrarModalConfirmacion" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+        <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+          <h3 class="text-lg font-bold mb-4 text-[#611232]">Confirmar acción</h3>
+          <p class="mb-6">
+            ¿Está seguro que desea 
+            <span v-if="concurso.status === 'abierto'">cerrar</span>
+            <span v-else>abrir</span>
+            el concurso <strong>{{ concurso.nombre }}</strong>?
+          </p>
+          <div class="flex justify-end gap-2">
+            <button class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400" @click="mostrarModalConfirmacion = false">Cancelar</button>
+            <button
+              class="px-4 py-2 bg-[#611232] text-white rounded hover:bg-[#4a0d24]"
+              @click="confirmarCambioEstado"
+            >
+              Sí, {{ concurso.status === 'abierto' ? 'cerrar' : 'abrir' }}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -143,6 +163,7 @@ const estadoSeleccionado = ref('');
 const busqueda = ref('');
 const paginaActual = ref(1);
 const registrosPorPagina = 10;
+const mostrarModalConfirmacion = ref(false);
 
 // Obtener props y desestructurar concurso
 const props = defineProps({
@@ -194,10 +215,14 @@ watch(busqueda, () => {
 // Definir emits y obtener la función emit
 const emit = defineEmits(['cambiar-estado-concurso']);
 
-const emitirCambioEstado = () => {
-  if (estadoSeleccionado.value) {
-    emit('cambiar-estado-concurso', { concurso, nuevoEstado: estadoSeleccionado.value });
-    estadoSeleccionado.value = '';
-  }
-};
+function abrirModalCambioEstado() {
+  mostrarModalConfirmacion.value = true;
+}
+
+function confirmarCambioEstado() {
+  mostrarModalConfirmacion.value = false;
+  // Determina el nuevo estado a enviar
+  const nuevoEstado = concurso.status === 'abierto' ? 'cerrado' : 'abierto';
+  emit('cambiar-estado-concurso', { concurso, nuevoEstado });
+}
 </script>
