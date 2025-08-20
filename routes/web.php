@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ConcursosFinales;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -15,6 +16,8 @@ use App\Http\Controllers\EvaluacionesManualesController;
 use App\Http\Controllers\EvaluacionesController;
 use App\Http\Controllers\UsuarioGestionController;
 use App\Models\Concursos;
+use App\Http\Controllers\ResultadosFinalesController;
+
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -188,5 +191,20 @@ Route::get('/concursos-finales/{concurso}/participantes', [\App\Http\Controllers
 
 // Ruta para descargar el reporte de equipos (admin)
 Route::get('/concursos-finales/{concurso}/reporte-equipos', [\App\Http\Controllers\ConcursosFinales::class, 'descargarReporteEquipos'])->name('concursosFinales.descargarReporteEquipos');
+
+// Ruta para generar el PDF de resultados finales
+Route::get('/generar-podio-pdf', [ResultadosFinalesController::class, 'generarPDF']) ->name('resultados.pdf');
+
+// Ruta para solicitar inscripción a un concurso
+Route::post('/concursos/{concurso}/inscribir', [ProyectosController::class, 'solicitarInscripcion'])->name('concursos.inscribir');
+
+// Nueva ruta para actualizar la clasificación de un usuario (admin)
+Route::post('/usuarios/toggleClasificacion', [ConcursosFinales::class, 'toggleClasificacion'])
+    ->name('usuarios.toggleClasificacion');
+
+// Ruta para descargar el reporte de evaluaciones de todos los proyectos de un concurso (admin)
+Route::get('/concursos/{concurso}/reporte-evaluaciones-todos', [\App\Http\Controllers\ConcursoController::class, 'descargarReporteEvaluacionesTodos'])
+    ->name('concursos.reporteEvaluacionesTodos');
+
 
 require __DIR__.'/auth.php';

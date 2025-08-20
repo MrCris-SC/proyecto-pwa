@@ -59,6 +59,7 @@ class Equipo extends Model
 
     public function lider()
     {
-        return $this->belongsTo(User::class, 'lider_id');
+        return $this->hasOne(User::class)->where('rol', 'lider');
     }
+
 }

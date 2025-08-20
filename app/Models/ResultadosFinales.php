@@ -10,6 +10,10 @@ class ResultadosFinales extends Model
 
     protected $fillable = [
         'equipo_id',
+        'categoria',
+        'modalidad_id',
+        'fase',
+        'promedio_final',
         'concurso_id',
         'promedio_final',
     ];

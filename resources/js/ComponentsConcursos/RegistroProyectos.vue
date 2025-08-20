@@ -1,7 +1,7 @@
 <script>
 import axios from 'axios';
 import { router } from '@inertiajs/vue3';
-
+import Swal from 'sweetalert2'; 
 export default {
   props: {
     concursoId: {
@@ -249,26 +249,49 @@ export default {
 
     // Método para enviar el formulario completo
     async submitFormularioCompleto() {
-      if (!this.validarFormularioCompleto()) {
-        return;
-      }
+  if (!this.validarFormularioCompleto()) {
+    return;
+  }
 
-      try {
-        const respuesta = await axios.post('/api/proyectos', {
-          ...this.form,
-          equipo: this.equipo,
-          perfil_jurado: this.perfilJurado, // Enviar perfiles de jurado
-        });
-        this.proyecto_id = respuesta.data.id;
-        this.mensajeExito = 'Proyecto y equipo registrados correctamente';
-        this.mensajeError = '';
-        // Redirige agregando el mensaje como parámetro en la URL
-        router.visit(`${route('concursos.index')}?success=${encodeURIComponent(this.mensajeExito)}`);
-      } catch (error) {
-        this.manejarError('Error al registrar el proyecto. Por favor, inténtalo de nuevo.');
-        console.error(error);
-      }
-    },
+  try {
+    const respuesta = await axios.post('/api/proyectos', {
+      ...this.form,
+      equipo: this.equipo,
+      perfil_jurado: this.perfilJurado,
+    });
+
+    this.proyecto_id = respuesta.data.id;
+    this.mensajeExito = 'Proyecto y equipo registrados correctamente';
+    this.mensajeError = '';
+
+    await Swal.fire({
+      title: '¡Éxito!',
+      text: this.mensajeExito,
+      icon: 'success',
+      confirmButtonText: 'Continuar'
+    });
+
+    router.visit(`${route('concursos.index')}?success=${encodeURIComponent(this.mensajeExito)}`);
+  } catch (error) {
+    // Si el backend devolvió mensaje específico de elegibilidad u otro
+    const message =
+      error.response?.data?.message ||
+      (error.response?.data?.errors
+        ? Object.values(error.response.data.errors).flat().join('\n')
+        : 'Error al registrar el proyecto. Por favor, inténtalo de nuevo.');
+
+      await Swal.fire({
+        title: 'Error',
+        text: message,
+        icon: 'error',
+        confirmButtonText: 'Ok'
+      });
+
+      this.manejarError(message);
+      console.error(error);
+
+  }
+},
 
     // Método para obtener datos iniciales
     async fetchData() {

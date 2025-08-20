@@ -5,7 +5,8 @@
             class="absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-semibold flex items-center space-x-1"
             :class="{
                 'bg-green-100 text-green-800': concurso.status === 'abierto',
-                'bg-red-100 text-red-800': concurso.status === 'cerrado'
+                'bg-red-100 text-red-800': concurso.status === 'cerrado',
+                'bg-gray-200 text-gray-700': concurso.status === 'finalizado'
             }"
         >
             <svg 
@@ -19,7 +20,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
             <svg 
-                v-else 
+                v-else-if="concurso.status === 'cerrado'" 
                 xmlns="http://www.w3.org/2000/svg" 
                 class="h-4 w-4 text-red-600" 
                 fill="none" 
@@ -28,7 +29,27 @@
             >
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
-            <span>{{ concurso.status === 'abierto' ? 'Abierto' : 'Cerrado' }}</span>
+            <svg
+                v-else-if="concurso.status === 'finalizado'"
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4 text-gray-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+            >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>
+                {{
+                    concurso.status === 'abierto'
+                        ? 'Abierto'
+                        : concurso.status === 'cerrado'
+                        ? 'Cerrado'
+                        : concurso.status === 'finalizado'
+                        ? 'Finalizado'
+                        : concurso.status
+                }}
+            </span>
         </div>
         
         <!-- Indicador de inscripción -->

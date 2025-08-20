@@ -15,6 +15,7 @@ import ModalEvaluaciones from '@/Components/ModalEvaluaciones.vue';
 import CrearEvaluacionManual from '@/ComponentsConcursos/CrearEvaluacionManual.vue';
 import axios from 'axios';
 import vistaConcursosAdmin from '@/ComponentsConcursos/vistaConcursosAdmin.vue';
+import Swal from 'sweetalert2';
 
 // Variables reactivas para controlar el estado de la vista y los formularios
 const selectedMenu = ref('Concursos'); // Menú seleccionado actualmente
@@ -136,48 +137,78 @@ const confirmarCerrarConcurso = () => {
 // Variables y funciones para el modal de inscripción de evaluador
 const mostrarModalInscripcion = ref(false);
 
-// Maneja el clic en una tarjeta de concurso según el rol del usuario
+
+
 const handleConcursoClick = async (concurso) => {
-  if (concurso && concurso.id) {
-    if (userRole === 'admin') {
-      // Mostrar modal admin y cargar equipos
-      concursoSeleccionadoAdmin.value = concurso;
-      await cargarEquiposConcurso(concurso.id);
-      mostrarModalVistaConcursosAdmin.value = true;
-    } else if (userRole === 'evaluador') {
-      // Si el evaluador ya está inscrito, redirige a la evaluación
-      if (concurso.inscrito) {
-        router.get(route('evaluacion.index'));
-      } else {
-        // Si no está inscrito, muestra el modal de inscripción
-        concursoSeleccionado.value = concurso;
-        mostrarModalInscripcion.value = true;
-      }
-    } else if (userRole === 'lider') {
-      // Si el concurso está cerrado y el líder no está inscrito, no permite inscripción
-      const user = props.auth.user;
-      if (concurso.estado === 'cerrado' && !user.concurso_registrado_id) {
-        alert('No puedes inscribirte en un concurso cerrado.');
-        return;
-      }
-      if (inscrito.value) {
-        router.get(route('gestion.proyectos'));
-      } else {
-        selectedMenu.value = 'Registro';
-        showForm.value = true;
-        concursoSeleccionado.value = concurso.id;
-      }
-    } else if (inscrito.value) {
-      router.get(route('gestion.proyectos'));
-    } else {
-      selectedMenu.value = 'Registro';
-      showForm.value = true;
-      concursoSeleccionado.value = concurso.id;
-    }
-  } else {
+  if (!concurso || !concurso.id) {
     console.error('Invalid concurso object:', concurso);
+    return;
+  }
+
+  const status = (concurso?.status ?? '').toString().toLowerCase().trim();
+  const user = props.auth.user;
+
+  // Si el concurso ya finalizó
+  if (status === 'finalizado') {
+    await Swal.fire({
+      icon: 'warning',
+      title: 'Concurso finalizado',
+      text: 'El concurso ha finalizado y no se pueden hacer cambios.',
+      confirmButtonText: 'Entendido'
+    });
+    return;
+  }
+
+  // Si está cerrado y el líder no está registrado
+  if (userRole === 'lider' && status === 'cerrado' && !user.concurso_registrado_id) {
+    await Swal.fire({
+      icon: 'error',
+      title: 'Inscripción no permitida',
+      text: 'No puedes inscribirte en un concurso cerrado.',
+      confirmButtonText: 'Ok'
+    });
+    return;
+  }
+
+  if (userRole === 'admin') {
+    concursoSeleccionadoAdmin.value = concurso;
+    await cargarEquiposConcurso(concurso.id);
+    mostrarModalVistaConcursosAdmin.value = true;
+    return;
+  }
+
+  if (userRole === 'evaluador') {
+    if (concurso.inscrito) {
+      router.get(route('evaluacion.index'));
+    } else {
+      concursoSeleccionado.value = concurso;
+      mostrarModalInscripcion.value = true;
+    }
+    return;
+  }
+
+  if (userRole === 'lider') {
+    if (inscrito.value) {
+      router.get(route('gestion.proyectos'));
+      return;
+    }
+    selectedMenu.value = 'Registro';
+    showForm.value = true;
+    concursoSeleccionado.value = concurso.id;
+    return;
+  }
+
+  // Otros usuarios / casos generales
+  if (inscrito.value) {
+    router.get(route('gestion.proyectos'));
+  } else {
+    selectedMenu.value = 'Registro';
+    showForm.value = true;
+    concursoSeleccionado.value = concurso.id;
   }
 };
+
+
 
 // Inscribe al evaluador en el concurso seleccionado
 const inscribirEvaluador = () => {
@@ -237,7 +268,7 @@ const handleConfiguracion = async (concurso) => {
 };
 
 // Finaliza un concurso después de confirmación
-const handleFinalizarConcurso = async (concurso) => {
+ const handleFinalizarConcurso = async (concurso) => {
   if (!concurso || !concurso.id) {
     alert('El concurso no es válido.');
     return;
@@ -247,7 +278,14 @@ const handleFinalizarConcurso = async (concurso) => {
   if (!confirmacion) return;
 
   try {
-    const response = await axios.post(route('concursos.finalizar', concurso.id));
+    // Si usas Laravel Sanctum y sesión, primero asegúrate del token CSRF
+    await axios.get('/sanctum/csrf-cookie');
+
+    const response = await axios.post(
+      route('concursos.finalizar', concurso.id),
+      {},
+      { withCredentials: true } // Esto envía cookies y sesión
+    );
 
     if (response.data.success) {
       alert('El concurso ha sido finalizado exitosamente.');
@@ -262,14 +300,17 @@ const handleFinalizarConcurso = async (concurso) => {
   }
 };
 
+
 // Redirige a la vista del podio del concurso
 const handlePodio = (concurso) => {
+  console.log('Concurso clickeado para podio:', concurso.id, concurso.nombre);
   if (concurso && concurso.id) {
     router.get(route('concursos.podio', { id: concurso.id }));
   } else {
     console.error('Concurso inválido para podio:', concurso);
   }
 };
+
 
 // Abre el formulario para crear una evaluación manual
 const handleAbrirCrearEvaluacionManual = async () => {
@@ -421,16 +462,6 @@ const puedeInscribirse = (concurso) => {
             {{ selectedMenu }}
           </h2>
 
-          <!-- Contenedor flex para el botón -->
-          <div class="flex justify-end">
-            <button 
-              v-if="selectedMenu === 'Concursos' && userRole === 'lider'" 
-              @click="handleDownloadPDF" 
-              class="mt-3 bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
-            >
-              Descargar FOREG
-            </button>
-          </div>
 
           <!-- Formulario para Registro -->
           <div v-if="showForm" class="relative">
@@ -462,7 +493,7 @@ const puedeInscribirse = (concurso) => {
               @eliminar="handleEliminar"
               @cerrar="handleCerrar"
               @configuracion="handleConfiguracion"
-              @podio="handlePodio(concurso)"
+              @podio="handlePodio(concurso)" 
               class="transition-transform transform hover:scale-105 hover:shadow-lg"
             />
           </div>

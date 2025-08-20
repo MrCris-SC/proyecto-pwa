@@ -68,6 +68,53 @@ class ConcursosFinales extends Controller
         return response()->json(['success' => true, 'estado' => $proyecto->estado]);
     }
 
+    public function actualizarClasificacion(Request $request, User $user)
+    {
+        $request->validate([
+            'fase_clasificado' => 'nullable|string'
+        ]);
+
+        $user->fase_clasificado = $request->fase_clasificado; // puede ser null o 'clasificado_estatal', etc.
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'fase_clasificado' => $user->fase_clasificado
+        ]);
+    }
+
+    public function toggleClasificacion(Request $request)
+    {
+        \Log::info('toggleClasificacion - Datos recibidos:', $request->all());
+
+        $request->validate([
+            'resultado_id' => 'required|integer|exists:resultados_finales,id',
+            'user_id' => 'required|integer|exists:users,id',
+            'fase_clasificado' => 'nullable|string',
+            'clasificado' => 'required|boolean',
+        ]);
+
+
+        // Buscar el resultado
+        $resultado = ResultadosFinales::findOrFail($request->resultado_id);
+
+        // Actualizar campo clasificado en resultado
+        $resultado->clasificado = $request->clasificado;
+        $resultado->save();
+
+        // Buscar usuario líder y actualizar fase_clasificado
+        $user = User::findOrFail($request->user_id);
+        $user->fase_clasificado = $request->fase_clasificado;
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'clasificado' => $resultado->clasificado,
+            'fase_clasificado' => $user->fase_clasificado,
+        ]);
+    }
+
+
     // Nueva función para obtener participantes por concurso
     public function participantesPorConcurso($concursoId)
     {
