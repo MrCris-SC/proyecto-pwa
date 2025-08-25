@@ -109,16 +109,11 @@
         </button>
         <!-- Botón reactivo para cambiar estado -->
         <button
-          v-if="concurso"
+          v-if="concurso && concurso.status === 'abierto'"
           @click="abrirModalCambioEstado"
-          :class="[
-            'px-4 py-2 rounded shadow w-full sm:w-auto',
-            concurso.status === 'abierto'
-              ? 'bg-yellow-600 text-white hover:bg-yellow-800'
-              : 'bg-blue-700 text-white hover:bg-blue-900'
-          ]"
+          class="px-4 py-2 rounded shadow w-full sm:w-auto bg-yellow-600 text-white hover:bg-yellow-800"
         >
-          {{ concurso.status === 'abierto' ? 'Cerrar Concurso' : 'Abrir Concurso' }}
+          Cerrar Concurso
         </button>
         <p v-if="resumenEvaluaciones.pendientes > 0" class="text-red-500 text-sm w-full sm:w-auto">
           No se puede finalizar el concurso mientras haya evaluaciones pendientes.
@@ -137,8 +132,7 @@
           <h3 class="text-lg font-bold mb-4 text-[#611232]">Confirmar acción</h3>
           <p class="mb-6">
             ¿Está seguro que desea 
-            <span v-if="concurso.status === 'abierto'">cerrar</span>
-            <span v-else>abrir</span>
+            cerrar
             el concurso <strong>{{ concurso.nombre }}</strong>?
           </p>
           <div class="flex justify-end gap-2">
@@ -147,7 +141,7 @@
               class="px-4 py-2 bg-[#611232] text-white rounded hover:bg-[#4a0d24]"
               @click="confirmarCambioEstado"
             >
-              Sí, {{ concurso.status === 'abierto' ? 'cerrar' : 'abrir' }}
+              Sí, cerrar
             </button>
           </div>
         </div>
@@ -221,8 +215,10 @@ function abrirModalCambioEstado() {
 
 function confirmarCambioEstado() {
   mostrarModalConfirmacion.value = false;
-  // Determina el nuevo estado a enviar
-  const nuevoEstado = concurso.status === 'abierto' ? 'cerrado' : 'abierto';
-  emit('cambiar-estado-concurso', { concurso, nuevoEstado });
+  // Solo permite cerrar el concurso si está abierto
+  if (concurso.status === 'abierto') {
+    emit('cambiar-estado-concurso', { concurso, nuevoEstado: 'cerrado' });
+  }
 }
 </script>
+ 

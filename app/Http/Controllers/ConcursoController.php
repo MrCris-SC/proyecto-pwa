@@ -991,12 +991,19 @@ class ConcursoController extends Controller
         // Trae todos los equipos con su proyecto y participantes
         $equipos = Equipo::with(['proyecto', 'participantes'])->where('concurso_id', $concursoId)->get();
 
-        // Para cada equipo, trae sus evaluaciones con evaluador y puntajes
+        // Agrupa los equipos por categoría y modalidad
+        $grupos = [];
         foreach ($equipos as $equipo) {
+            $categoria = $equipo->proyecto->categoria ?? 'SinCategoria';
+            $modalidad = $equipo->proyecto->modalidad->nombre ?? 'SinModalidad';
+            $key = $categoria . '___' . $modalidad;
+            if (!isset($grupos[$key])) {
+                $grupos[$key] = [];
+            }
+            // Carga evaluaciones y perfiles
             $evaluaciones = Evaluaciones::with(['evaluador', 'puntajes.criterio'])
                 ->where('equipo_id', $equipo->id)
                 ->get();
-
             foreach ($evaluaciones as $evaluacion) {
                 if ($evaluacion->evaluador) {
                     $perfil = \App\Models\Evaluadores::where('userID', $evaluacion->evaluador->id)->value('perfil');
@@ -1006,13 +1013,38 @@ class ConcursoController extends Controller
                 }
             }
             $equipo->evaluaciones = $evaluaciones;
+            $grupos[$key][] = $equipo;
         }
 
-        $pdf = Pdf::loadView('pdf.reporte_evaluaciones_todos', [
-            'concurso' => $concurso,
-            'equipos' => $equipos,
-        ]);
+        // Si solo hay un grupo, descarga el PDF como antes
+        if (count($grupos) === 1) {
+            $equiposGrupo = array_values($grupos)[0];
+            $nombreGrupo = array_keys($grupos)[0];
+            $pdf = Pdf::loadView('pdf.reporte_evaluaciones_todos', [
+                'concurso' => $concurso,
+                'equipos' => $equiposGrupo,
+            ]);
+            return $pdf->download('reporte_evaluaciones_' . $nombreGrupo . '_concurso_' . $concurso->id . '.pdf');
+        }
 
-        return $pdf->download('reporte_evaluaciones_concurso_' . $concurso->id . '.pdf');
+        // Si hay varios grupos, genera todos los PDFs y devuélvelos en un ZIP
+        $zip = new \ZipArchive();
+        $zipFileName = storage_path('app/reporte_evaluaciones_concurso_' . $concurso->id . '.zip');
+        if (file_exists($zipFileName)) {
+            unlink($zipFileName);
+        }
+        $zip->open($zipFileName, \ZipArchive::CREATE);
+
+        foreach ($grupos as $key => $equiposGrupo) {
+            $pdf = Pdf::loadView('pdf.reporte_evaluaciones_todos', [
+                'concurso' => $concurso,
+                'equipos' => $equiposGrupo,
+            ]);
+            $filename = 'reporte_evaluaciones_' . str_replace('___', '_', $key) . '_concurso_' . $concurso->id . '.pdf';
+            $zip->addFromString($filename, $pdf->output());
+        }
+        $zip->close();
+
+        return response()->download($zipFileName)->deleteFileAfterSend(true);
     }
 }
