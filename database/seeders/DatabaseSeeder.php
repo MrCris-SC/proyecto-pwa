@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
         LineasInvestigacionSeeder::class,
         ModalidadesSeeder::class,
         MunicipiosSeeder::class,
+        PlantelesSeeder::class,
     ]); 
     }
 }
