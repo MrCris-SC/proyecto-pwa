@@ -13,6 +13,7 @@ class Participantes extends Model
         'equipo_id',
         'correo', 
         'telefono',
+        'genero',
         'direccion',
         'proyecto_id',
     ];
